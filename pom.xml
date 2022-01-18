@@ -5,7 +5,7 @@
    <modelVersion>4.0.0</modelVersion>
 
    <groupId>fr.ceoche</groupId>
-   <artifactId>validation</artifactId>
+   <artifactId>bvalid</artifactId>
    <version>1.0-SNAPSHOT</version>
 
    <properties>
@@ -31,6 +31,27 @@
                   <version>0.14</version>
                </dependency>
             </dependencies>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+               <execution>
+                  <id>generate-javadoc</id>
+                  <phase>generate-resources</phase>
+                  <goals>
+                     <goal>javadoc</goal>
+                  </goals>
+               </execution>
+               <execution>
+                  <id>package-javadoc</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>jar</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

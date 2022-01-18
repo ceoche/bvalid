@@ -29,18 +29,17 @@ import java.lang.annotation.Target;
  * <p>
  * example:
  * <p>
- * <pre>{@code
- * @BusinessObject(name="my-entity")
+ * <pre>
+ * {@code @BusinessObject(name="my-entity")
  * public class MyEntity {
  *
  *    public String name;
  *
- *    @BusinessRule(description = "name must be defined.")
+ *    {@literal @}BusinessRule(description = "name must be defined.")
  *    public boolean isNameValid() {
  *       return name != null && !name.trim().isEmpty();
  *    }
- * }
- * }</pre>
+ * }}</pre>
  *
  * @author ceoche
  */
