@@ -47,6 +47,13 @@ public class BusinessObjectMocks {
       return object;
    }
 
+   public static Object instantiateInheritanceWithoutAnnotationValid() {
+      WithInheritanceButWithoutAnnotation object = new WithInheritanceButWithoutAnnotation();
+      object.setMandatoryAttribute("name");
+      object.getOneOrMoreAssociation().add("one association");
+      return object;
+   }
+
    public static Object instantiateWithoutAssertions() {
       IllegalBusinessObject object= new IllegalBusinessObject();
       object.setName("value");
@@ -160,6 +167,10 @@ public class BusinessObjectMocks {
       public boolean isSubtypeValid() {
          return BasicRules.isDefined(subtype);
       }
+   }
+
+   public static class WithInheritanceButWithoutAnnotation extends DefaultValidableMock {
+
    }
 
    @BusinessObject

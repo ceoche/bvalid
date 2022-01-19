@@ -52,6 +52,9 @@ public class Author {
 }
 ```
 
+Any sub-classes of a class annotated with `@BusinessObject` are also considered business objects:q
+and can be validated.
+
 ### Validation
 
 To verify a business object, simply call the `BValidator`:
@@ -220,7 +223,8 @@ In the example above, `Comic` will also inherit from the business rule `Author::
 
 ### Default rules
 
-__BValid__ provides the `BasicRules` utility to implement quickly default business rules to assert mandatory attributes or cardinality.
+__BValid__ provides the `BasicRules` utility to implement quickly default business rules to assert mandatory attributes
+or cardinality.
 
 ```java
 import fr.ceoche.bvalid.BasicRules;

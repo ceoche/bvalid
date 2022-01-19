@@ -24,31 +24,36 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * The {@link BValidator} provides method to validate business rules and members of POJO business objects as long
- * as they are annotated with {@link BusinessObject}, {@link BusinessRule} and {@link BusinessMember}.
+ * The {@link BValidator} provides method to validate business rules and members of POJO business
+ * objects as long as they are annotated with {@link BusinessObject}, {@link BusinessRule} and
+ * {@link BusinessMember}.
  *
  * @author ceoche
  */
 public class BValidator {
 
    /**
-    * Verify if an object annotated with {@link BusinessObject} is valid by running business rules tests methods
-    * annotated with {@link BusinessRule} and by validating all nested {@link BusinessObject} accessible through methods
-    * annotated with {@link BusinessMember}. The validation will test all business rules and store the results in an
+    * Verify if an object annotated with {@link BusinessObject} is valid by running business
+    * rules tests methods annotated with {@link BusinessRule} and by validating all nested
+    * {@link BusinessObject} accessible through methods annotated with {@link BusinessMember}.
+    * The validation will test all business rules and store the results in an
     * {@link ObjectResult}.
     *
     * @param object business object to validate.
-    *
     * @return an {@link ObjectResult} that hold all the business rule and member results.
-    *
-    * @throws IllegalBusinessObjectException if the object is not an {@link BusinessObject}, or if it has no {@link
-    *                                        BusinessRule} nor {@link BusinessMember} public methods. If one of the
-    *                                        methods annotated with {@link BusinessRule} have more than zero parameters
-    *                                        or does not return a boolean value. Or if one of the methods annotated with
-    *                                        {@link BusinessMember} have more than zero parameters or does not return a
-    *                                        {@link BusinessObject} (or a collection/array of it).
-    * @throws InvocationException            if an exception is raised while invoking a {@link BusinessRule} or a {@link
-    *                                        BusinessMember} method. The original exception will be wrapped as cause.
+    * @throws IllegalBusinessObjectException if the object is not an {@link BusinessObject}, or
+    *                                        if it has no {@link BusinessRule} nor
+    *                                        {@link BusinessMember} public methods. If one of the
+    *                                        methods annotated with {@link BusinessRule} have
+    *                                        more than zero parameters or does not return a
+    *                                        boolean value. Or if one of the methods annotated with
+    *                                        {@link BusinessMember} have more than zero parameters
+    *                                        or does not return a {@link BusinessObject} (or a
+    *                                        collection/array of it).
+    * @throws InvocationException            if an exception is raised while invoking a
+    *                                        {@link BusinessRule} or a {@link BusinessMember}
+    *                                        method. The original exception will be wrapped as
+    *                                        cause.
     * @throws NullPointerException           if the given object is null.
     */
    public ObjectResult validate(final Object object) {
@@ -56,23 +61,27 @@ public class BValidator {
    }
 
    /**
-    * Verify if a collection of objects annotated with {@link BusinessObject} are valid by running business rules tests
-    * methods annotated with {@link BusinessRule} and by validating all nested {@link BusinessObject} accessible through
-    * methods annotated with {@link BusinessMember}. For each element of the collection, the validation will test all
+    * Verify if a collection of objects annotated with {@link BusinessObject} are valid by
+    * running business rules tests methods annotated with {@link BusinessRule} and by validating
+    * all nested {@link BusinessObject} accessible through methods annotated with
+    * {@link BusinessMember}. For each element of the collection, the validation will test all
     * business rules and store the results in an {@link ObjectResult}.
     *
     * @param objects business objects to validate.
-    *
     * @return a list of {@link ObjectResult}, one for each object.
-    *
-    * @throws IllegalBusinessObjectException if one of the object is not an {@link BusinessObject}, or if it has no
-    *                                        {@link BusinessRule} nor {@link BusinessMember} public methods. If one of
-    *                                        the methods annotated with {@link BusinessRule} have more than zero
-    *                                        parameters or does not return a boolean value. Or if one of the methods
-    *                                        annotated with {@link BusinessMember} have more than zero parameters or
-    *                                        does not return a {@link BusinessObject} (or a collection/array of it).
-    * @throws InvocationException            if an exception is raised while invoking a {@link BusinessRule} or a {@link
-    *                                        BusinessMember} method. The original exception will be wrapped as cause.
+    * @throws IllegalBusinessObjectException if one of the object is not an {@link BusinessObject},
+    *                                        or if it has no {@link BusinessRule} nor
+    *                                        {@link BusinessMember} public methods. If one of
+    *                                        the methods annotated with {@link BusinessRule} have
+    *                                        more than zero parameters or does not return a
+    *                                        boolean value. Or if one of the methods annotated
+    *                                        with {@link BusinessMember} have more than zero
+    *                                        parameters or does not return a {@link BusinessObject}
+    *                                        (or a collection/array of it).
+    * @throws InvocationException            if an exception is raised while invoking a
+    *                                        {@link BusinessRule} or a {@link BusinessMember}
+    *                                        method. The original exception will be wrapped as
+    *                                        cause.
     * @throws NullPointerException           if the given object is null.
     */
    public List<ObjectResult> validate(final Collection<?> objects) {
@@ -80,23 +89,27 @@ public class BValidator {
    }
 
    /**
-    * Verify if an array of objects annotated with {@link BusinessObject} are valid by running business rules tests
-    * methods annotated with {@link BusinessRule} and by validating all nested {@link BusinessObject} accessible through
-    * methods annotated with {@link BusinessMember}. For each element of the array, the validation will test all
-    * business rules and store the results in an {@link ObjectResult}.
+    * Verify if an array of objects annotated with {@link BusinessObject} are valid by running
+    * business rules tests methods annotated with {@link BusinessRule} and by validating all nested
+    * {@link BusinessObject} accessible through methods annotated with {@link BusinessMember}.
+    * For each element of the array, the validation will test all business rules and store the
+    * results in an {@link ObjectResult}.
     *
     * @param objects business objects to validate.
-    *
     * @return a list of {@link ObjectResult}, one for each object.
-    *
-    * @throws IllegalBusinessObjectException if one of the object is not an {@link BusinessObject}, or if it has no
-    *                                        {@link BusinessRule} nor {@link BusinessMember} public methods. If one of
-    *                                        the methods annotated with {@link BusinessRule} have more than zero
-    *                                        parameters or does not return a boolean value. Or if one of the methods
-    *                                        annotated with {@link BusinessMember} have more than zero parameters or
-    *                                        does not return a {@link BusinessObject} (or a collection/array of it).
-    * @throws InvocationException            if an exception is raised while invoking a {@link BusinessRule} or a {@link
-    *                                        BusinessMember} method. The original exception will be wrapped as cause.
+    * @throws IllegalBusinessObjectException if one of the object is not an {@link BusinessObject},
+    *                                        or if it has no {@link BusinessRule} nor
+    *                                        {@link BusinessMember} public methods. If one of
+    *                                        the methods annotated with {@link BusinessRule} have
+    *                                        more than zero parameters or does not return a
+    *                                        boolean value. Or if one of the methods annotated
+    *                                        with {@link BusinessMember} have more than zero
+    *                                        parameters or does not return a {@link BusinessObject}
+    *                                        (or a collection/array of it).
+    * @throws InvocationException            if an exception is raised while invoking a
+    *                                        {@link BusinessRule} or a {@link BusinessMember}
+    *                                        method. The original exception will be wrapped as
+    *                                        cause.
     * @throws NullPointerException           if the given object is null.
     */
    public List<ObjectResult> validate(final Object[] objects) {
@@ -128,7 +141,7 @@ public class BValidator {
       List<ObjectResult> results = new ArrayList<>();
       int index = -1;
       for (Object object : objects) {
-         if(object != null) {
+         if (object != null) {
             results.add(validate(object, name + "[" + ++index + "]"));
          }
       }
@@ -145,15 +158,16 @@ public class BValidator {
          objectResult.addMemberResults(validateBusinessMembers(object, businessMembers));
       } else {
          throw new IllegalBusinessObjectException(
-               "The class " + clazz.getCanonicalName() + " annotated with @BusinessObject does not have any public " +
-                     "@BusinessRule nor any public @BusinessMember methods to verify.");
+               "The class " + clazz.getCanonicalName() + " annotated with @BusinessObject does " +
+                     "not have any public  @BusinessRule nor any public @BusinessMember methods " +
+                     "to verify.");
       }
       return objectResult;
    }
 
    /**
-    * Perform validation of methods marked with {@link BusinessRule}. It will also validate inherited {@link
-    * BusinessRule} methods.
+    * Perform validation of methods marked with {@link BusinessRule}. It will also validate
+    * inherited {@link BusinessRule} methods.
     *
     * @param object        object to validate
     * @param businessRules business rule methods to run.
@@ -169,8 +183,9 @@ public class BValidator {
             ));
          } catch (IllegalAccessException | IllegalArgumentException | ClassCastException e) {
             throw new IllegalBusinessObjectException(String.format(
-                  "Method '%s' of class '%s' does not respect BusinessRule method format (should be " +
-                        "public with no arguments and return a boolean value).", businessRuleMethod.getName(),
+                  "Method '%s' of class '%s' does not respect BusinessRule method format (should " +
+                        "be  public with no arguments and return a boolean value).",
+                  businessRuleMethod.getName(),
                   object.getClass().getCanonicalName()), e);
          } catch (InvocationTargetException e) {
             throw new InvocationException(e.getCause());
@@ -190,10 +205,9 @@ public class BValidator {
             }
          } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new IllegalBusinessObjectException(
-                  "Method '" + businessMember.getName() + "' does not respect BusinessMember method format (should be" +
-                        " public with no arguments and return an object value that is a BusinessObject or a group of " +
-                        "BusinessObject).",
-                  e);
+                  "Method '" + businessMember.getName() + "' does not respect BusinessMember " +
+                        "method format (should be public with no arguments and return an object " +
+                        "value that is a BusinessObject or a group of BusinessObject).", e);
          } catch (InvocationTargetException e) {
             throw new InvocationException(e.getCause());
          }
@@ -203,7 +217,8 @@ public class BValidator {
 
    private String getBusinessObjectName(Class<?> clazz) {
       BusinessObject annotation = clazz.getAnnotation(BusinessObject.class);
-      return annotation.name().isEmpty() ? clazz.getSimpleName() : annotation.name();
+      return annotation == null || annotation.name().isEmpty() ? clazz.getSimpleName() :
+            annotation.name();
    }
 
    private String getBusinessRuleDescription(Method businessRule) {
@@ -227,7 +242,8 @@ public class BValidator {
       return getAnnotatedPublicMethod(clazz, BusinessMember.class);
    }
 
-   private List<Method> getAnnotatedPublicMethod(Class<?> clazz, Class<? extends Annotation> annotation) {
+   private List<Method> getAnnotatedPublicMethod(Class<?> clazz,
+                                                 Class<? extends Annotation> annotation) {
       List<Method> annotatedPublicMethods = new ArrayList<>();
       for (Method method : clazz.getMethods()) {
          if (method.isAnnotationPresent(annotation) && method.getModifiers() == Modifier.PUBLIC) {
@@ -239,7 +255,7 @@ public class BValidator {
 
    private Class<?> assertBusinessObjectClass(Object object) {
       Class<?> clazz = object.getClass();
-      if (isBusinessObject(clazz)) {
+      if (isBusinessObject(clazz) || hasASuperClassBusinessObject(clazz.getSuperclass())) {
          return clazz;
       } else {
          throw new IllegalBusinessObjectException("The object's class " + clazz.getCanonicalName()
@@ -249,5 +265,21 @@ public class BValidator {
 
    private boolean isBusinessObject(Class<?> clazz) {
       return clazz.isAnnotationPresent(BusinessObject.class);
+   }
+
+   private boolean hasASuperClassBusinessObject(Class<?> superClass) {
+      if (isOnTopClassHierarchy(superClass)) {
+         return false;
+      } else {
+         if (isBusinessObject(superClass)) {
+            return true;
+         } else {
+            return hasASuperClassBusinessObject(superClass.getSuperclass());
+         }
+      }
+   }
+
+   private boolean isOnTopClassHierarchy(Class<?> superClass) {
+      return superClass.equals(Object.class);
    }
 }

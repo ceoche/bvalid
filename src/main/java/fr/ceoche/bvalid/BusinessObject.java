@@ -25,11 +25,13 @@ import java.lang.annotation.Target;
  * <p>
  * Classes that are declared {@link BusinessObject} must :
  * <ul>
- * <li>implement at least one business rule (method annotated with {@link BusinessRule} or have at least one
- * business member (getter annotated with {@link BusinessMember} or,</li>
+ * <li>implement at least one business rule (method annotated with {@link BusinessRule} or have
+ * at least one business member (getter annotated with {@link BusinessMember} or,</li>
  * <li>have a parent class that respect the previous rule.</li>
  * </ul>
  * <p>
+ * <i>Sub-classes of a class annotated with {@link BusinessObject} can also be validated with
+ * {@link BValidator}.</i>
  *
  * @author ceoche
  * @see BusinessRule
@@ -42,7 +44,7 @@ public @interface BusinessObject {
    /**
     * Name of the business object. The class name by default.
     *
-    * @return
+    * @return the name of the business object.
     */
-   public String name() default "";
+   String name() default "";
 }

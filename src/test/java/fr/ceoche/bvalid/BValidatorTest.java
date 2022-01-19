@@ -49,6 +49,13 @@ public class BValidatorTest {
    }
 
    @Test
+   public void testParentIsBusinessObjectValid() {
+      Object object = BusinessObjectMocks.instantiateInheritanceWithoutAnnotationValid();
+      ObjectResult objectResult = new BValidator().validate(object);
+      assertTrue(objectResult.isValid(), "the business object must be valid");
+   }
+
+   @Test
    public void testInvalid() {
       Object object = BusinessObjectMocks.instantiateInvalid();
       ObjectResult objectResult = new BValidator().validate(object);
