@@ -17,6 +17,7 @@ package fr.ceoche.bvalid;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 /**
  * {@link BasicRules} provides basic expressions methods for business model constraints about
@@ -137,4 +138,19 @@ public class BasicRules {
       return hasOneOrMoreElements(objects) && hasDefinedElements(objects);
    }
 
+   /**
+    * Verify whether a String is matching the given pattern.
+    *
+    * @param regexp  the regular expression to match
+    * @param subject the subject of the pattern test.
+    * @return true if the subject is matching the regexp, false if not or if either regexp or
+    * subject is null.
+    */
+   public static boolean matches(String regexp, String subject) {
+      if (regexp != null && subject != null) {
+         return Pattern.compile(regexp).matcher(subject).matches();
+      } else {
+         return false;
+      }
+   }
 }

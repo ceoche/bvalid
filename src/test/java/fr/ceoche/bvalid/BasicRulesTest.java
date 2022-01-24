@@ -19,13 +19,13 @@ package fr.ceoche.bvalid;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BasicRulesTest {
 
@@ -128,6 +128,24 @@ public class BasicRulesTest {
    void testHasOneOrMoreDefinedElementListInvalid() {
       assertFalse(BasicRules.hasOneOrMoreDefinedElements(new ArrayList<>()));
       assertFalse(BasicRules.hasOneOrMoreDefinedElements(Arrays.asList(1, null, 3)));
+   }
+
+   @Test
+   void testPatternMatches() {
+      assertTrue(BasicRules.matches("^[^\\s\\.{}\\$]+$", "validId"));
+   }
+
+   @ParameterizedTest
+   @ValueSource(strings = {"idWith space", "idWith.dot", "idWith{bracket", "idWithBracket}",
+         "idWith$"})
+   void testPatternMatchesInvalid(String subject) {
+      assertFalse(BasicRules.matches("^[^\\s\\.{}\\$]+$", subject));
+   }
+
+   @Test
+   void testPatternMatchesError() {
+      assertFalse(BasicRules.matches(null, "toto"));
+      assertFalse(BasicRules.matches(".*", null));
    }
 
 }
