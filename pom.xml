@@ -4,9 +4,36 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
 
-   <groupId>fr.ceoche</groupId>
+   <groupId>io.github.ceoche</groupId>
    <artifactId>bvalid</artifactId>
    <version>1.0-SNAPSHOT</version>
+
+   <name>BValid</name>
+   <description>BValid is an open-source Java library to provide easy business rules and model validation.</description>
+   <url>https://github.com/ceoche/bvalid</url>
+
+   <licenses>
+      <license>
+         <name>The Apache Software License, Version 2.0</name>
+         <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+
+   <developers>
+      <developer>
+         <id>ceoche</id>
+         <name>Cédric Eoche-Duval</name>
+         <email>cedric.eoche.duval@gmail.com</email>
+      </developer>
+   </developers>
+
+   <scm>
+      <url>https://github.com/ceoche/bvalid</url>
+      <connection>scm:git:git://github.com/ceoche/bvalid.git</connection>
+      <developerConnection>scm:git:ssh://github.com:ceoche/bvalid.git</developerConnection>
+      <tag>HEAD</tag>
+   </scm>
 
    <properties>
       <maven.compiler.source>11</maven.compiler.source>
@@ -17,18 +44,19 @@
    <build>
       <plugins>
          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.22.2</version>
+            <version>3.0.0-M7</version>
          </plugin>
          <plugin>
             <groupId>org.pitest</groupId>
             <artifactId>pitest-maven</artifactId>
-            <version>1.7.3</version>
+            <version>1.9.1</version>
             <dependencies>
                <dependency>
                   <groupId>org.pitest</groupId>
                   <artifactId>pitest-junit5-plugin</artifactId>
-                  <version>0.14</version>
+                  <version>1.0.0</version>
                </dependency>
             </dependencies>
          </plugin>
@@ -53,6 +81,34 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.2.1</version>
+            <executions>
+               <execution>
+                  <id>package-sources</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>jar</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+               <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                     <goal>sign</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
 
@@ -60,7 +116,7 @@
       <dependency>
          <groupId>org.junit.jupiter</groupId>
          <artifactId>junit-jupiter</artifactId>
-         <version>5.7.2</version>
+         <version>5.8.2</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

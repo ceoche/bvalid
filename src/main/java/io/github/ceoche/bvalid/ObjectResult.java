@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Cédric Eoche-Duval
+ * Copyright 2022 Cédric Eoche-Duval
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package fr.ceoche.bvalid;
+package io.github.ceoche.bvalid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class ObjectResult {
 
    private final String businessObjectName;
-   private final List<RuleResult> RuleResults = new ArrayList<>();
+   private final List<RuleResult> ruleResults = new ArrayList<>();
    private final List<ObjectResult> memberResults = new ArrayList<>();
 
    protected ObjectResult() {
@@ -40,7 +40,7 @@ public class ObjectResult {
    }
 
    protected void addRuleResults(List<RuleResult> RuleResults) {
-      this.RuleResults.addAll(RuleResults);
+      this.ruleResults.addAll(RuleResults);
    }
 
    protected void addMemberResults(List<ObjectResult> memberResults) {
@@ -53,7 +53,7 @@ public class ObjectResult {
     * @return true if all rules and members are valid, false otherwise.
     */
    public boolean isValid() {
-      for (RuleResult RuleResult : RuleResults) {
+      for (RuleResult RuleResult : ruleResults) {
          if (!RuleResult.isValid()) {
             return false;
          }
@@ -72,7 +72,7 @@ public class ObjectResult {
 
    public int getNbOfTests() {
       int sum = 0;
-      sum += RuleResults.size();
+      sum += ruleResults.size();
       for (ObjectResult memberResult : memberResults) {
          sum += memberResult.getNbOfTests();
       }
@@ -87,7 +87,7 @@ public class ObjectResult {
     * result, true for valid and false otherwise.
     */
    public List<RuleResult> getRuleResults() {
-      return new ArrayList<>(RuleResults);
+      return new ArrayList<>(ruleResults);
    }
 
    public List<ObjectResult> getMemberResults() {
@@ -102,7 +102,7 @@ public class ObjectResult {
    // FIXME Maybe should return failures of members ?
    public List<RuleResult> getRuleFailures() {
       List<RuleResult> testFailures = new ArrayList<>();
-      for (RuleResult testEntry : RuleResults) {
+      for (RuleResult testEntry : ruleResults) {
          if (!testEntry.isValid()) {
             testFailures.add(testEntry);
          }
@@ -117,7 +117,7 @@ public class ObjectResult {
 
    private String toString(final String prefix) {
       StringBuilder sb = new StringBuilder();
-      for (RuleResult RuleResult : RuleResults) {
+      for (RuleResult RuleResult : ruleResults) {
          sb.append(prefix).append(businessObjectName).append(" ").append(RuleResult.toString()).append(System.lineSeparator());
       }
       if (!memberResults.isEmpty()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Cédric Eoche-Duval
+ * Copyright 2022 Cédric Eoche-Duval
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package fr.ceoche.bvalid;
+package io.github.ceoche.bvalid;
 
 import java.util.ArrayList;
 import java.util.Collection;
