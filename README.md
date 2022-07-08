@@ -52,7 +52,7 @@ public class Author {
 }
 ```
 
-Any sub-classes of a class annotated with `@BusinessObject` are also considered business objects:q
+Any sub-classes of a class annotated with `@BusinessObject` are also considered business objects
 and can be validated.
 
 ### Validation
