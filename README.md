@@ -16,7 +16,8 @@ __README Index__
     6. [Default rules](#default-rules)
 3. [Ideas behind BValid](#ideas-behind-bvalid)
 4. [Sources and build](#sources-and-build)
-5. [License](#license)
+5. [Contribute](#contribute)
+6. [License](#license)
 
 ## Project set-up
 
@@ -41,9 +42,9 @@ When using __BValid__, a business object is a Java class annotated with `@Busine
 rule or one business member.
 
 ```java
-import fr.ceoche.bvalid.BasicRules;
-import fr.ceoche.bvalid.BusinessObject;
-import fr.ceoche.bvalid.BusinessRule;
+import io.github.ceoche.bvalid.BasicRules;
+import io.github.ceoche.bvalid.BusinessObject;
+import io.github.ceoche.bvalid.BusinessRule;
 
 @BusinessObject
 public class Author {
@@ -72,9 +73,9 @@ Any sub-classes of a class annotated with `@BusinessObject` are also considered 
 To verify a business object, simply call the `BValidator`:
 
 ```java
-import fr.ceoche.bvalid.ObjectResult;
-import fr.ceoche.bvalid.BValidator;
-import fr.ceoche.bvalid.RuleResult;
+import io.github.ceoche.bvalid.ObjectResult;
+import io.github.ceoche.bvalid.BValidator;
+import io.github.ceoche.bvalid.RuleResult;
 
 public class Example {
 
@@ -105,9 +106,9 @@ A business rule is a __public__ method that takes no arguments, returns a `boole
 with `@BusinessRule` (the method must return `true` if the rule is validated, `false` otherwise).
 
 ```java
-import fr.ceoche.bvalid.BasicRules;
-import fr.ceoche.bvalid.BusinessObject;
-import fr.ceoche.bvalid.BusinessRule;
+import io.github.ceoche.bvalid.BasicRules;
+import io.github.ceoche.bvalid.BusinessObject;
+import io.github.ceoche.bvalid.BusinessRule;
 
 @BusinessObject
 public class Author {
@@ -145,10 +146,10 @@ __BValid__ is able to validate business members if they are defined via a __publ
 return a business object (instance of a class annotated with `@BusinessObject`) and is annotated with `@BusinessMember`:
 
 ```java
-import fr.ceoche.bvalid.BasicRules;
-import fr.ceoche.bvalid.BusinessMember;
-import fr.ceoche.bvalid.BusinessObject;
-import fr.ceoche.bvalid.BusinessRule;
+import io.github.ceoche.bvalid.BasicRules;
+import io.github.ceoche.bvalid.BusinessMember;
+import io.github.ceoche.bvalid.BusinessObject;
+import io.github.ceoche.bvalid.BusinessRule;
 
 import javax.security.sasl.AuthorizeCallback;
 
@@ -180,8 +181,8 @@ allows optional associations in models.
 Composition support also multiple cardinality:
 
 ```java
-import fr.ceoche.bvalid.BusinessMember;
-import fr.ceoche.bvalid.BusinessObject;
+import io.github.ceoche.bvalid.BusinessMember;
+import io.github.ceoche.bvalid.BusinessObject;
 
 import java.util.ArrayList;
 
@@ -207,9 +208,9 @@ Business objects can inherit from others business object. They will get all busi
 business object.
 
 ```java
-import fr.ceoche.bvalid.BasicRules;
-import fr.ceoche.bvalid.BusinessObject;
-import fr.ceoche.bvalid.BusinessRule;
+import io.github.ceoche.bvalid.BasicRules;
+import io.github.ceoche.bvalid.BusinessObject;
+import io.github.ceoche.bvalid.BusinessRule;
 
 @BusinessObject
 public class Comic extends Book {
@@ -239,7 +240,7 @@ __BValid__ provides the `BasicRules` utility to implement quickly default busine
 or cardinality.
 
 ```java
-import fr.ceoche.bvalid.BasicRules;
+import io.github.ceoche.bvalid.BasicRules;
 
 import java.util.Collections;
 
@@ -341,7 +342,7 @@ Feel free to open an issue, fork the project and/or propose a merge request.
 
 ## License
 
-__Copyright 2021 Cédric Eoche-Duval.__
+__Copyright 2022 Cédric Eoche-Duval.__
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with
 the License. You may obtain a copy of the License at
