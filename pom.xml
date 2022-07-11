@@ -31,7 +31,7 @@
    <scm>
       <url>https://github.com/ceoche/bvalid</url>
       <connection>scm:git:git://github.com/ceoche/bvalid.git</connection>
-      <developerConnection>scm:git:ssh://github.com:ceoche/bvalid.git</developerConnection>
+      <developerConnection>scm:git:git://github.com/ceoche/bvalid.git</developerConnection>
       <tag>HEAD</tag>
    </scm>
 
