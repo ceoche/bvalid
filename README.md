@@ -6,20 +6,33 @@ This project is under [Apache License, Version 2.0](#license).
 
 __README Index__
 
-1. [Usage](#usage)
+1. [Project set up](#project-set-up)
+2. [Usage](#usage)
     1. [Business Object](#business-object)
     2. [Validation](#validation)
     3. [Business rules](#business-rules)
     4. [Business members composition](#business-member-composition)
     5. [Business object inheritance](#business-object-inheritance)
     6. [Default rules](#default-rules)
-2. [Ideas behind BValid](#ideas-behind-bvalid)
-3. [Sources and build](#sources-and-build)
-4. [License](#license)
+3. [Ideas behind BValid](#ideas-behind-bvalid)
+4. [Sources and build](#sources-and-build)
+5. [License](#license)
+
+## Project set-up
+
+__BValid__ is available on Maven Central Repository
+
+```xml
+<dependency>
+   <groupId>io.github.ceoche</groupId>
+   <artifactId>bvalid</artifactId>
+   <version>0.1.0</version>
+</dependency>
+```
 
 ## Usage
 
-__BValid__ goal is to help running a collection of assertions or rules on a business object to assess whether this
+__BValid__ is a validation tool running a collection of assertions or rules on a business object to assess whether this
 object is valid or not.
 
 ### Business Object
@@ -52,8 +65,7 @@ public class Author {
 }
 ```
 
-Any sub-classes of a class annotated with `@BusinessObject` are also considered business objects
-and can be validated.
+Any sub-classes of a class annotated with `@BusinessObject` are also considered business objects and can be validated.
 
 ### Validation
 
@@ -296,7 +308,7 @@ To build, test and package the project as JAR :
 mvn clean package
 ```
 
-JAR file will be available in `target/` directory. To make it available to any other Maven project on your machine :
+JAR file and javadoc will be available in `target/` directory. To make it available to any other Maven project on your machine :
 
 ```shell
 mvn install
@@ -311,6 +323,21 @@ mvn pitest:mutationCoverage
 ```
 
 A report will be generated in `target/pit-reports/yyyyMMddhhmm/index.html`
+
+### Release a new version of BValid
+
+Release process can only be performed by project members.
+
+```shell
+mvn release:prepare
+mvn release:perform
+# Verify the staging repo created, then run
+mvn nexus-staging:release -Prelease -DstagingRepositoryId=${STAGING_REPO}
+```
+
+## Contribute
+
+Feel free to open an issue, fork the project and/or propose a merge request.
 
 ## License
 
