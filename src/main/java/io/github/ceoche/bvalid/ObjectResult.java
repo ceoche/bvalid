@@ -18,6 +18,7 @@ package io.github.ceoche.bvalid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Aggregate all {@link BusinessRule} and {@link BusinessMember} test results of a
@@ -48,9 +49,9 @@ public class ObjectResult {
    }
 
    /**
-    * Return the overall business rules and members result.
+    * Get the validation result.
     *
-    * @return true if all rules and members are valid, false otherwise.
+    * @return true if all contained rules and members are valid, false otherwise.
     */
    public boolean isValid() {
       for (RuleResult RuleResult : ruleResults) {
@@ -64,6 +65,23 @@ public class ObjectResult {
          }
       }
       return true;
+   }
+
+   /**
+    * <p>Assert that the result is valid or throw a Throwable that contains a detailed report using
+    * the given builder.</p>
+    * <p>Example:</p>
+    * <pre>{@code
+    * new BValidator().validate(object).assertValidOrThrow(IllegalArgumentException::new);
+    * }</pre>
+    *
+    * @param exceptionBuilder {@link Function} that takes the detailed report in {@link String} as
+    *                         input and return a {@link Throwable}.
+    * @throws T throws the Exception built by the given builder if the result is invalid.
+    */
+   public <T extends Throwable> void assertValidOrThrow(Function<String, T> exceptionBuilder) throws T {
+      if (!isValid())
+         throw exceptionBuilder.apply(this.toString());
    }
 
    public String getBusinessObjectName() {
