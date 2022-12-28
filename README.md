@@ -1,5 +1,7 @@
 # BValid
 
+### _WARNING: THIS IS AN OUTDATED DOCUMENTATION_
+
 __BValid__ is an open-source Java library to provide easy business rules and model validation.
 
 This project is under [Apache License, Version 2.0](#license).
@@ -73,8 +75,8 @@ Any sub-classes of a class annotated with `@BusinessObject` are also considered 
 To verify a business object, simply call the `BValidator`:
 
 ```java
-import io.github.ceoche.bvalid.ObjectResult;
 import io.github.ceoche.bvalid.BValidator;
+import io.github.ceoche.bvalid.ObjectResult;
 import io.github.ceoche.bvalid.RuleResult;
 
 public class Example {

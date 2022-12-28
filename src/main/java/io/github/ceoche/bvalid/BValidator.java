@@ -15,271 +15,210 @@
  */
 package io.github.ceoche.bvalid;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * The {@link BValidator} provides method to validate business rules and members of POJO business
- * objects as long as they are annotated with {@link BusinessObject}, {@link BusinessRule} and
+ * based on the rules and members provided by the {@link BValidatorBuilderImpl}.
  * {@link BusinessMember}.
  *
  * @author ceoche
  */
-public class BValidator {
+public class BValidator<T>  {
 
-   /**
-    * Verify if an object annotated with {@link BusinessObject} is valid by running business
-    * rules tests methods annotated with {@link BusinessRule} and by validating all nested
-    * {@link BusinessObject} accessible through methods annotated with {@link BusinessMember}.
-    * The validation will test all business rules and store the results in an
-    * {@link ObjectResult}.
-    *
-    * @param object business object to validate.
-    * @return an {@link ObjectResult} that hold all the business rule and member results.
-    * @throws IllegalBusinessObjectException if the object is not an {@link BusinessObject}, or
-    *                                        if it has no {@link BusinessRule} nor
-    *                                        {@link BusinessMember} public methods. If one of the
-    *                                        methods annotated with {@link BusinessRule} have
-    *                                        more than zero parameters or does not return a
-    *                                        boolean value. Or if one of the methods annotated with
-    *                                        {@link BusinessMember} have more than zero parameters
-    *                                        or does not return a {@link BusinessObject} (or a
-    *                                        collection/array of it).
-    * @throws InvocationException            if an exception is raised while invoking a
-    *                                        {@link BusinessRule} or a {@link BusinessMember}
-    *                                        method. The original exception will be wrapped as
-    *                                        cause.
-    * @throws NullPointerException           if the given object is null.
-    */
-   public ObjectResult validate(final Object object) {
-      return validate(object, getBusinessObjectName(assertBusinessObjectClass(object)));
-   }
+    private final Set<BusinessRuleObject<T>> rules;
 
-   /**
-    * Verify if a collection of objects annotated with {@link BusinessObject} are valid by
-    * running business rules tests methods annotated with {@link BusinessRule} and by validating
-    * all nested {@link BusinessObject} accessible through methods annotated with
-    * {@link BusinessMember}. For each element of the collection, the validation will test all
-    * business rules and store the results in an {@link ObjectResult}.
-    *
-    * @param objects business objects to validate.
-    * @return a list of {@link ObjectResult}, one for each object.
-    * @throws IllegalBusinessObjectException if one of the object is not an {@link BusinessObject},
-    *                                        or if it has no {@link BusinessRule} nor
-    *                                        {@link BusinessMember} public methods. If one of
-    *                                        the methods annotated with {@link BusinessRule} have
-    *                                        more than zero parameters or does not return a
-    *                                        boolean value. Or if one of the methods annotated
-    *                                        with {@link BusinessMember} have more than zero
-    *                                        parameters or does not return a {@link BusinessObject}
-    *                                        (or a collection/array of it).
-    * @throws InvocationException            if an exception is raised while invoking a
-    *                                        {@link BusinessRule} or a {@link BusinessMember}
-    *                                        method. The original exception will be wrapped as
-    *                                        cause.
-    * @throws NullPointerException           if the given object is null.
-    */
-   public List<ObjectResult> validate(final Collection<?> objects) {
-      return validate(objects, objects.getClass().getSimpleName());
-   }
+    private final Set<BusinessMemberObject<T,?>> members;
 
-   /**
-    * Verify if an array of objects annotated with {@link BusinessObject} are valid by running
-    * business rules tests methods annotated with {@link BusinessRule} and by validating all nested
-    * {@link BusinessObject} accessible through methods annotated with {@link BusinessMember}.
-    * For each element of the array, the validation will test all business rules and store the
-    * results in an {@link ObjectResult}.
-    *
-    * @param objects business objects to validate.
-    * @return a list of {@link ObjectResult}, one for each object.
-    * @throws IllegalBusinessObjectException if one of the object is not an {@link BusinessObject},
-    *                                        or if it has no {@link BusinessRule} nor
-    *                                        {@link BusinessMember} public methods. If one of
-    *                                        the methods annotated with {@link BusinessRule} have
-    *                                        more than zero parameters or does not return a
-    *                                        boolean value. Or if one of the methods annotated
-    *                                        with {@link BusinessMember} have more than zero
-    *                                        parameters or does not return a {@link BusinessObject}
-    *                                        (or a collection/array of it).
-    * @throws InvocationException            if an exception is raised while invoking a
-    *                                        {@link BusinessRule} or a {@link BusinessMember}
-    *                                        method. The original exception will be wrapped as
-    *                                        cause.
-    * @throws NullPointerException           if the given object is null.
-    */
-   public List<ObjectResult> validate(final Object[] objects) {
-      return validate(objects, objects.getClass().getSimpleName());
-   }
+    private final String businessObjectName;
 
-   private List<ObjectResult> validateAnyMember(final Object object, String name) {
-      List<ObjectResult> objectResults = new ArrayList<>();
-      Class<?> objectClass = object.getClass();
-      if (isCollection(objectClass)) {
-         objectResults.addAll(validate((Collection<?>) object, name));
-      } else if (objectClass.isArray()) {
-         objectResults.addAll(validate((Object[]) object, name));
-      } else {
-         objectResults.add(validate(object, name));
-      }
-      return objectResults;
-   }
+    /**
+     * Hidden constructor. Only {@link BValidatorBuilderImpl} can create a {@link BValidator}.
+     */
+    BValidator(Set<BusinessRuleObject<T>> rules, Set<BusinessMemberObject<T,?>> members, String businessObjectName) {
+        this.businessObjectName = businessObjectName;
+        if((rules == null || rules.isEmpty()) && (members == null || members.isEmpty()) ){
+            throw new IllegalBusinessObjectException("Rules or members must be provided for a business object: "+businessObjectName);
+        }
+        this.rules = rules;
+        this.members = members;
+    }
 
-   private boolean isCollection(Class<?> objectClass) {
-      return Collection.class.isAssignableFrom(objectClass);
-   }
+    /**
+     * Verify if an object of type T is valid by running business
+     * rules tests methods listed in {@link BValidator#rules} and by validating all members
+     * accessible from the {@link BValidator#members}.
+     * The validation will test all business rules and store the results in an
+     * {@link ObjectResult}.
+     *
+     * @param object business object to validate.
+     * @return an {@link ObjectResult} that hold all the business rule and member results.
+     * @throws InvocationException  if an exception is raised while invoking a
+     *                              {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
+     *                              function. The original exception will be wrapped as cause.
+     * @throws IllegalBusinessObjectException if an error occurs while validating a member (Wrong return type,...)
+     * @throws NullPointerException if the given object is null.
+     */
 
-   private List<ObjectResult> validate(Collection<?> objects, String name) {
-      return validate(objects.toArray(), name);
-   }
+    public ObjectResult validate(final T object) {
+        return this.validate(object, businessObjectName);
+    }
 
-   private List<ObjectResult> validate(Object[] objects, String name) {
-      List<ObjectResult> results = new ArrayList<>();
-      int index = -1;
-      for (Object object : objects) {
-         if (object != null) {
-            results.add(validate(object, name + "[" + ++index + "]"));
-         }
-      }
-      return results;
-   }
 
-   private ObjectResult validate(final Object object, final String name) {
-      ObjectResult objectResult = new ObjectResult(name);
-      Class<?> clazz = assertBusinessObjectClass(object);
-      List<Method> businessRules = getBusinessRuleMethods(clazz);
-      List<Method> businessMembers = getBusinessMemberMethods(clazz);
-      if (!businessRules.isEmpty() || !businessMembers.isEmpty()) {
-         objectResult.addRuleResults(validateBusinessRules(object, businessRules));
-         objectResult.addMemberResults(validateBusinessMembers(object, businessMembers));
-      } else {
-         throw new IllegalBusinessObjectException(
-               "The class " + clazz.getCanonicalName() + " annotated with @BusinessObject does " +
-                     "not have any public  @BusinessRule nor any public @BusinessMember methods " +
-                     "to verify.");
-      }
-      return objectResult;
-   }
+    /**
+     * Verify if an array of objects is valid by running business
+     * rules tests methods listed in {@link BValidator#rules} and by validating all members
+     * accessible from the {@link BValidator#members}.
+     * The validation will test all business rules and store the results in an
+     * {@link ObjectResult}.
+     *
+     * @param collection collection of business objects to validate.
+     * @return an {@link ObjectResult} that hold all the business rule and member results.
+     * @throws InvocationException  if an exception is raised while invoking a
+     *                              {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
+     *                              function. The original exception will be wrapped as cause.
+     * @throws IllegalBusinessObjectException if an error occurs while validating a member (Wrong return type,...)
+     * @throws NullPointerException if the given object is null.
+     */
+    public List<ObjectResult> validate(final Collection<T> collection) {
+        return this.validate(collection, businessObjectName);
+    }
 
-   /**
-    * Perform validation of methods marked with {@link BusinessRule}. It will also validate
-    * inherited {@link BusinessRule} methods.
-    *
-    * @param object        object to validate
-    * @param businessRules business rule methods to run.
-    */
-   private List<RuleResult> validateBusinessRules(Object object, List<Method> businessRules) {
-      List<RuleResult> RuleResults = new ArrayList<>();
-      for (Method businessRuleMethod : businessRules) {
-         try {
-            RuleResults.add(new RuleResult(
-                  getBusinessRuleId(businessRuleMethod),
-                  getBusinessRuleDescription(businessRuleMethod),
-                  (Boolean) businessRuleMethod.invoke(object)
-            ));
-         } catch (IllegalAccessException | IllegalArgumentException | ClassCastException e) {
-            throw new IllegalBusinessObjectException(String.format(
-                  "Method '%s' of class '%s' does not respect BusinessRule method format (should " +
-                        "be  public with no arguments and return a boolean value).",
-                  businessRuleMethod.getName(),
-                  object.getClass().getCanonicalName()), e);
-         } catch (InvocationTargetException e) {
-            throw new InvocationException(e.getCause());
-         }
-      }
-      return RuleResults;
-   }
+    /**
+     * Verify if a collections of type T is valid by running business
+     * rules tests methods listed in {@link BValidator#rules} and by validating all members
+     * accessible from the {@link BValidator#members}.
+     * The validation will test all business rules and store the results in an
+     * {@link ObjectResult}.
+     *
+     * @param array array of business objects to validate.
+     * @return an {@link ObjectResult} that hold all the business rule and member results.
+     * @throws InvocationException  if an exception is raised while invoking a
+     *                              {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
+     *                              function. The original exception will be wrapped as cause.
+     * @throws IllegalBusinessObjectException if an error occurs while validating a member (Wrong return type,...)
+     * @throws NullPointerException if the given object is null.
+     */
+    public List<ObjectResult> validate(final T[] array) {
+        return this.validate(array, businessObjectName);
+    }
 
-   private List<ObjectResult> validateBusinessMembers(Object object, List<Method> businessMembers) {
-      List<ObjectResult> membersResults = new ArrayList<>();
-      for (Method businessMember : businessMembers) {
-         try {
-            Object member = businessMember.invoke(object);
-            if (member != null) {
-               //Recursive call
-               membersResults.addAll(validateAnyMember(member, getMemberName(businessMember)));
+    private <R> ObjectResult validate(T object, String name) {
+        if (object == null) {
+            throw new NullPointerException("The object to validate cannot be null");
+        }
+        final ObjectResult result = new ObjectResult(name);
+        List<RuleResult> ruleResults = validateBusinessRules(object);
+        List<ObjectResult> memberResults = this.<R>validateBusinessMembers(object);
+        result.addRuleResults(ruleResults);
+        result.addMemberResults(memberResults);
+        return result;
+    }
+
+    private <R> List<ObjectResult> validate(Collection<T> collection, String name) {
+        List<ObjectResult> results = new ArrayList<>();
+        int index = -1;
+        for (T object : collection) {
+            results.add(this.<R>validate(object, name + "[" + ++index + "]"));
+        }
+        return results;
+    }
+
+    private List<ObjectResult> validate(T[] array, String name) {
+        return validate(Arrays.asList(array), name);
+    }
+
+    private <R> ObjectResult validateMember(final R object, final BValidator<R> validator, final String memberName) {
+        return validator.validate(object, memberName);
+    }
+
+    private <R> List<ObjectResult> validateMemberCollection(final Collection<R> collection, final BValidator<R> validator, final String memberName) {
+        return validator.<R>validate(collection, memberName);
+    }
+
+    private <R> List<ObjectResult> validateMemberArray(final R[] array, final BValidator<R> validator, final String memberName) {
+        return validator.validate(array, memberName);
+    }
+
+
+    private List<RuleResult> validateBusinessRules(final T object) {
+        final List<RuleResult> results = new ArrayList<>();
+        for (final BusinessRuleObject<T> rule : rules) {
+            try {
+                results.add(new RuleResult(rule.getId(), rule.getDescription(), rule.apply(object)));
             }
-         } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new IllegalBusinessObjectException(
-                  "Method '" + businessMember.getName() + "' does not respect BusinessMember " +
-                        "method format (should be public with no arguments and return an object " +
-                        "value that is a BusinessObject or a group of BusinessObject).", e);
-         } catch (InvocationTargetException e) {
-            throw new InvocationException(e.getCause());
-         }
-      }
-      return membersResults;
-   }
+            catch (InvocationException e) {
+                throw new InvocationException(e.getCause());
+            }
+        }
+        return results;
+    }
 
-   private String getBusinessObjectName(Class<?> clazz) {
-      BusinessObject annotation = clazz.getAnnotation(BusinessObject.class);
-      return annotation == null || annotation.name().isEmpty() ? clazz.getSimpleName() :
-            annotation.name();
-   }
+    private <R> List<ObjectResult> validateBusinessMembers(final T object)  {
+        final List<ObjectResult> results = new ArrayList<>();
+        for (final BusinessMemberObject<T, ?> member : members) {
+            try {
+                final Object memberValue = getMemberValue(object, member);
+                results.addAll(validateAnyMember(memberValue, (BValidator<R>) member.getValidator(), member.getName()));
+            }
+            catch (IllegalArgumentException e) {
+                throw new IllegalBusinessObjectException(
+                        "Method '" + member.getName() + "' does not respect BusinessMember " +
+                                "method format (should be public with no arguments and return an object " +
+                                "value that is a BusinessObject or a group of BusinessObject).", e);
+            }
+            catch (ClassCastException e){
+                throw new IllegalBusinessObjectException("Wrong member type", e);
+            }
+            catch (final Throwable e) {
+                if(e.getCause() != null)
+                    throw new InvocationException(e.getCause());
+                throw new InvocationException(e);
+            }
+        }
+        return results;
+    }
 
-   private String getBusinessRuleDescription(Method businessRule) {
-      return businessRule.getAnnotation(BusinessRule.class).description();
-   }
+    private <R> void castGenericCheck(Object object) throws ClassCastException {
+           R casted = (R) object;
+    }
 
-   private String getBusinessRuleId(Method businessRule) {
-      return businessRule.getAnnotation(BusinessRule.class).id();
-   }
+    private Object getMemberValue(final T object, final BusinessMemberObject<T, ?> member) throws Throwable{
+        try {
+            return member.getMemberValue(object);
+        }
+        catch (final InvocationException e) {
+            throw e.getCause();
+        }
+    }
 
-   private String getMemberName(Method businessMember) {
-      BusinessMember annotation = businessMember.getAnnotation(BusinessMember.class);
-      return annotation.name().isEmpty() ? businessMember.getName() : annotation.name();
-   }
+    private <R> List<ObjectResult>  validateAnyMember(final Object memberValue, BValidator<R> validator, String name) {
+        final List<ObjectResult> results = new ArrayList<>();
+        if(memberValue == null){
+            return Collections.emptyList();
+        }
+        if (isValidCollection(memberValue)) {
+            this.<R>castGenericCheck(((Collection<?>) memberValue).iterator().next());
+            results.addAll(this.validateMemberCollection((Collection<R>) memberValue, validator, name));
+        } else if (isValidArray(memberValue)) {
+            this.<R>castGenericCheck(((Object[]) memberValue)[0]);
+            results.addAll(this.validateMemberArray((R[]) memberValue, validator, name));
+        } else {
+            this.<R>castGenericCheck(memberValue);
+            results.add(this.validateMember((R)memberValue, validator, name));
+        }
+        return results;
+    }
 
-   private List<Method> getBusinessRuleMethods(Class<?> clazz) {
-      return getAnnotatedPublicMethod(clazz, BusinessRule.class);
-   }
+    private boolean isValidCollection(Object memberValue) {
+        return (memberValue instanceof Collection) && !((Collection<?>) memberValue).isEmpty();
+    }
 
-   private List<Method> getBusinessMemberMethods(Class<?> clazz) {
-      return getAnnotatedPublicMethod(clazz, BusinessMember.class);
-   }
+    private boolean isValidArray(Object memberValue) {
+        return (memberValue instanceof Object[]) && ((Object[]) memberValue).length > 0;
+    }
 
-   private List<Method> getAnnotatedPublicMethod(Class<?> clazz,
-                                                 Class<? extends Annotation> annotation) {
-      List<Method> annotatedPublicMethods = new ArrayList<>();
-      for (Method method : clazz.getMethods()) {
-         if (method.isAnnotationPresent(annotation) && method.getModifiers() == Modifier.PUBLIC) {
-            annotatedPublicMethods.add(method);
-         }
-      }
-      return annotatedPublicMethods;
-   }
 
-   private Class<?> assertBusinessObjectClass(Object object) {
-      Class<?> clazz = object.getClass();
-      if (isBusinessObject(clazz) || hasASuperClassBusinessObject(clazz.getSuperclass())) {
-         return clazz;
-      } else {
-         throw new IllegalBusinessObjectException("The object's class " + clazz.getCanonicalName()
-               + " is not annotated with @BusinessObject.");
-      }
-   }
 
-   private boolean isBusinessObject(Class<?> clazz) {
-      return clazz.isAnnotationPresent(BusinessObject.class);
-   }
 
-   private boolean hasASuperClassBusinessObject(Class<?> superClass) {
-      if (isOnTopClassHierarchy(superClass)) {
-         return false;
-      } else {
-         if (isBusinessObject(superClass)) {
-            return true;
-         } else {
-            return hasASuperClassBusinessObject(superClass.getSuperclass());
-         }
-      }
-   }
-
-   private boolean isOnTopClassHierarchy(Class<?> superClass) {
-      return superClass.equals(Object.class);
-   }
 }

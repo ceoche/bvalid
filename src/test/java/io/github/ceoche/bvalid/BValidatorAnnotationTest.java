@@ -20,11 +20,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BValidatorTest {
+import static io.github.ceoche.bvalid.BusinessObjectMocks.*;
+
+public class BValidatorAnnotationTest {
 
    public static final int MEMBER_NAME = 0;
    public static final int RULE_ID = 1;
@@ -33,16 +37,16 @@ public class BValidatorTest {
 
    @Test
    public void testValid() {
-      Object object = BusinessObjectMocks.instantiateValid();
-      ObjectResult objectResult = new BValidator().validate(object);
+      DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
+      ObjectResult objectResult = this.buildObjectValidator(DefaultValidableMock.class).validate(object);
 
       assertTrue(objectResult.isValid(), "the business object must be valid");
 
       assertResultsContains(
             new Object[][]{
                   {"validable-mock", "rule01", "mandatoryAttribute must be defined.", true},
-                  {"validable-mock", "", "optionalAttribute must be defined if present.", true},
-                  {"validable-mock", "", "oneOrMoreAssociation must have at least one element.",
+                  {"validable-mock", "OptionalAttributeValid", "optionalAttribute must be defined if present.", true},
+                  {"validable-mock", "OneOrMoreAssociationValid", "oneOrMoreAssociation must have at least one element.",
                         true}
             },
             objectResult);
@@ -50,43 +54,47 @@ public class BValidatorTest {
 
    @Test
    public void testParentIsBusinessObjectValid() {
-      Object object = BusinessObjectMocks.instantiateInheritanceWithoutAnnotationValid();
-      ObjectResult objectResult = new BValidator().validate(object);
+      DefaultValidableMock object = BusinessObjectMocks.instantiateInheritanceWithoutAnnotationValid();
+      ObjectResult objectResult = buildObjectValidator(DefaultValidableMock.class).validate(object);
       assertTrue(objectResult.isValid(), "the business object must be valid");
    }
 
    @Test
    public void testInvalid() {
-      Object object = BusinessObjectMocks.instantiateInvalid();
-      ObjectResult objectResult = new BValidator().validate(object);
+      DefaultValidableMock object = BusinessObjectMocks.instantiateInvalid();
+      ObjectResult objectResult = buildObjectValidator(DefaultValidableMock.class).validate(object);
       assertFalse(objectResult.isValid(), "The object must be invalid");
    }
 
    @Test
    public void testRuleAttributesResult() {
-      Object object = BusinessObjectMocks.instantiateValid();
-      ObjectResult objectResult = new BValidator().validate(object);
+      DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
+      ObjectResult objectResult = buildObjectValidator(DefaultValidableMock.class).validate(object);
+      List<String> rulesNamesFromMethods = Arrays.stream(DefaultValidableMock.class.getMethods())
+               .filter(method -> method.isAnnotationPresent(BusinessRule.class))
+               .map(method -> method.getName().replace("is",""))
+               .collect(Collectors.toList());
       for (RuleResult RuleResult : objectResult.getRuleResults()) {
          if (RuleResult.getDescription().contains("mandatoryAttribute")) {
             assertEquals("rule01", RuleResult.getId());
          } else {
-            assertTrue(RuleResult.getId().isEmpty());
+            assertTrue(rulesNamesFromMethods.contains(RuleResult.getId()));
          }
       }
    }
 
    @Test
    public void testParentInvalid() {
-      Object object = BusinessObjectMocks.instantiateInheritanceWithInvalidParent();
-      ObjectResult objectResult = new BValidator().validate(object);
+      WithInheritance object = BusinessObjectMocks.instantiateInheritanceWithInvalidParent();
+      ObjectResult objectResult = buildObjectValidator(WithInheritance.class).validate(object);
       assertFalse(objectResult.isValid(), "The object must be invalid");
 
       assertResultsContains(
             new Object[][]{
-                  {"With-inheritance", "", "Sub type must be defined.", true},
+                  {"With-inheritance", "SubtypeValid", "Sub type must be defined.", true},
                   {"With-inheritance", "rule01", "mandatoryAttribute must be defined.", false},
-                  {"With-inheritance", "", "optionalAttribute must be defined if present.", true},
-                  {"With-inheritance", "", "oneOrMoreAssociation must have at least one element.",
+                  {"With-inheritance", "OptionalAttributeValid", "optionalAttribute must be defined if present.", true},
+                  {"With-inheritance", "OneOrMoreAssociationValid", "oneOrMoreAssociation must have at least one element.",
                         false}
             },
             objectResult);
@@ -94,8 +102,8 @@ public class BValidatorTest {
 
    @Test
    public void testBusinessObjectMemberInvalid() {
-      Object object = BusinessObjectMocks.instantiateBusinessMemberInvalid();
-      ObjectResult objectResult = new BValidator().validate(object);
+      OnlyBusinessMembers object = BusinessObjectMocks.instantiateBusinessMemberInvalid();
+      ObjectResult objectResult = buildObjectValidator(OnlyBusinessMembers.class).validate(object);
       assertFalse(
             objectResult.isValid(),
             "When an attribute of a BusinessObject is an invalid BusinessObject, the validation " +
@@ -105,8 +113,8 @@ public class BValidatorTest {
       assertResultsContains(
             new Object[][]{
                   {"my-only-member", "rule01", "mandatoryAttribute must be defined.", false},
-                  {"my-only-member", "", "optionalAttribute must be defined if present.", false},
-                  {"my-only-member", "", "oneOrMoreAssociation must have at least one element.",
+                  {"my-only-member", "OptionalAttributeValid", "optionalAttribute must be defined if present.", false},
+                  {"my-only-member", "OneOrMoreAssociationValid", "oneOrMoreAssociation must have at least one element.",
                         false}
             },
             objectResult);
@@ -120,17 +128,17 @@ public class BValidatorTest {
 
    @Test
    public void testCollectionOfBO() {
-      List<Object> objects = new ArrayList<>();
+      List<DefaultValidableMock> objects = new ArrayList<>();
       objects.add(BusinessObjectMocks.instantiateValid());
       objects.add(BusinessObjectMocks.instantiateValid());
       objects.add(BusinessObjectMocks.instantiateValid());
 
-      List<ObjectResult> results = new BValidator().validate(objects);
+      List<ObjectResult> results = buildObjectValidator(DefaultValidableMock.class).validate(objects);
 
       assertFalse(results.isEmpty());
       for (int index = 0; index < results.size(); index++) {
          assertTrue(results.get(index).isValid());
-         assertEquals("ArrayList[" + index + "]", results.get(index).getBusinessObjectName(),
+         assertEquals("validable-mock[" + index + "]", results.get(index).getBusinessObjectName(),
                "Results' name of BusinessObjects in a collection should be incremented like an " +
                      "array.");
       }
@@ -138,18 +146,18 @@ public class BValidatorTest {
 
    @Test
    public void testBusinessObjectCollectionMember() {
-      Object object = BusinessObjectMocks.instantiateBusinessMemberCollection();
-      ObjectResult objectResult = new BValidator().validate(object);
+      CollectionBusinessMembers object = BusinessObjectMocks.instantiateBusinessMemberCollection();
+      ObjectResult objectResult = buildObjectValidator(CollectionBusinessMembers.class).validate(object);
       assertFalse(objectResult.isValid());
    }
 
    @Test
    public void testArrayOfBO() {
-      Object[] objects = new Object[]{
+      DefaultValidableMock[] objects = new DefaultValidableMock[]{
             BusinessObjectMocks.instantiateValid(),
             BusinessObjectMocks.instantiateValid()
       };
-      List<ObjectResult> results = new BValidator().validate(objects);
+      List<ObjectResult> results = buildObjectValidator(DefaultValidableMock.class).validate(objects);
       assertFalse(results.isEmpty());
       for (ObjectResult result : results) {
          assertTrue(result.isValid());
@@ -158,8 +166,8 @@ public class BValidatorTest {
 
    @Test
    public void testBusinessObjectArrayMember() {
-      Object object = BusinessObjectMocks.instantiateBusinessMemberArray();
-      ObjectResult objectResult = new BValidator().validate(object);
+      ArrayBusinessMember object = BusinessObjectMocks.instantiateBusinessMemberArray();
+      ObjectResult objectResult = buildObjectValidator(ArrayBusinessMember.class).validate(object);
       assertFalse(objectResult.isValid());
    }
 
@@ -177,8 +185,8 @@ public class BValidatorTest {
 
    @Test
    public void testBusinessObjectNullMember() {
-      Object object = BusinessObjectMocks.instantiateBusinessMemberNull();
-      ObjectResult objectResult = new BValidator().validate(object);
+      OnlyBusinessMembers object = BusinessObjectMocks.instantiateBusinessMemberNull();
+      ObjectResult objectResult = buildObjectValidator(OnlyBusinessMembers.class).validate(object);
       assertTrue(objectResult.isValid());
    }
 
@@ -186,36 +194,37 @@ public class BValidatorTest {
    @Test
    public void testNotABusinessObjectError() {
       assertThrows(IllegalBusinessObjectException.class,
-            () -> new BValidator().validate(new String(
+            () -> buildObjectValidator(String.class).validate(new String(
                   "Not a validable")));
    }
 
    @Test
    public void testNoBusinessRuleNorMemberError() {
-      Object object = BusinessObjectMocks.instantiateWithoutAssertions();
+      IllegalBusinessObject object = BusinessObjectMocks.instantiateWithoutAssertions();
       assertThrows(IllegalBusinessObjectException.class,
-            () -> new BValidator().validate(object));
+            () -> buildObjectValidator(IllegalBusinessObject.class).validate(object));
    }
 
    @Test
    public void testIllegalBusinessRuleError() {
       Object object = BusinessObjectMocks.instantiateIllegalBusinessRule();
       assertThrows(IllegalBusinessObjectException.class,
-            () -> new BValidator().validate(object));
+            () -> buildObjectValidator(Object.class).validate(object));
    }
 
    @Test
    public void testIllegalBusinessMemberError() {
-      Object object = BusinessObjectMocks.instantiateIllegalBusinessMember();
+      IllegalBusinessMemberObject object = BusinessObjectMocks.instantiateIllegalBusinessMember();
       assertThrows(IllegalBusinessObjectException.class,
-            () -> new BValidator().validate(object));
+            () -> buildObjectValidator(IllegalBusinessMemberObject.class).validate(object));
    }
 
    @Test
    public void testExceptionWhileValidatingRule() {
-      Object object = BusinessObjectMocks.instantiateExceptionBusinessRule();
+      ExceptionBusinessRuleObject object = BusinessObjectMocks.instantiateExceptionBusinessRule();
       try {
-         new BValidator().validate(object);
+          BValidator<ExceptionBusinessRuleObject> validator = buildObjectValidator(ExceptionBusinessRuleObject.class);
+          validator.validate(object);
          fail("Should have raised an " + InvocationException.class.getCanonicalName());
       } catch (InvocationException e) {
          assertEquals(IllegalStateException.class, e.getCause().getClass(),
@@ -225,9 +234,9 @@ public class BValidatorTest {
 
    @Test
    public void testExceptionWhileGettingMember() {
-      Object object = BusinessObjectMocks.instantiateExceptionBusinessMember();
+      ExceptionBusinessMemberObject object = BusinessObjectMocks.instantiateExceptionBusinessMember();
       try {
-         new BValidator().validate(object);
+          buildObjectValidator(ExceptionBusinessMemberObject.class).validate(object);
          fail("Should have raised an " + InvocationException.class.getCanonicalName());
       } catch (InvocationException e) {
          assertEquals(IllegalStateException.class, e.getCause().getClass(),
@@ -235,6 +244,21 @@ public class BValidatorTest {
       }
    }
 
+    @Test
+    public void testBusinessObjectWithBusinessRuleOnSuperClass() {
+        BusinessObjectWithNoAnnotation object = BusinessObjectMocks.instantiateBusinessObjectWithNoAnnotation();
+        ObjectResult objectResult = buildObjectValidator(BusinessObjectWithNoAnnotation.class).validate(object);
+        assertTrue(objectResult.isValid());
+    }
+
+    @Test
+    public void testBuildValidatorWithName() {
+        BValidator<DefaultValidableMock> validator = new BValidatorAnnotationBuilder<>(DefaultValidableMock.class)
+                .setBusinessObjectName("myValidator")
+                .build();
+        ObjectResult objectResult = validator.validate(BusinessObjectMocks.instantiateValid());
+        assertEquals("myValidator", objectResult.getBusinessObjectName());
+    }
 
    private void assertResultsContains(Object[][] expectedResultsMatrix,
                                       ObjectResult actualResults) {
@@ -280,6 +304,10 @@ public class BValidatorTest {
          }
       }
       return null;
+   }
+
+   private <R> BValidator<R> buildObjectValidator(Class<R> clazz) {
+      return new BValidatorAnnotationBuilder<>(clazz).build();
    }
 
 }

@@ -26,51 +26,51 @@ import java.util.concurrent.LinkedTransferQueue;
 
 public class BusinessObjectMocks {
 
-   public static Object instantiateValid() {
+   public static DefaultValidableMock instantiateValid() {
       DefaultValidableMock object = new DefaultValidableMock();
       object.setMandatoryAttribute("name");
       object.getOneOrMoreAssociation().add("one association");
       return object;
    }
 
-   public static Object instantiateInvalid() {
+   public static DefaultValidableMock instantiateInvalid() {
       DefaultValidableMock object = new DefaultValidableMock();
       object.setMandatoryAttribute(null);
       object.setOptionalAttribute("   ");
       return object;
    }
 
-   public static Object instantiateInheritanceWithInvalidParent() {
+   public static WithInheritance instantiateInheritanceWithInvalidParent() {
       WithInheritance object = new WithInheritance();
       object.setSubtype("defined sub type");
       object.setMandatoryAttribute(null);
       return object;
    }
 
-   public static Object instantiateInheritanceWithoutAnnotationValid() {
+   public static DefaultValidableMock instantiateInheritanceWithoutAnnotationValid() {
       WithInheritanceButWithoutAnnotation object = new WithInheritanceButWithoutAnnotation();
       object.setMandatoryAttribute("name");
       object.getOneOrMoreAssociation().add("one association");
       return object;
    }
 
-   public static Object instantiateWithoutAssertions() {
+   public static IllegalBusinessObject instantiateWithoutAssertions() {
       IllegalBusinessObject object= new IllegalBusinessObject();
       object.setName("value");
       return object;
    }
 
-   public static Object instantiateBusinessMemberInvalid() {
+   public static OnlyBusinessMembers instantiateBusinessMemberInvalid() {
       OnlyBusinessMembers onlyBusinessMembers = new OnlyBusinessMembers();
       onlyBusinessMembers.setValidableMock((DefaultValidableMock) instantiateInvalid());
       return onlyBusinessMembers;
    }
 
-   public static Object instantiateBusinessMemberNull() {
+   public static OnlyBusinessMembers instantiateBusinessMemberNull() {
       return new OnlyBusinessMembers();
    }
 
-   public static Object instantiateBusinessMemberCollection() {
+   public static CollectionBusinessMembers instantiateBusinessMemberCollection() {
       DefaultValidableMock validMock = (DefaultValidableMock) instantiateValid();
       DefaultValidableMock invalidMock = (DefaultValidableMock) instantiateInvalid();
       CollectionBusinessMembers collecBusinessMember = new CollectionBusinessMembers();
@@ -80,7 +80,7 @@ public class BusinessObjectMocks {
       return collecBusinessMember;
    }
 
-   public static Object instantiateBusinessMemberArray() {
+   public static ArrayBusinessMember instantiateBusinessMemberArray() {
       DefaultValidableMock validMock = (DefaultValidableMock) instantiateValid();
       DefaultValidableMock invalidMock = (DefaultValidableMock) instantiateInvalid();
       ArrayBusinessMember arrayBusinessMember = new ArrayBusinessMember();
@@ -88,21 +88,29 @@ public class BusinessObjectMocks {
       return arrayBusinessMember;
    }
 
-   public static Object instantiateIllegalBusinessRule() {
+   public static IllegalBusinessRuleObject instantiateIllegalBusinessRule() {
       return new IllegalBusinessRuleObject();
    }
 
-   public static Object instantiateIllegalBusinessMember() {
+   public static IllegalBusinessMemberObject instantiateIllegalBusinessMember() {
       return new IllegalBusinessMemberObject();
    }
 
-   public static Object instantiateExceptionBusinessRule() {
+   public static ExceptionBusinessRuleObject instantiateExceptionBusinessRule() {
       return new ExceptionBusinessRuleObject();
    }
 
-   public static Object instantiateExceptionBusinessMember() {
+   public static ExceptionBusinessMemberObject instantiateExceptionBusinessMember() {
       return new ExceptionBusinessMemberObject();
    }
+
+    public static BusinessObjectWithNoAnnotation instantiateBusinessObjectWithNoAnnotation() {
+        BusinessObjectWithNoAnnotation object = new BusinessObjectWithNoAnnotation();
+        object.setName("noAnnotation");
+        object.setMandatoryAttribute("mandatory");
+        object.getOneOrMoreAssociation().add("one association");
+        return object;
+    }
 
    @BusinessObject(name = "validable-mock")
    public static class DefaultValidableMock {
@@ -286,11 +294,30 @@ public class BusinessObjectMocks {
    }
 
    @BusinessObject
-   private static class ExceptionBusinessMemberObject {
+   public static class ExceptionBusinessMemberObject {
 
       @BusinessMember
       public DefaultValidableMock getMember() {
          throw new IllegalStateException();
       }
+   }
+
+   public static class BusinessObjectWithNoAnnotation extends DefaultValidableMock {
+
+      private String name;
+
+      public String getName() {
+         return name;
+      }
+
+      public void setName(String name) {
+         this.name = name;
+      }
+
+      @BusinessRule(description = "The object name must be defined")
+      public boolean isNameValid() {
+          return name != null && !name.isEmpty();
+      }
+
    }
 }
