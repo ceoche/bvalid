@@ -198,8 +198,10 @@ public class BValidator<T>  {
             return Collections.emptyList();
         }
         if (isValidCollection(memberValue)) {
-            this.<R>castGenericCheck(((Collection<?>) memberValue).iterator().next());
-            results.addAll(this.validateMemberCollection((Collection<R>) memberValue, validator, name));
+            if(!((Collection<?>) memberValue).isEmpty()){
+                this.<R>castGenericCheck(((Collection<?>) memberValue).iterator().next());
+                results.addAll(this.validateMemberCollection((Collection<R>) memberValue, validator, name));
+            }
         } else if (isValidArray(memberValue)) {
             this.<R>castGenericCheck(((Object[]) memberValue)[0]);
             results.addAll(this.validateMemberArray((R[]) memberValue, validator, name));
@@ -211,7 +213,7 @@ public class BValidator<T>  {
     }
 
     private boolean isValidCollection(Object memberValue) {
-        return (memberValue instanceof Collection) && !((Collection<?>) memberValue).isEmpty();
+        return (memberValue instanceof Collection);
     }
 
     private boolean isValidArray(Object memberValue) {

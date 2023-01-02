@@ -100,11 +100,20 @@ public class BValidatorBuilderTest {
     @Test
     void testBuildValidatorWithWrongMemberCollectionType(){
         assertThrows(IllegalBusinessObjectException.class , () -> new BValidatorBuilderImpl<Person>()
-                .addMember("Adress", (Function<Person, ?>) p->List.of(new Phone("11","+22")), new BValidatorBuilderImpl<Address>()
+                .addMember("Address", (Function<Person, ?>) p->List.of(new Phone("11","+22")), new BValidatorBuilderImpl<Address>()
                         .addRule("rule1", s->true, "Always true"))
                 .build()
                 .validate(createAllCorrectPerson()));
 
+    }
+
+    @Test
+    void testBuildValidatorWithEmptyMemberCollection(){
+        new BValidatorBuilderImpl<Person>()
+                .addMember("Address", (Function<Person, ?>) p->List.of(), new BValidatorBuilderImpl<Address>()
+                        .addRule("rule1", s->true, "Always true"))
+                .build()
+                .validate(createAllCorrectPerson());
     }
 
     @Test
