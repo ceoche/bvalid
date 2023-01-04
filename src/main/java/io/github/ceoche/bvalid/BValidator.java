@@ -19,7 +19,7 @@ import java.util.*;
 
 /**
  * The {@link BValidator} provides method to validate business rules and members of POJO business
- * based on the rules and members provided by the {@link BValidatorBuilderImpl}.
+ * based on the rules and members provided by the {@link BValidatorManualBuilder}.
  * {@link BusinessMember}.
  *
  * @author ceoche
@@ -33,7 +33,7 @@ public class BValidator<T>  {
     private final String businessObjectName;
 
     /**
-     * Hidden constructor. Only {@link BValidatorBuilderImpl} can create a {@link BValidator}.
+     * Hidden constructor. Only {@link BValidatorManualBuilder} can create a {@link BValidator}.
      */
     BValidator(Set<BusinessRuleObject<T>> rules, Set<BusinessMemberObject<T,?>> members, String businessObjectName) {
         this.businessObjectName = businessObjectName;
@@ -115,11 +115,11 @@ public class BValidator<T>  {
         return result;
     }
 
-    private <R> List<ObjectResult> validate(Collection<T> collection, String name) {
+    private List<ObjectResult> validate(Collection<T> collection, String name) {
         List<ObjectResult> results = new ArrayList<>();
         int index = -1;
         for (T object : collection) {
-            results.add(this.<R>validate(object, name + "[" + ++index + "]"));
+            results.add(this.validate(object, name + "[" + ++index + "]"));
         }
         return results;
     }
@@ -133,7 +133,7 @@ public class BValidator<T>  {
     }
 
     private <R> List<ObjectResult> validateMemberCollection(final Collection<R> collection, final BValidator<R> validator, final String memberName) {
-        return validator.<R>validate(collection, memberName);
+        return validator.validate(collection, memberName);
     }
 
     private <R> List<ObjectResult> validateMemberArray(final R[] array, final BValidator<R> validator, final String memberName) {

@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 
 /**
  * Build a {@link BValidator} from a {@link BusinessObject} annotated class
- * using the {@link BValidatorBuilderImpl}.
+ * using the {@link BValidatorManualBuilder}.
  *
  * @param <T>
  * @author a.achkari
@@ -43,7 +43,7 @@ public class BValidatorAnnotationBuilder<T> implements BValidatorBuilder<T> {
 
     @Override
     public BValidator<T> build(){
-        return new BValidatorBuilderImpl<T>()
+        return new BValidatorManualBuilder<T>()
                 .addAllMembers(members)
                 .addAllRules(rules)
                 .setBusinessObjectName(businessObjectName)

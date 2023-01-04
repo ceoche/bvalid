@@ -17,7 +17,7 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testBuildValidatorCorrectValidObject(){
-        BValidatorBuilderImpl<Person> builder = createCompleteBuilder();
+        BValidatorManualBuilder<Person> builder = createCompleteBuilder();
         assertEquals(3, builder.getRulesCount());
         assertEquals(3, builder.getMembersCount());
         ObjectResult result = builder.build().validate(createAllCorrectPerson());
@@ -34,7 +34,7 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testBuildValidatorCorrectInvalidObject(){
-        BValidatorBuilderImpl<Person> builder = createCompleteBuilder();
+        BValidatorManualBuilder<Person> builder = createCompleteBuilder();
         assertEquals(3, builder.getRulesCount());
         assertEquals(3, builder.getMembersCount());
         ObjectResult result = builder.build().validate(createPersonWithIncorrectEmailAndPhone());
@@ -45,16 +45,17 @@ public class BValidatorBuilderTest {
 
     @Test
     void testBuildValidatorEmpty(){
-        BValidatorBuilderImpl<Person> builder = new BValidatorBuilderImpl<>();
+        BValidatorManualBuilder<Person> builder = new BValidatorManualBuilder<>();
         assertEquals(0, builder.getRulesCount());
         assertEquals(0, builder.getMembersCount());
+        assertTrue(builder.isEmpty());
         Throwable exception = assertThrows(IllegalBusinessObjectException.class, builder::build);
         assertEquals("Rules or members must be provided for a business object: ", exception.getMessage());
     }
 
     @Test
     void testBuildValidatorWithSameRuleId(){
-        BValidatorBuilderImpl<Person> validatorBuilder = new BValidatorBuilderImpl<Person>()
+        BValidatorManualBuilder<Person> validatorBuilder = new BValidatorManualBuilder<Person>()
                 .addRule("rule1", p->true, "Always true")
                 .addRule("rule1", p->true, "Always true");
         assertEquals(1, validatorBuilder.getRulesCount());
@@ -63,7 +64,7 @@ public class BValidatorBuilderTest {
 
     @Test
     void testBuildValidatorWithThrowRules(){
-        BValidator<Person> validator = new BValidatorBuilderImpl<Person>()
+        BValidator<Person> validator = new BValidatorManualBuilder<Person>()
                         .addRule("rule1",
                                 p->{throw new IllegalStateException("Exception in rule1");},
                                 "Name must not be null")
@@ -76,7 +77,7 @@ public class BValidatorBuilderTest {
     @ParameterizedTest
     @MethodSource("provideInvalidMembers")
     void testBuildValidatorWithNullMember(String memberName, Function<Person, ?> memberFunction, BValidatorBuilder<Person> validatorSupplier){
-        assertThrows(IllegalArgumentException.class, ()->new BValidatorBuilderImpl<Person>()
+        assertThrows(IllegalArgumentException.class, ()->new BValidatorManualBuilder<Person>()
                 .addMember(memberName, memberFunction, validatorSupplier));
     }
 
@@ -84,14 +85,14 @@ public class BValidatorBuilderTest {
     @ParameterizedTest
     @MethodSource("provideInvalidRules")
     void testBuildValidatorWithNullRule(String ruleId, Predicate<Person> rule, String message){
-        assertThrows(IllegalArgumentException.class, ()->new BValidatorBuilderImpl<Person>()
+        assertThrows(IllegalArgumentException.class, ()->new BValidatorManualBuilder<Person>()
                 .addRule(ruleId, rule, message));
     }
 
     @Test
     void testBuildValidatorWithNullMemberGetter(){
-        new BValidatorBuilderImpl<Person>()
-                .addMember("name", (Function<Person, ?>) p->null, new BValidatorBuilderImpl<Address>()
+        new BValidatorManualBuilder<Person>()
+                .addMember("name", (Function<Person, ?>) p->null, new BValidatorManualBuilder<Address>()
                         .addRule("rule1", s->true, "Always true"))
                 .build()
                 .validate(createAllCorrectPerson());
@@ -99,8 +100,8 @@ public class BValidatorBuilderTest {
 
     @Test
     void testBuildValidatorWithWrongMemberCollectionType(){
-        assertThrows(IllegalBusinessObjectException.class , () -> new BValidatorBuilderImpl<Person>()
-                .addMember("Address", (Function<Person, ?>) p->List.of(new Phone("11","+22")), new BValidatorBuilderImpl<Address>()
+        assertThrows(IllegalBusinessObjectException.class , () -> new BValidatorManualBuilder<Person>()
+                .addMember("Address", (Function<Person, ?>) p->List.of(new Phone("11","+22")), new BValidatorManualBuilder<Address>()
                         .addRule("rule1", s->true, "Always true"))
                 .build()
                 .validate(createAllCorrectPerson()));
@@ -109,8 +110,8 @@ public class BValidatorBuilderTest {
 
     @Test
     void testBuildValidatorWithEmptyMemberCollection(){
-        new BValidatorBuilderImpl<Person>()
-                .addMember("Address", (Function<Person, ?>) p->List.of(), new BValidatorBuilderImpl<Address>()
+        new BValidatorManualBuilder<Person>()
+                .addMember("Address", (Function<Person, ?>) p->List.of(), new BValidatorManualBuilder<Address>()
                         .addRule("rule1", s->true, "Always true"))
                 .build()
                 .validate(createAllCorrectPerson());
@@ -123,8 +124,31 @@ public class BValidatorBuilderTest {
         BusinessRuleObject<Person> rule3 = new BusinessRuleObject<>("rule2", p->true, "Always true");
         assertEquals(rule1, rule2);
         assertNotEquals(rule1, rule3);
+        assertEquals(rule1, rule1);
+        assertNotEquals("rule1", rule1);
     }
 
+    @Test
+    void testCompareMembers(){
+        BusinessMemberObject<Person, Address> member1 = new BusinessMemberObject<>("member1",
+                Person::getAddress,
+                new BValidatorManualBuilder<Address>()
+                    .addRule("rule1", s->true, "Always true")
+                    .build());
+        BusinessMemberObject<Person, Email> member2 = new BusinessMemberObject<>("member1", Person::getEmails,
+                new BValidatorManualBuilder<Email>()
+                    .addRule("rule1", s->true, "Always true")
+                    .build());
+        BusinessMemberObject<Person, Phone> member3 = new BusinessMemberObject<>("member2", Person::getPhones,
+                new BValidatorManualBuilder<Phone>()
+                    .addRule("rule1", s->true, "Always true")
+                    .build());
+        assertEquals(member1, member2);
+        assertNotEquals(member1, member3);
+        assertEquals(member1, member1);
+        assertNotEquals("member1", member1);
+
+    }
 
     private void assertMemberResults(ObjectResult result, boolean expected){
         for(ObjectResult memberResult : result.getMemberResults()){
@@ -169,28 +193,28 @@ public class BValidatorBuilderTest {
 
 
 
-    private BValidatorBuilderImpl<Person> createCompleteBuilder(){
-        return new BValidatorBuilderImpl<Person>()
+    private BValidatorManualBuilder<Person> createCompleteBuilder(){
+        return new BValidatorManualBuilder<Person>()
                 .setBusinessObjectName("Person")
                 .addRule("ageValid", Person::isAgeValid, "Name must not be null")
                 .addRule("NameNotEmpty", Person::isNameValid, "Name must not be empty")
                 .addRule("ValidEmail", Person::isEmailValid, "Email must be valid")
-                .addMember("address", Person::getAddress, new BValidatorBuilderImpl<Address>()
+                .addMember("address", Person::getAddress, new BValidatorManualBuilder<Address>()
                         .setBusinessObjectName("Address")
                         .addRule("cityValid", Address::isCityValid, "City must not be null")
                         .addRule("StreetValid", Address::isStreetValid, "Street must not be empty")
-                        .addMember("city", Address::getCity,  new BValidatorBuilderImpl<City>()
+                        .addMember("city", Address::getCity,  new BValidatorManualBuilder<City>()
                                 .setBusinessObjectName("City")
                                 .addRule("cityNameValid", City::isNamesValid, "City name must not be empty")
                                 .addRule("cityZipcodeValid", City::isZipCodeValid, "City zipcode must be valid")
                                 )
                         )
-                .addMember("phones", Person::getPhones,  new BValidatorBuilderImpl<Phone>()
+                .addMember("phones", Person::getPhones,  new BValidatorManualBuilder<Phone>()
                         .setBusinessObjectName("Phone")
                         .addRule("numberValid", Phone::isNumberValid, "Number must not be null")
                         .addRule("countryCodeValid", Phone::isCountryCodeValid, "Country code must not be valid")
                         )
-                .addMember("emails", Person::getEmails, new BValidatorBuilderImpl<Email>()
+                .addMember("emails", Person::getEmails, new BValidatorManualBuilder<Email>()
                         .setBusinessObjectName("Email")
                         .addRule("emailValid", Email::isEmailValid, "Email must be valid")
                         .addRule("domainValid", Email::isDomainValid, "Domain must be valid")

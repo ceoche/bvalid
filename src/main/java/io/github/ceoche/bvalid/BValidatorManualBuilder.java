@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class BValidatorBuilderImpl<T> implements BValidatorBuilder<T> {
+public class BValidatorManualBuilder<T> implements BValidatorBuilder<T> {
 
     private final Set<BusinessRuleObject<T>> rules = new HashSet<>();
 
@@ -13,7 +13,7 @@ public class BValidatorBuilderImpl<T> implements BValidatorBuilder<T> {
 
     private String businessObjectName = "";
 
-    public BValidatorBuilderImpl<T> addRule(String id, Predicate<T> rule, String description){
+    public BValidatorManualBuilder<T> addRule(String id, Predicate<T> rule, String description){
         if(id == null || rule == null){
             throw new IllegalArgumentException("Id and rule must not be null");
         }
@@ -21,7 +21,7 @@ public class BValidatorBuilderImpl<T> implements BValidatorBuilder<T> {
         return this;
     }
 
-    public <R> BValidatorBuilderImpl<T> addMember(String name, Function<T, ?> getter, BValidatorBuilder<R> bValidatorBuilder){
+    public <R> BValidatorManualBuilder<T> addMember(String name, Function<T, ?> getter, BValidatorBuilder<R> bValidatorBuilder){
         if(name == null || getter == null || bValidatorBuilder == null){
             throw new IllegalArgumentException("Name, getter and bValidatorBuilder must not be null");
         }
@@ -29,17 +29,17 @@ public class BValidatorBuilderImpl<T> implements BValidatorBuilder<T> {
         return this;
     }
 
-    public BValidatorBuilderImpl<T> addAllMembers(Collection<BusinessMemberBuilder<T,?>> members){
+    public BValidatorManualBuilder<T> addAllMembers(Collection<BusinessMemberBuilder<T,?>> members){
         this.members.addAll(members);
         return this;
     }
 
-    public BValidatorBuilderImpl<T> addAllRules(Collection<BusinessRuleObject<T>> rules){
+    public BValidatorManualBuilder<T> addAllRules(Collection<BusinessRuleObject<T>> rules){
         this.rules.addAll(rules);
         return this;
     }
 
-    public BValidatorBuilderImpl<T> setBusinessObjectName(String businessObjectName){
+    public BValidatorManualBuilder<T> setBusinessObjectName(String businessObjectName){
         this.businessObjectName = businessObjectName;
         return this;
     }
