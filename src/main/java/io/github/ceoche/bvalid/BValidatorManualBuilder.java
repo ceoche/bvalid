@@ -4,14 +4,28 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class BValidatorManualBuilder<T> implements BValidatorBuilder<T> {
+public class BValidatorManualBuilder<T> extends AbstractBValidatorBuilder<T> {
 
-    private final Set<BusinessRuleObject<T>> rules = new HashSet<>();
+    private final Set<BusinessRuleObject<T>> rules = new LinkedHashSet<>();
 
-    private final Set<BusinessMemberBuilder<T,?>> members = new HashSet<>();
-
+    private final Set<BusinessMemberBuilder<T,?>> members = new LinkedHashSet<>();
 
     private String businessObjectName = "";
+
+    @Override
+    public Set<BusinessRuleObject<T>> getRules() {
+        return rules;
+    }
+
+    @Override
+    public Set<BusinessMemberBuilder<T, ?>> getMembers() {
+        return members;
+    }
+
+    @Override
+    public String getBusinessObjectName() {
+        return businessObjectName;
+    }
 
     public BValidatorManualBuilder<T> addRule(String id, Predicate<T> rule, String description){
         if(id == null || rule == null){
@@ -29,12 +43,12 @@ public class BValidatorManualBuilder<T> implements BValidatorBuilder<T> {
         return this;
     }
 
-    public BValidatorManualBuilder<T> addAllMembers(Collection<BusinessMemberBuilder<T,?>> members){
+    public BValidatorManualBuilder<T> addAllMembers(Set<BusinessMemberBuilder<T, ?>> members){
         this.members.addAll(members);
         return this;
     }
 
-    public BValidatorManualBuilder<T> addAllRules(Collection<BusinessRuleObject<T>> rules){
+    public BValidatorManualBuilder<T> addAllRules(Set<BusinessRuleObject<T>> rules){
         this.rules.addAll(rules);
         return this;
     }
@@ -54,18 +68,18 @@ public class BValidatorManualBuilder<T> implements BValidatorBuilder<T> {
 
     @Override
     public BValidator<T> build(){
-        Set<BusinessMemberObject<T,?>> businessMemberObjects = new HashSet<>();
-        for (BusinessMemberBuilder<T,?> businessMemberBuilder : members) {
-            if(!businessMemberBuilder.getValidatorBuilder().isEmpty()){
-                businessMemberObjects.add(new BusinessMemberObject<>(businessMemberBuilder.getName(),
-                        businessMemberBuilder.getGetter(), businessMemberBuilder.getValidatorBuilder().build()));
-            }
-        }
-        return new BValidator<>(rules, businessMemberObjects, businessObjectName);
+        Map<AbstractBValidatorBuilder<?>,BValidator<?>> visitedBuilders = new HashMap<>();
+        return build(visitedBuilders);
     }
+
+
 
    @Override
    public boolean isEmpty() {
         return rules.isEmpty() && members.isEmpty();
     }
+
+
+
+
 }

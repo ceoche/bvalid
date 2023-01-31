@@ -1,9 +1,7 @@
 package io.github.ceoche.bvalid;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -14,13 +12,28 @@ import java.util.function.Predicate;
  * @param <T>
  * @author a.achkari
  */
-public class BValidatorAnnotationBuilder<T> implements BValidatorBuilder<T> {
+public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T> {
 
-    private final List<BusinessRuleObject<T>> rules;
+    private final Set<BusinessRuleObject<T>> rules;
 
-    private final List<BusinessMemberBuilder<T,?>> members;
+    private final Set<BusinessMemberBuilder<T,?>> members;
 
     private String businessObjectName = "";
+
+    @Override
+    public Set<BusinessRuleObject<T>> getRules() {
+        return rules;
+    }
+
+    @Override
+    public Set<BusinessMemberBuilder<T, ?>> getMembers() {
+        return members;
+    }
+
+    @Override
+    public String getBusinessObjectName() {
+        return businessObjectName;
+    }
 
     public BValidatorAnnotationBuilder(Class<T> clazz) {
         BusinessObject businessObject = clazz.getAnnotation(BusinessObject.class);
@@ -55,8 +68,10 @@ public class BValidatorAnnotationBuilder<T> implements BValidatorBuilder<T> {
         return rules.isEmpty() && members.isEmpty();
     }
 
-    private List<BusinessRuleObject<T>> getRules(Class<T> clazz) {
-        List<BusinessRuleObject<T>> rulesResult = new ArrayList<>();
+
+
+    private Set<BusinessRuleObject<T>> getRules(Class<T> clazz) {
+        Set<BusinessRuleObject<T>> rulesResult = new LinkedHashSet<>();
         for (Method method : clazz.getMethods()) {
             if(method.isAnnotationPresent(BusinessRule.class)){
                 BusinessRule businessRule = method.getAnnotation(BusinessRule.class);
@@ -70,8 +85,8 @@ public class BValidatorAnnotationBuilder<T> implements BValidatorBuilder<T> {
         return rulesResult;
     }
 
-    private List<BusinessMemberBuilder<T,?>> getMembers(Class<T> clazz) {
-        List<BusinessMemberBuilder<T,?>> memberBuilderList = new ArrayList<>();
+    private Set<BusinessMemberBuilder<T,?>> getMembers(Class<T> clazz) {
+        Set<BusinessMemberBuilder<T,?>> memberBuilderList = new LinkedHashSet<>();
         for (Method method : clazz.getMethods()) {
             if(method.isAnnotationPresent(BusinessMember.class)){
                 BusinessMember businessMember = method.getAnnotation(BusinessMember.class);

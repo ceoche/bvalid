@@ -10,6 +10,7 @@ public class BusinessMemberBuilder <T,R>{
 
     private final BValidatorBuilder<R> validatorBuilder;
 
+
     public BusinessMemberBuilder(String name, Function<T, ?> getter, BValidatorBuilder<R> bValidatorBuilder) {
         this.name = name;
         this.getter = getter;
@@ -27,5 +28,6 @@ public class BusinessMemberBuilder <T,R>{
     public BValidatorBuilder<R> getValidatorBuilder() {
         return validatorBuilder;
     }
+
 
 }

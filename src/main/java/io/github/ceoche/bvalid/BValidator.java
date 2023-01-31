@@ -37,9 +37,6 @@ public class BValidator<T>  {
      */
     BValidator(Set<BusinessRuleObject<T>> rules, Set<BusinessMemberObject<T,?>> members, String businessObjectName) {
         this.businessObjectName = businessObjectName;
-        if((rules == null || rules.isEmpty()) && (members == null || members.isEmpty()) ){
-            throw new IllegalBusinessObjectException("Rules or members must be provided for a business object: "+businessObjectName);
-        }
         this.rules = rules;
         this.members = members;
     }
@@ -61,7 +58,7 @@ public class BValidator<T>  {
      */
 
     public ObjectResult validate(final T object) {
-        return this.validate(object, businessObjectName);
+        return this.validate(object, businessObjectName, new HashSet<>());
     }
 
 
@@ -81,7 +78,7 @@ public class BValidator<T>  {
      * @throws NullPointerException if the given object is null.
      */
     public List<ObjectResult> validate(final Collection<T> collection) {
-        return this.validate(collection, businessObjectName);
+        return this.validate(collection, businessObjectName, new HashSet<>());
     }
 
     /**
@@ -100,44 +97,44 @@ public class BValidator<T>  {
      * @throws NullPointerException if the given object is null.
      */
     public List<ObjectResult> validate(final T[] array) {
-        return this.validate(array, businessObjectName);
+        return this.validate(array, businessObjectName, new HashSet<>());
     }
 
-    private <R> ObjectResult validate(T object, String name) {
+    private <R> ObjectResult validate(T object, String name, Set<Object> visitedObjects) {
         if (object == null) {
             throw new NullPointerException("The object to validate cannot be null");
         }
         final ObjectResult result = new ObjectResult(name);
         List<RuleResult> ruleResults = validateBusinessRules(object);
-        List<ObjectResult> memberResults = this.<R>validateBusinessMembers(object);
+        List<ObjectResult> memberResults = this.<R>validateBusinessMembers(object, visitedObjects);
         result.addRuleResults(ruleResults);
         result.addMemberResults(memberResults);
         return result;
     }
 
-    private List<ObjectResult> validate(Collection<T> collection, String name) {
+    private List<ObjectResult> validate(Collection<T> collection, String name, Set<Object> visitedObjects) {
         List<ObjectResult> results = new ArrayList<>();
         int index = -1;
         for (T object : collection) {
-            results.add(this.validate(object, name + "[" + ++index + "]"));
+            results.add(this.validate(object, name + "[" + ++index + "]", visitedObjects));
         }
         return results;
     }
 
-    private List<ObjectResult> validate(T[] array, String name) {
-        return validate(Arrays.asList(array), name);
+    private List<ObjectResult> validate(T[] array, String name, Set<Object> visitedObjects) {
+        return validate(Arrays.asList(array), name, visitedObjects);
     }
 
-    private <R> ObjectResult validateMember(final R object, final BValidator<R> validator, final String memberName) {
-        return validator.validate(object, memberName);
+    private <R> ObjectResult validateMember(final R object, final BValidator<R> validator, final String memberName, Set<Object> visitedObjects) {
+        return validator.validate(object, memberName, visitedObjects);
     }
 
-    private <R> List<ObjectResult> validateMemberCollection(final Collection<R> collection, final BValidator<R> validator, final String memberName) {
-        return validator.validate(collection, memberName);
+    private <R> List<ObjectResult> validateMemberCollection(final Collection<R> collection, final BValidator<R> validator, final String memberName, Set<Object> visitedObjects) {
+        return validator.validate(collection, memberName, visitedObjects);
     }
 
-    private <R> List<ObjectResult> validateMemberArray(final R[] array, final BValidator<R> validator, final String memberName) {
-        return validator.validate(array, memberName);
+    private <R> List<ObjectResult> validateMemberArray(final R[] array, final BValidator<R> validator, final String memberName, Set<Object> visitedObjects) {
+        return validator.validate(array, memberName, visitedObjects);
     }
 
 
@@ -145,6 +142,7 @@ public class BValidator<T>  {
         final List<RuleResult> results = new ArrayList<>();
         for (final BusinessRuleObject<T> rule : rules) {
             try {
+//                if()
                 results.add(new RuleResult(rule.getId(), rule.getDescription(), rule.apply(object)));
             }
             catch (InvocationException e) {
@@ -154,12 +152,15 @@ public class BValidator<T>  {
         return results;
     }
 
-    private <R> List<ObjectResult> validateBusinessMembers(final T object)  {
+    private <R> List<ObjectResult> validateBusinessMembers(final T object, Set<Object> visitedObjects)  {
         final List<ObjectResult> results = new ArrayList<>();
         for (final BusinessMemberObject<T, ?> member : members) {
             try {
                 final Object memberValue = getMemberValue(object, member);
-                results.addAll(validateAnyMember(memberValue, (BValidator<R>) member.getValidator(), member.getName()));
+                if(!visitedObjects.contains(memberValue)) {
+                    visitedObjects.add(memberValue);
+                    results.addAll(validateAnyMember(memberValue, (BValidator<R>) member.getValidator(), member.getName(), visitedObjects));
+                }
             }
             catch (IllegalArgumentException e) {
                 throw new IllegalBusinessObjectException(
@@ -192,7 +193,7 @@ public class BValidator<T>  {
         }
     }
 
-    private <R> List<ObjectResult>  validateAnyMember(final Object memberValue, BValidator<R> validator, String name) {
+    private <R> List<ObjectResult>  validateAnyMember(final Object memberValue, BValidator<R> validator, String name, Set<Object> visitedObjects) {
         final List<ObjectResult> results = new ArrayList<>();
         if(memberValue == null){
             return Collections.emptyList();
@@ -200,14 +201,14 @@ public class BValidator<T>  {
         if (isValidCollection(memberValue)) {
             if(!((Collection<?>) memberValue).isEmpty()){
                 this.<R>castGenericCheck(((Collection<?>) memberValue).iterator().next());
-                results.addAll(this.validateMemberCollection((Collection<R>) memberValue, validator, name));
+                results.addAll(this.validateMemberCollection((Collection<R>) memberValue, validator, name, visitedObjects));
             }
         } else if (isValidArray(memberValue)) {
             this.<R>castGenericCheck(((Object[]) memberValue)[0]);
-            results.addAll(this.validateMemberArray((R[]) memberValue, validator, name));
+            results.addAll(this.validateMemberArray((R[]) memberValue, validator, name, visitedObjects));
         } else {
             this.<R>castGenericCheck(memberValue);
-            results.add(this.validateMember((R)memberValue, validator, name));
+            results.add(this.validateMember((R)memberValue, validator, name, visitedObjects));
         }
         return results;
     }
