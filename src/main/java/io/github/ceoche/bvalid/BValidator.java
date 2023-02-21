@@ -142,7 +142,6 @@ public class BValidator<T>  {
         final List<RuleResult> results = new ArrayList<>();
         for (final BusinessRuleObject<T> rule : rules) {
             try {
-//                if()
                 results.add(new RuleResult(rule.getId(), rule.getDescription(), rule.apply(object)));
             }
             catch (InvocationException e) {

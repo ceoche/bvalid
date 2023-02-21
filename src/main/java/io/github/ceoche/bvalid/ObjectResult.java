@@ -32,8 +32,6 @@ public class ObjectResult {
    private final List<RuleResult> ruleResults = new ArrayList<>();
    private final List<ObjectResult> memberResults = new ArrayList<>();
 
-   private static final Pattern INDEX_PATTERN_REGEX = Pattern.compile("\\w+\\[\\d+\\]$");
-
    protected ObjectResult() {
       this("");
    }
@@ -137,17 +135,17 @@ public class ObjectResult {
    /**
     * Get the path of a {@link RuleResult} from the root of the {@link ObjectResult} tree.
     * @param rulePath Ex: "person.address.street[streetNameValid]"
-    * <p>
+    *
     * The path is composed of the business object name, followed by the path of
     * the member, followed by the id of the rule.
-    *     <br>
+    *
     *     <ul>
     *         <li>person is the root {@link ObjectResult}</li>
     *         <li>address is the businessObjectName of {@link BusinessMember} person</li>
     *         <li>street is the businessObjectName of {@link BusinessMember} address</li>
     *         <li>streetNameValid is the id of {@link BusinessRule} street</li>
     *     </ul>
-    * </p>
+    *
     * @return the {@link RuleResult} or null if not found.
     * @throws IllegalArgumentException if a member is not found.
     */

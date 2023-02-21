@@ -190,7 +190,7 @@ public class BValidatorBuilderTest {
                                 .setAttr1(null)));
 
         ObjectResult result = validator.validate(firstRecursiveObject);
-        System.out.println(result);
+
         assertFalse(result.isValid());
         assertFalse(result.getMemberResults().get(0).getMemberResults().get(0).getRuleResults().get(0).isValid());
 
@@ -215,7 +215,6 @@ public class BValidatorBuilderTest {
                         .setEmail(new Email("aa@bb.com", "aa.com")))
                 .setEmail(new Email("bb@vv", "aa.com"));
         ObjectResult result = validator.validate(firstRecursiveObject);
-        System.out.println(result);
         assertTrue(result.isValid());
     }
 
@@ -274,20 +273,14 @@ public class BValidatorBuilderTest {
                 .setBusinessObjectName("SecondRecursiveObject");
 
         builderFirst.addRule("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
-//        builderFirst.addRule("emailValid", FirstRecursiveObject::isEmailValid, "Email must be valid");
         builderFirst.addRule("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
         builderFirst.addRule("secondRecursiveObjectValid", FirstRecursiveObject::isSecondRecursiveObjectValid, "SecondRecursiveObject in firstRecursiveObject must be valid");
         builderFirst.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builderFirst);
-//        builderFirst.addMember("email", FirstRecursiveObject::getEmail, new BValidatorManualBuilder<Email>()
-//                .addRule("emailValid", Email::isEmailValid, "Email must be valid")
-//                .addRule("domainValid", Email::isDomainValid, "Domain must be valid"));
         builderFirst.addMember("secondRecursiveObject", FirstRecursiveObject::getSecondRecursiveObject, builderSecond);
 
         builderSecond.addRule("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
         builderSecond.addRule("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
         builderSecond.addMember("firstRecursiveObject", SecondRecursiveObject::getFirstRecursiveObject, builderFirst);
-
-        builderSecond.build();
 
         BValidatorManualBuilder<CollectionRecursiveObject> builderCollection = new BValidatorManualBuilder<CollectionRecursiveObject>()
                 .setBusinessObjectName("CollectionRecursiveObject")
@@ -296,9 +289,6 @@ public class BValidatorBuilderTest {
                 .addRule("secondRecursiveObjectValid", CollectionRecursiveObject::isSecondRecursiveObjectsValid, "secondRecursiveObject in collectionRecursiveObject must be valid")
                 .addMember("firstRecursiveObjects", CollectionRecursiveObject::getFirstRecursiveObjects, builderFirst)
                 .addMember("secondRecursiveObjects", CollectionRecursiveObject::getSecondRecursiveObjects, builderSecond);
-
-        builderSecond.build();
-        builderFirst.build();
 
 
         ObjectResult result = builderCollection.build().validate(new CollectionRecursiveObject()
@@ -373,7 +363,6 @@ public class BValidatorBuilderTest {
 
         ObjectResult result = builderFirst.build().validate(firstLoopObject);
 
-        System.out.println(result);
 
         assertTrue(result.isValid());
         assertEquals(4, result.getNbOfTests());
@@ -397,11 +386,6 @@ public class BValidatorBuilderTest {
         builderSecond.addRule("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
         builderSecond.addRule("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
         builderSecond.addMember("firstRecursiveObject", SecondRecursiveObject::getFirstRecursiveObject, builderFirst);
-
-//        builderSecond.build();
-
-//        builderSecond.build();
-//        builderFirst.build();
 
         FirstRecursiveObject firstLoopObject = new FirstRecursiveObject().setAttr1("attr1");
         firstLoopObject.setFirstRecursiveObject(firstLoopObject);
