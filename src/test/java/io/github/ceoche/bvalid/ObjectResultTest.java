@@ -16,19 +16,19 @@ public class ObjectResultTest {
 
     @BeforeAll
     public static void setUp() {
-        addressValidator = new BValidatorManualBuilder<Address>()
+        addressValidator = new BValidatorManualBuilder<>(Address.class)
                 .setBusinessObjectName("Address")
                 .addRule("cityValid", Address::isCityValid, "City must not be null")
                 .addRule("StreetValid", Address::isStreetValid, "Street must not be empty")
-                .addMember("city", Address::getCity, new BValidatorManualBuilder<City>()
+                .addMember("city", Address::getCity, new BValidatorManualBuilder<>(City.class)
                         .setBusinessObjectName("city")
                         .addRule("cityNameValid", City::isNamesValid, "City name must not be empty")
                         .addRule("cityZipcodeValid", City::isZipCodeValid, "City zipcode must be valid")
                 )
                 .build();
-        personValidatorWithPhones = new BValidatorManualBuilder<Person>()
+        personValidatorWithPhones = new BValidatorManualBuilder<>(Person.class)
                 .setBusinessObjectName("Person")
-                .addMember("phones", Person::getPhones, new BValidatorManualBuilder<Phone>()
+                .addMember("phones", Person::getPhones, new BValidatorManualBuilder<>(Phone.class)
                         .setBusinessObjectName("Phone")
                         .addRule("numberValid", Phone::isNumberValid, "Number must not be null")
                         .addRule("countryCodeValid", Phone::isCountryCodeValid, "Country code must not be valid")

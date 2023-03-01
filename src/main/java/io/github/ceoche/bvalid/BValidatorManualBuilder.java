@@ -10,7 +10,13 @@ public class BValidatorManualBuilder<T> extends AbstractBValidatorBuilder<T> {
 
     private final Set<BusinessMemberBuilder<T,?>> members = new LinkedHashSet<>();
 
+    private final Set<Class<?>> implementations = new HashSet<>();
+
     private String businessObjectName = "";
+
+    public BValidatorManualBuilder(Class<T> type){
+        super(type);
+    }
 
     @Override
     public Set<BusinessRuleObject<T>> getRules() {
@@ -35,11 +41,12 @@ public class BValidatorManualBuilder<T> extends AbstractBValidatorBuilder<T> {
         return this;
     }
 
-    public <R> BValidatorManualBuilder<T> addMember(String name, Function<T, ?> getter, BValidatorBuilder<R> bValidatorBuilder){
-        if(name == null || getter == null || bValidatorBuilder == null){
-            throw new IllegalArgumentException("Name, getter and bValidatorBuilder must not be null");
+    @SafeVarargs
+    public final <R> BValidatorManualBuilder<T> addMember(String name, Function<T, ?> getter, BValidatorBuilder<? extends R>... bValidatorBuilders){
+        if(name == null || getter == null || isThereNullBuilder(bValidatorBuilders)){
+            throw new IllegalArgumentException("Name, getter and bValidatorBuilders must not be null");
         }
-        members.add(new BusinessMemberBuilder<>(name, getter, bValidatorBuilder));
+        members.add(new BusinessMemberBuilder<>(name, getter, bValidatorBuilders));
         return this;
     }
 
@@ -73,13 +80,13 @@ public class BValidatorManualBuilder<T> extends AbstractBValidatorBuilder<T> {
     }
 
 
-
-   @Override
-   public boolean isEmpty() {
-        return rules.isEmpty() && members.isEmpty();
+    private boolean isThereNullBuilder(BValidatorBuilder<?>... bValidatorBuilders){
+        for (BValidatorBuilder<?> bValidatorBuilder : bValidatorBuilders) {
+            if(bValidatorBuilder == null){
+                return true;
+            }
+        }
+        return false;
     }
-
-
-
 
 }

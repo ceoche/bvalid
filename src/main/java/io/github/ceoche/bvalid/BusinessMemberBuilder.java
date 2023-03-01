@@ -8,10 +8,11 @@ public class BusinessMemberBuilder <T,R>{
 
     private final Function<T, ?> getter;
 
-    private final BValidatorBuilder<R> validatorBuilder;
+    private final BValidatorBuilder<? extends R>[] validatorBuilder;
 
 
-    public BusinessMemberBuilder(String name, Function<T, ?> getter, BValidatorBuilder<R> bValidatorBuilder) {
+    @SafeVarargs
+    public BusinessMemberBuilder(String name, Function<T, ?> getter, BValidatorBuilder<? extends R> ...bValidatorBuilder) {
         this.name = name;
         this.getter = getter;
         this.validatorBuilder = bValidatorBuilder;
@@ -25,7 +26,7 @@ public class BusinessMemberBuilder <T,R>{
         return getter;
     }
 
-    public BValidatorBuilder<R> getValidatorBuilder() {
+    public BValidatorBuilder<? extends R>[] getValidatorBuilders() {
         return validatorBuilder;
     }
 

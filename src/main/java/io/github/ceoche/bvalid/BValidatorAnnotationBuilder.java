@@ -36,6 +36,7 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
     }
 
     public BValidatorAnnotationBuilder(Class<T> clazz) {
+        super(clazz);
         BusinessObject businessObject = clazz.getAnnotation(BusinessObject.class);
         if (businessObject != null) {
             businessObjectName = businessObject.name();
@@ -56,17 +57,13 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
 
     @Override
     public BValidator<T> build(){
-        return new BValidatorManualBuilder<T>()
+        return new BValidatorManualBuilder<T>(type)
                 .addAllMembers(members)
                 .addAllRules(rules)
                 .setBusinessObjectName(businessObjectName)
                 .build();
     }
 
-    @Override
-    public boolean isEmpty() {
-        return rules.isEmpty() && members.isEmpty();
-    }
 
 
 
@@ -180,6 +177,7 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
     private boolean isOnTopClassHierarchy(Class<?> superClass) {
         return superClass.equals(Object.class);
     }
+
 
 
 }

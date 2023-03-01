@@ -1,5 +1,6 @@
 package io.github.ceoche.bvalid;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -9,12 +10,12 @@ public class BusinessMemberObject<T,R> {
 
     private final Function<T, ?> getter;
 
-    private final BValidator<R> validator;
+    private final Map<Class<?>,BValidator<? extends R>> validators;
 
-    public BusinessMemberObject(String name, Function<T, ?> getter, BValidator<R> validator) {
+    public BusinessMemberObject(String name, Function<T, ?> getter, Map<Class<?>,BValidator<? extends R>> validators) {
         this.name = name;
         this.getter = getter;
-        this.validator = validator;
+        this.validators = validators;
     }
 
     public String getName() {
@@ -25,8 +26,13 @@ public class BusinessMemberObject<T,R> {
         return getter.apply(object);
     }
 
-    public  BValidator<R> getValidator() {
-        return validator;
+    public void addValidator(Class<?> clazz, BValidator<?> validator) {
+        this.validators.put(clazz, (BValidator<? extends R>) validator);
+
+    }
+
+    public Map<Class<?>, BValidator<? extends R>> getValidators() {
+        return validators;
     }
 
     @Override

@@ -24,18 +24,19 @@ import java.util.*;
  *
  * @author ceoche
  */
-public class BValidator<T>  {
+public class BValidator<T> {
 
     private final Set<BusinessRuleObject<T>> rules;
 
-    private final Set<BusinessMemberObject<T,?>> members;
+    private final Set<BusinessMemberObject<T, ?>> members;
+
 
     private final String businessObjectName;
 
     /**
      * Hidden constructor. Only {@link BValidatorManualBuilder} can create a {@link BValidator}.
      */
-    BValidator(Set<BusinessRuleObject<T>> rules, Set<BusinessMemberObject<T,?>> members, String businessObjectName) {
+    BValidator(Set<BusinessRuleObject<T>> rules, Set<BusinessMemberObject<T, ?>> members, String businessObjectName) {
         this.businessObjectName = businessObjectName;
         this.rules = rules;
         this.members = members;
@@ -50,11 +51,11 @@ public class BValidator<T>  {
      *
      * @param object business object to validate.
      * @return an {@link ObjectResult} that hold all the business rule and member results.
-     * @throws InvocationException  if an exception is raised while invoking a
-     *                              {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
-     *                              function. The original exception will be wrapped as cause.
+     * @throws InvocationException            if an exception is raised while invoking a
+     *                                        {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
+     *                                        function. The original exception will be wrapped as cause.
      * @throws IllegalBusinessObjectException if an error occurs while validating a member (Wrong return type,...)
-     * @throws NullPointerException if the given object is null.
+     * @throws NullPointerException           if the given object is null.
      */
 
     public ObjectResult validate(final T object) {
@@ -71,11 +72,11 @@ public class BValidator<T>  {
      *
      * @param collection collection of business objects to validate.
      * @return an {@link ObjectResult} that hold all the business rule and member results.
-     * @throws InvocationException  if an exception is raised while invoking a
-     *                              {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
-     *                              function. The original exception will be wrapped as cause.
+     * @throws InvocationException            if an exception is raised while invoking a
+     *                                        {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
+     *                                        function. The original exception will be wrapped as cause.
      * @throws IllegalBusinessObjectException if an error occurs while validating a member (Wrong return type,...)
-     * @throws NullPointerException if the given object is null.
+     * @throws NullPointerException           if the given object is null.
      */
     public List<ObjectResult> validate(final Collection<T> collection) {
         return this.validate(collection, businessObjectName, new HashSet<>());
@@ -90,11 +91,11 @@ public class BValidator<T>  {
      *
      * @param array array of business objects to validate.
      * @return an {@link ObjectResult} that hold all the business rule and member results.
-     * @throws InvocationException  if an exception is raised while invoking a
-     *                              {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
-     *                              function. The original exception will be wrapped as cause.
+     * @throws InvocationException            if an exception is raised while invoking a
+     *                                        {@link java.util.function.Predicate} or a {@link java.util.function.Function}.
+     *                                        function. The original exception will be wrapped as cause.
      * @throws IllegalBusinessObjectException if an error occurs while validating a member (Wrong return type,...)
-     * @throws NullPointerException if the given object is null.
+     * @throws NullPointerException           if the given object is null.
      */
     public List<ObjectResult> validate(final T[] array) {
         return this.validate(array, businessObjectName, new HashSet<>());
@@ -125,16 +126,21 @@ public class BValidator<T>  {
         return validate(Arrays.asList(array), name, visitedObjects);
     }
 
-    private <R> ObjectResult validateMember(final R object, final BValidator<R> validator, final String memberName, Set<Object> visitedObjects) {
-        return validator.validate(object, memberName, visitedObjects);
+    private <R,F extends R> ObjectResult validateMember(final F object, final BValidator<? extends R> validator, final String memberName, Set<Object> visitedObjects) {
+        return ((BValidator<F>)validator).validate(object,memberName, visitedObjects);
     }
 
-    private <R> List<ObjectResult> validateMemberCollection(final Collection<R> collection, final BValidator<R> validator, final String memberName, Set<Object> visitedObjects) {
-        return validator.validate(collection, memberName, visitedObjects);
+    private <R, F extends R> List<ObjectResult> validateMemberCollection(final Collection<F> collection, final Map<Class<?>,BValidator<? extends R>> validators, final String memberName, Set<Object> visitedObjects) {
+        List<ObjectResult> results = new ArrayList<>();
+        int index = -1;
+        for (F object : collection) {
+            results.add(((BValidator<F>)(getValidatorByType(validators, object))).validate(object, memberName + "[" + ++index + "]", visitedObjects));
+        }
+        return results;
     }
 
-    private <R> List<ObjectResult> validateMemberArray(final R[] array, final BValidator<R> validator, final String memberName, Set<Object> visitedObjects) {
-        return validator.validate(array, memberName, visitedObjects);
+    private <R> List<ObjectResult> validateMemberArray(final R[] array, final Map<Class<?>,BValidator<? extends R>> validators, final String memberName, Set<Object> visitedObjects) {
+        return validateMemberCollection(Arrays.asList(array), validators, memberName, visitedObjects);
     }
 
 
@@ -143,8 +149,7 @@ public class BValidator<T>  {
         for (final BusinessRuleObject<T> rule : rules) {
             try {
                 results.add(new RuleResult(rule.getId(), rule.getDescription(), rule.apply(object)));
-            }
-            catch (InvocationException e) {
+            } catch (InvocationException e) {
                 throw new InvocationException(e.getCause());
             }
         }
@@ -158,7 +163,7 @@ public class BValidator<T>  {
                 final Object memberValue = getMemberValue(object, member);
                 if(!visitedObjects.contains(memberValue)) {
                     visitedObjects.add(memberValue);
-                    results.addAll(validateAnyMember(memberValue, (BValidator<R>) member.getValidator(), member.getName(), visitedObjects));
+                    results.addAll(validateAnyMember(memberValue,  member.getValidators(), member.getName(), visitedObjects));
                 }
             }
             catch (IllegalArgumentException e) {
@@ -179,35 +184,30 @@ public class BValidator<T>  {
         return results;
     }
 
-    private <R> void castGenericCheck(Object object) throws ClassCastException {
-           R casted = (R) object;
-    }
 
     private Object getMemberValue(final T object, final BusinessMemberObject<T, ?> member) throws Throwable{
         try {
             return member.getMemberValue(object);
-        }
-        catch (final InvocationException e) {
+        } catch (final InvocationException e) {
             throw e.getCause();
         }
     }
 
-    private <R> List<ObjectResult>  validateAnyMember(final Object memberValue, BValidator<R> validator, String name, Set<Object> visitedObjects) {
+    private <R> List<ObjectResult> validateAnyMember(final Object memberValue, Map<Class<?>,BValidator<? extends R>> validators, String name, Set<Object> visitedObjects) {
         final List<ObjectResult> results = new ArrayList<>();
-        if(memberValue == null){
+        if (memberValue == null) {
             return Collections.emptyList();
         }
         if (isValidCollection(memberValue)) {
-            if(!((Collection<?>) memberValue).isEmpty()){
-                this.<R>castGenericCheck(((Collection<?>) memberValue).iterator().next());
-                results.addAll(this.validateMemberCollection((Collection<R>) memberValue, validator, name, visitedObjects));
+            if (!((Collection<?>) memberValue).isEmpty()) {
+                results.addAll(this.validateMemberCollection((Collection<R>) memberValue, validators, name, visitedObjects));
             }
         } else if (isValidArray(memberValue)) {
-            this.<R>castGenericCheck(((Object[]) memberValue)[0]);
-            results.addAll(this.validateMemberArray((R[]) memberValue, validator, name, visitedObjects));
+            if (((Object[]) memberValue).length > 0) {
+                results.addAll(this.validateMemberArray((R[]) memberValue, validators, name, visitedObjects));
+            }
         } else {
-            this.<R>castGenericCheck(memberValue);
-            results.add(this.validateMember((R)memberValue, validator, name, visitedObjects));
+            results.add(this.validateMember( memberValue, getValidatorByType(validators, memberValue), name, visitedObjects));
         }
         return results;
     }
@@ -217,10 +217,16 @@ public class BValidator<T>  {
     }
 
     private boolean isValidArray(Object memberValue) {
-        return (memberValue instanceof Object[]) && ((Object[]) memberValue).length > 0;
+        return (memberValue instanceof Object[]);
     }
 
-
+    private <R> BValidator<? extends R> getValidatorByType(Map<Class<?>,BValidator<? extends R>> validators, Object object) {
+        Class<?> clazz = object.getClass();
+        if(validators.containsKey(clazz))
+            return validators.get(clazz);
+        else
+            throw new IllegalBusinessObjectException("No validator found for type " + clazz.getName());
+    }
 
 
 }
