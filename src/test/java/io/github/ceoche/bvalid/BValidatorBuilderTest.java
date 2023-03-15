@@ -404,6 +404,7 @@ public class BValidatorBuilderTest {
         BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = createGraphicValidatorBuilder();
 
         ObjectResult result = graphicBValidatorManualBuilder.build().validate(createGraphic());
+        System.out.println(result);
         assertTrue(result.isValid());
         assertEquals(19, result.getNbOfTests());
         assertTrue(result.getRuleResult("Graphic.shapesList[0] [sqNameValid]").isValid());
@@ -431,10 +432,10 @@ public class BValidatorBuilderTest {
                         .build()
                         .validate(new Graphic()
                         .setName("graphic")
-                        .addShapeToList(new Rectangle().setName("rectangleInList").setHeight(1).setSide(1)))
+                        .addShapeToList(new Circle().setName("circleInList").setRadius(1)))
         );
         assertInstanceOf(IllegalBusinessObjectException.class, throwable.getCause());
-        assertEquals("No validator found for type io.github.ceoche.bvalid.mock.Rectangle", throwable.getCause().getMessage());
+        assertEquals("No validator found for type io.github.ceoche.bvalid.mock.Circle", throwable.getCause().getMessage());
 
     }
 
@@ -522,6 +523,17 @@ public class BValidatorBuilderTest {
         assertTrue(result.isValid());
         assertEquals(1, result.getNbOfTests());
     }
+
+    @Test
+    public void testValidateGraphic(){
+        BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = createGraphicValidatorBuilder();
+        Graphic graphic = createGraphic().addShapeToList(new Losange().setName("losange").setDiagonal(10));
+        ObjectResult result = graphicBValidatorManualBuilder.build().validate(graphic);
+        System.out.println(result);
+        assertFalse(result.isValid());
+        assertEquals(22, result.getNbOfTests());
+    }
+
 
 
     private void assertMemberResults(ObjectResult result, boolean expected) {
@@ -612,11 +624,11 @@ public class BValidatorBuilderTest {
                 .setBusinessObjectName("Square")
                 .addRule("sqNameValid", Square::isNameValid, "name is not null")
                 .addRule("sqSideValid", Square::isSideValid, "side is not null");
-        BValidatorManualBuilder<Rectangle> rectangleBValidatorManualBuilder = new BValidatorManualBuilder<>(Rectangle.class)
+        BValidatorManualBuilder<Rectangle> rectangleBValidatorManualBuilder = new BValidatorManualBuilder<>(squareBValidatorManualBuilder,Rectangle.class)
                 .setBusinessObjectName("Rectangle")
-                .addRule("recNameValid", Rectangle::isNameValid, "name is not null")
-                .addRule("recHeightValid", Rectangle::isHeightValid, "height is not null")
-                .addRule("recSideValid", Rectangle::isSideValid, "side is not null");
+//                .addRule("recNameValid", Rectangle::isNameValid, "name is not null")
+                .addRule("recHeightValid", Rectangle::isHeightValid, "height is not null");
+//                .addRule("recSideValid", Rectangle::isSideValid, "side is not null");
         BValidatorManualBuilder<Circle> circleBValidatorManualBuilder = new BValidatorManualBuilder<>(Circle.class)
                 .addRule("crNameValid", Circle::isNameValid, "name is not null")
                 .addRule("crRadiusValid", Circle::isRadiusValid, "radius is not null");

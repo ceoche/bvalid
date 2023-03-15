@@ -10,9 +10,9 @@ public class BusinessMemberObject<T,R> {
 
     private final Function<T, ?> getter;
 
-    private final Map<Class<?>,BValidator<? extends R>> validators;
+    private final Map<Class<? extends R>,BValidator<? extends R>> validators;
 
-    public BusinessMemberObject(String name, Function<T, ?> getter, Map<Class<?>,BValidator<? extends R>> validators) {
+    BusinessMemberObject(String name, Function<T, ?> getter, Map<Class<? extends R>,BValidator<? extends R>> validators) {
         this.name = name;
         this.getter = getter;
         this.validators = validators;
@@ -26,12 +26,12 @@ public class BusinessMemberObject<T,R> {
         return getter.apply(object);
     }
 
-    public void addValidator(Class<?> clazz, BValidator<?> validator) {
+    void addValidator(Class<? extends R> clazz, BValidator<?> validator) {
         this.validators.put(clazz, (BValidator<? extends R>) validator);
 
     }
 
-    public Map<Class<?>, BValidator<? extends R>> getValidators() {
+    public Map<Class<? extends R>, BValidator<? extends R>> getValidators() {
         return validators;
     }
 

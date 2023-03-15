@@ -12,11 +12,21 @@ public class BValidatorManualBuilder<T> extends AbstractBValidatorBuilder<T> {
 
     private final Set<Class<?>> implementations = new HashSet<>();
 
+//    private final BValidatorBuilder<? extends R>[] validatorBuilder;
+
     private String businessObjectName = "";
 
     public BValidatorManualBuilder(Class<T> type){
         super(type);
     }
+
+    public BValidatorManualBuilder(BValidatorManualBuilder<? super T> builder, Class<T> type){
+        super(type);
+        builder.rules.forEach(rule -> rules.add((BusinessRuleObject<T>) rule));
+        builder.members.forEach(member -> members.add((BusinessMemberBuilder<T, ?>) member));
+        implementations.addAll(builder.implementations);
+    }
+
 
     @Override
     public Set<BusinessRuleObject<T>> getRules() {

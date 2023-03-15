@@ -126,20 +126,20 @@ public class BValidator<T> {
         return validate(Arrays.asList(array), name, visitedObjects);
     }
 
-    private <R,F extends R> ObjectResult validateMember(final F object, final BValidator<? extends R> validator, final String memberName, Set<Object> visitedObjects) {
-        return ((BValidator<F>)validator).validate(object,memberName, visitedObjects);
+    private <R, F extends R> ObjectResult validateMember(final F object, final BValidator<? extends R> validator, final String memberName, Set<Object> visitedObjects) {
+        return ((BValidator<F>) validator).validate(object, memberName, visitedObjects);
     }
 
-    private <R, F extends R> List<ObjectResult> validateMemberCollection(final Collection<F> collection, final Map<Class<?>,BValidator<? extends R>> validators, final String memberName, Set<Object> visitedObjects) {
+    private <R, F extends R> List<ObjectResult> validateMemberCollection(final Collection<F> collection, final Map<Class<? extends R>, BValidator<? extends R>> validators, final String memberName, Set<Object> visitedObjects) {
         List<ObjectResult> results = new ArrayList<>();
         int index = -1;
         for (F object : collection) {
-            results.add(((BValidator<F>)(getValidatorByType(validators, object))).validate(object, memberName + "[" + ++index + "]", visitedObjects));
+            results.add(((BValidator<F>) (getValidatorByType(validators, object))).validate(object, memberName + "[" + ++index + "]", visitedObjects));
         }
         return results;
     }
 
-    private <R> List<ObjectResult> validateMemberArray(final R[] array, final Map<Class<?>,BValidator<? extends R>> validators, final String memberName, Set<Object> visitedObjects) {
+    private <R> List<ObjectResult> validateMemberArray(final R[] array, final Map<Class<? extends R>, BValidator<? extends R>> validators, final String memberName, Set<Object> visitedObjects) {
         return validateMemberCollection(Arrays.asList(array), validators, memberName, visitedObjects);
     }
 
@@ -156,27 +156,24 @@ public class BValidator<T> {
         return results;
     }
 
-    private <R> List<ObjectResult> validateBusinessMembers(final T object, Set<Object> visitedObjects)  {
+    private List<ObjectResult> validateBusinessMembers(final T object, Set<Object> visitedObjects) {
         final List<ObjectResult> results = new ArrayList<>();
         for (final BusinessMemberObject<T, ?> member : members) {
             try {
                 final Object memberValue = getMemberValue(object, member);
-                if(!visitedObjects.contains(memberValue)) {
+                if (!isObjectAlreadyVisited(memberValue, visitedObjects)) {
                     visitedObjects.add(memberValue);
-                    results.addAll(validateAnyMember(memberValue,  member.getValidators(), member.getName(), visitedObjects));
+                    results.addAll(validateAnyMember(memberValue, member.getValidators(), member.getName(), visitedObjects));
                 }
-            }
-            catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 throw new IllegalBusinessObjectException(
                         "Method '" + member.getName() + "' does not respect BusinessMember " +
                                 "method format (should be public with no arguments and return an object " +
                                 "value that is a BusinessObject or a group of BusinessObject).", e);
-            }
-            catch (ClassCastException e){
+            } catch (ClassCastException e) {
                 throw new IllegalBusinessObjectException("Wrong member type", e);
-            }
-            catch (final Throwable e) {
-                if(e.getCause() != null)
+            } catch (final Throwable e) {
+                if (e.getCause() != null)
                     throw new InvocationException(e.getCause());
                 throw new InvocationException(e);
             }
@@ -184,8 +181,20 @@ public class BValidator<T> {
         return results;
     }
 
+    private boolean isObjectAlreadyVisited(Object memberValue, Set<Object> visitedObjects) {
+        if (memberValue == null) {
+            return false;
+        }
+        for (Object visitedObject : visitedObjects) {
+            if (memberValue == visitedObject) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    private Object getMemberValue(final T object, final BusinessMemberObject<T, ?> member) throws Throwable{
+
+    private Object getMemberValue(final T object, final BusinessMemberObject<T, ?> member) throws Throwable {
         try {
             return member.getMemberValue(object);
         } catch (final InvocationException e) {
@@ -193,7 +202,7 @@ public class BValidator<T> {
         }
     }
 
-    private <R> List<ObjectResult> validateAnyMember(final Object memberValue, Map<Class<?>,BValidator<? extends R>> validators, String name, Set<Object> visitedObjects) {
+    private <R> List<ObjectResult> validateAnyMember(final Object memberValue, Map<Class<? extends R>, BValidator<? extends R>> validators, String name, Set<Object> visitedObjects) {
         final List<ObjectResult> results = new ArrayList<>();
         if (memberValue == null) {
             return Collections.emptyList();
@@ -207,7 +216,7 @@ public class BValidator<T> {
                 results.addAll(this.validateMemberArray((R[]) memberValue, validators, name, visitedObjects));
             }
         } else {
-            results.add(this.validateMember( memberValue, getValidatorByType(validators, memberValue), name, visitedObjects));
+            results.add(this.validateMember(memberValue, getValidatorByType(validators, memberValue), name, visitedObjects));
         }
         return results;
     }
@@ -220,12 +229,18 @@ public class BValidator<T> {
         return (memberValue instanceof Object[]);
     }
 
-    private <R> BValidator<? extends R> getValidatorByType(Map<Class<?>,BValidator<? extends R>> validators, Object object) {
+    private <R> BValidator<? extends R> getValidatorByType(Map<Class<? extends R>, BValidator<? extends R>> validators, Object object) {
         Class<?> clazz = object.getClass();
-        if(validators.containsKey(clazz))
-            return validators.get(clazz);
-        else
-            throw new IllegalBusinessObjectException("No validator found for type " + clazz.getName());
+        String className = clazz.getName();
+        do {
+            if(validators.containsKey(clazz)) {
+                return validators.get(clazz);
+            }
+            clazz = clazz.getSuperclass();
+        }
+        while (clazz != null);
+
+        throw new IllegalBusinessObjectException("No validator found for type " + className);
     }
 
 

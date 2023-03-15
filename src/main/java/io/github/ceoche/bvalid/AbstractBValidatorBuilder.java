@@ -8,7 +8,6 @@ abstract public class AbstractBValidatorBuilder<T> implements BValidatorBuilder<
 
     abstract public Set<BusinessRuleObject<T>> getRules();
 
-    abstract public Set<BusinessMemberBuilder<T, ?>> getMembers();
 
     abstract public String getBusinessObjectName();
 
@@ -20,7 +19,7 @@ abstract public class AbstractBValidatorBuilder<T> implements BValidatorBuilder<
         this.type = type;
     }
 
-    protected final BValidator<T> build(Map<AbstractBValidatorBuilder<?>,BValidator<?>> visitedBuilders){
+    final BValidator<T> build(Map<AbstractBValidatorBuilder<?>,BValidator<?>> visitedBuilders){
         if(type == null){
             throw new IllegalStateException("Type is not set");
         }
@@ -30,7 +29,7 @@ abstract public class AbstractBValidatorBuilder<T> implements BValidatorBuilder<
         for (BusinessMemberBuilder<T,?> businessMemberBuilder : getMembers()) {
             if(!allBuildersAreEmpty(businessMemberBuilder.getValidatorBuilders())){
                 AbstractBValidatorBuilder<?>[] subValidatorBuilders = Arrays.stream(businessMemberBuilder.getValidatorBuilders()).map(bValidatorBuilder -> (AbstractBValidatorBuilder<?>) bValidatorBuilder).toArray(AbstractBValidatorBuilder[]::new);
-                BusinessMemberObject<T,?> businessMemberObject = new BusinessMemberObject<>(businessMemberBuilder.getName(), businessMemberBuilder.getGetter(), new HashMap<>());
+                BusinessMemberObject<T,Object> businessMemberObject = new BusinessMemberObject<>(businessMemberBuilder.getName(), businessMemberBuilder.getGetter(), new HashMap<>());
                 for(AbstractBValidatorBuilder<?> subValidatorBuilder : subValidatorBuilders){
                     if(!visitedBuilders.containsKey(subValidatorBuilder)){
                         businessMemberObject.addValidator(subValidatorBuilder.type,subValidatorBuilder.build(visitedBuilders));
