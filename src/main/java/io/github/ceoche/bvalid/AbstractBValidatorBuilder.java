@@ -28,7 +28,10 @@ abstract public class AbstractBValidatorBuilder<T> implements BValidatorBuilder<
         visitedBuilders.put(this, validator);
         for (BusinessMemberBuilder<T,?> businessMemberBuilder : getMembers()) {
             if(!allBuildersAreEmpty(businessMemberBuilder.getValidatorBuilders())){
-                AbstractBValidatorBuilder<?>[] subValidatorBuilders = Arrays.stream(businessMemberBuilder.getValidatorBuilders()).map(bValidatorBuilder -> (AbstractBValidatorBuilder<?>) bValidatorBuilder).toArray(AbstractBValidatorBuilder[]::new);
+                AbstractBValidatorBuilder<?>[] subValidatorBuilders = Arrays
+                        .stream(businessMemberBuilder.getValidatorBuilders())
+                        .map(bValidatorBuilder -> (AbstractBValidatorBuilder<?>) bValidatorBuilder)
+                        .toArray(AbstractBValidatorBuilder[]::new);
                 BusinessMemberObject<T,Object> businessMemberObject = new BusinessMemberObject<>(businessMemberBuilder.getName(), businessMemberBuilder.getGetter(), new HashMap<>());
                 for(AbstractBValidatorBuilder<?> subValidatorBuilder : subValidatorBuilders){
                     if(!visitedBuilders.containsKey(subValidatorBuilder)){

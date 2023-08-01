@@ -101,13 +101,13 @@ public class BValidator<T> {
         return this.validate(array, businessObjectName, new HashSet<>());
     }
 
-    private <R> ObjectResult validate(T object, String name, Set<Object> visitedObjects) {
+    private ObjectResult validate(T object, String name, Set<Object> visitedObjects) {
         if (object == null) {
             throw new NullPointerException("The object to validate cannot be null");
         }
         final ObjectResult result = new ObjectResult(name);
-        List<RuleResult> ruleResults = validateBusinessRules(object);
-        List<ObjectResult> memberResults = this.<R>validateBusinessMembers(object, visitedObjects);
+        List<RuleResult> ruleResults = this.validateBusinessRules(object);
+        List<ObjectResult> memberResults = this.validateBusinessMembers(object, visitedObjects);
         result.addRuleResults(ruleResults);
         result.addMemberResults(memberResults);
         return result;
@@ -134,7 +134,7 @@ public class BValidator<T> {
         List<ObjectResult> results = new ArrayList<>();
         int index = -1;
         for (F object : collection) {
-            results.add(((BValidator<F>) (getValidatorByType(validators, object))).validate(object, memberName + "[" + ++index + "]", visitedObjects));
+            results.add(((BValidator<F>) getValidatorByType(validators, object)).validate(object, memberName + "[" + ++index + "]", visitedObjects));
         }
         return results;
     }
@@ -181,16 +181,12 @@ public class BValidator<T> {
         return results;
     }
 
+    // O(1) complexity for hashset
     private boolean isObjectAlreadyVisited(Object memberValue, Set<Object> visitedObjects) {
         if (memberValue == null) {
             return false;
         }
-        for (Object visitedObject : visitedObjects) {
-            if (memberValue == visitedObject) {
-                return true;
-            }
-        }
-        return false;
+        return visitedObjects.contains(memberValue);
     }
 
 
