@@ -1,8 +1,5 @@
 package io.github.ceoche.bvalid.mock;
 
-import io.github.ceoche.bvalid.BusinessObject;
-import io.github.ceoche.bvalid.BusinessRule;
-
 public class Email {
 
     private final String email;

@@ -3,6 +3,12 @@ package io.github.ceoche.bvalid;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+/**
+ * A business rule object is a predicate with an id and a description.
+ * It is used to validate a business object with the manual builder.
+ * It's the equivalent of a {@link BusinessMember} in annotation based validation.
+ * @param <T> the type of the business object to validate
+ */
 public class BusinessRuleObject<T> {
 
     private final String id;
@@ -35,11 +41,13 @@ public class BusinessRuleObject<T> {
         if (this == o) return true;
         if (!(o instanceof BusinessRuleObject)) return false;
         BusinessRuleObject<?> that = (BusinessRuleObject<?>) o;
-        return id.equals(that.id);
+
+        return description.equals(that.description) &&
+                rule.equals(that.rule);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(description, rule);
     }
 }

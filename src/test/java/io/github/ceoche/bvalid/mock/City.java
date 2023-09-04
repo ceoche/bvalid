@@ -1,7 +1,5 @@
 package io.github.ceoche.bvalid.mock;
 
-import io.github.ceoche.bvalid.BusinessObject;
-
 public class City {
 
     private final String names;

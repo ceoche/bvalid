@@ -1,7 +1,9 @@
 package io.github.ceoche.bvalid;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -26,7 +28,7 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
     }
 
     @Override
-    public Set<BusinessMemberBuilder<T, ?>> getMembers() {
+    Set<BusinessMemberBuilder<T, ?>> getMembers() {
         return members;
     }
 

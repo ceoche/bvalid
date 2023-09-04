@@ -18,7 +18,6 @@ package io.github.ceoche.bvalid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Aggregate all {@link BusinessRule} and {@link BusinessMember} test results of a
@@ -118,8 +117,8 @@ public class ObjectResult {
 
    private String toString(final String prefix) {
       StringBuilder sb = new StringBuilder();
-      for (RuleResult RuleResult : ruleResults) {
-         sb.append(prefix).append(businessObjectName).append(" ").append(RuleResult.toString()).append(System.lineSeparator());
+      for (RuleResult ruleResult : ruleResults) {
+         sb.append(prefix).append(businessObjectName).append(" ").append(ruleResult.toString()).append(System.lineSeparator());
       }
       if (!memberResults.isEmpty()) {
          String subPrefix = prefix + businessObjectName + ".";

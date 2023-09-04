@@ -58,9 +58,10 @@ public class BValidatorBuilderTest {
 
     @Test
     void testBuildValidatorWithSameRuleId() {
+        Predicate<Person> rule = p -> true;
         BValidatorManualBuilder<Person> validatorBuilder = new BValidatorManualBuilder<>(Person.class)
-                .addRule("rule1", p -> true, "Always true")
-                .addRule("rule1", p -> true, "Always true");
+                .addRule("rule1", rule, "Always true")
+                .addRule("rule1", rule, "Always true");
         assertEquals(1, validatorBuilder.getRulesCount());
     }
 
@@ -87,11 +88,10 @@ public class BValidatorBuilderTest {
     }
 
 
-    @ParameterizedTest
-    @MethodSource("provideInvalidRules")
-    void testBuildValidatorWithNullRule(String ruleId, Predicate<Person> rule, String message) {
+    @Test
+    void testBuildValidatorWithNullRule() {
         assertThrows(IllegalArgumentException.class, () -> new BValidatorManualBuilder<>(Person.class)
-                .addRule(ruleId, rule, message));
+                .addRule("rule", null, "message"));
     }
 
     @Test
@@ -124,9 +124,11 @@ public class BValidatorBuilderTest {
 
     @Test
     void testCompareRules() {
-        BusinessRuleObject<Person> rule1 = new BusinessRuleObject<>("rule1", p -> true, "Always true");
-        BusinessRuleObject<Person> rule2 = new BusinessRuleObject<>("rule1", p -> true, "Always true");
-        BusinessRuleObject<Person> rule3 = new BusinessRuleObject<>("rule2", p -> true, "Always true");
+        Predicate<Person> predicate1 = p -> true;
+        Predicate<Person> predicate2 = p -> true;
+        BusinessRuleObject<Person> rule1 = new BusinessRuleObject<>("rule1", predicate1, "Rule 1 Always true");
+        BusinessRuleObject<Person> rule2 = new BusinessRuleObject<>("rule1", predicate1, "Rule 1 Always true");
+        BusinessRuleObject<Person> rule3 = new BusinessRuleObject<>("rule2", predicate2, "Rule 2 Always true");
         assertEquals(rule1, rule2);
         assertNotEquals(rule1, rule3);
         assertEquals(rule1, rule1);
@@ -534,6 +536,17 @@ public class BValidatorBuilderTest {
         assertEquals(22, result.getNbOfTests());
     }
 
+    @Test
+    public void testAddMemberWithoutId(){
+        BValidator<Phone> bValidator = new BValidatorManualBuilder<>(Phone.class)
+                .setBusinessObjectName("phone")
+                .addRule(Phone::isCountryCodeValid, "country code is not valid")
+                .addRule(Phone::isNumberValid, "number is not valid")
+                .build();
+        ObjectResult result = bValidator.validate(new Phone("01234567", "+33"));
+        assertTrue(result.isValid());
+    }
+
 
 
     private void assertMemberResults(ObjectResult result, boolean expected) {
@@ -551,13 +564,6 @@ public class BValidatorBuilderTest {
         );
     }
 
-    private static Stream<Arguments> provideInvalidRules() {
-        return Stream.of(
-                Arguments.of(null, (Predicate<Person>) p -> true, "message"),
-                Arguments.of("rule1", null, "message"),
-                Arguments.of(null, null, null)
-        );
-    }
 
     private Person createAllCorrectPerson() {
         return new Person(
@@ -626,9 +632,7 @@ public class BValidatorBuilderTest {
                 .addRule("sqSideValid", Square::isSideValid, "side is not null");
         BValidatorManualBuilder<Rectangle> rectangleBValidatorManualBuilder = new BValidatorManualBuilder<>(squareBValidatorManualBuilder,Rectangle.class)
                 .setBusinessObjectName("Rectangle")
-//                .addRule("recNameValid", Rectangle::isNameValid, "name is not null")
                 .addRule("recHeightValid", Rectangle::isHeightValid, "height is not null");
-//                .addRule("recSideValid", Rectangle::isSideValid, "side is not null");
         BValidatorManualBuilder<Circle> circleBValidatorManualBuilder = new BValidatorManualBuilder<>(Circle.class)
                 .addRule("crNameValid", Circle::isNameValid, "name is not null")
                 .addRule("crRadiusValid", Circle::isRadiusValid, "radius is not null");

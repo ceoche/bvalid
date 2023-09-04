@@ -8,8 +8,9 @@ abstract public class AbstractBValidatorBuilder<T> implements BValidatorBuilder<
 
     abstract public Set<BusinessRuleObject<T>> getRules();
 
-
     abstract public String getBusinessObjectName();
+
+    abstract Set<BusinessMemberBuilder<T,?>> getMembers();
 
     public boolean isEmpty(){
         return getRules().isEmpty() && getMembers().isEmpty();

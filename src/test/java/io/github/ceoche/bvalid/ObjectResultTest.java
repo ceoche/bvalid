@@ -1,6 +1,9 @@
 package io.github.ceoche.bvalid;
 
-import io.github.ceoche.bvalid.mock.*;
+import io.github.ceoche.bvalid.mock.Address;
+import io.github.ceoche.bvalid.mock.City;
+import io.github.ceoche.bvalid.mock.Person;
+import io.github.ceoche.bvalid.mock.Phone;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

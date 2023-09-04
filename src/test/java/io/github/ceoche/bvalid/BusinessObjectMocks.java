@@ -16,12 +16,7 @@
 
 package io.github.ceoche.bvalid;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.LinkedTransferQueue;
 
 public class BusinessObjectMocks {
