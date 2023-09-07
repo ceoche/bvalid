@@ -1,5 +1,12 @@
 package io.github.ceoche.bvalid;
 
+
+/**
+ * The API to build a {@link BValidator}.
+ * @param <T> the type of the business object to validate
+ *
+ * @author Achraf Achkari
+ */
 public interface BValidatorBuilder <T> {
 
     /**

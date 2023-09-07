@@ -2,13 +2,20 @@ package io.github.ceoche.bvalid;
 
 import java.util.*;
 
-abstract public class AbstractBValidatorBuilder<T> implements BValidatorBuilder<T> {
+/**
+ * This class contains the common logic for all BValidatorBuilders
+ * which is the engine behind building a BValidator
+ * @param <T> The type of the object to validate
+ *
+ * @author Achraf Achkari
+ */
+public abstract class AbstractBValidatorBuilder<T> implements BValidatorBuilder<T> {
 
     protected Class<T> type;
 
-    abstract public Set<BusinessRuleObject<T>> getRules();
+    public abstract Set<BusinessRuleObject<T>> getRules();
 
-    abstract public String getBusinessObjectName();
+    public abstract String getBusinessObjectName();
 
     abstract Set<BusinessMemberBuilder<T,?>> getMembers();
 

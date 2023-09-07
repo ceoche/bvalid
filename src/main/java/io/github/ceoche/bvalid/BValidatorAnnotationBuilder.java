@@ -12,7 +12,7 @@ import java.util.function.Predicate;
  * using the {@link BValidatorManualBuilder}.
  *
  * @param <T>
- * @author a.achkari
+ * @author Achraf Achkari
  */
 public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T> {
 
