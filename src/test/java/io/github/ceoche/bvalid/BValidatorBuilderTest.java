@@ -207,7 +207,7 @@ public class BValidatorBuilderTest {
         builder.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builder);
         builder.addMember("email", FirstRecursiveObject::getEmail, new BValidatorManualBuilder<>(Email.class)
                         .addRule("emailValid", Email::isEmailValid, "Email must be valid")
-                        .addRule("domainValid", Email::isDomainValid, "Domain must be valid"))
+                        .addRule("domainValid", Email::isDomainValid, "Domain must be set and not empty"))
                 .build();
         BValidator<FirstRecursiveObject> validator = builder.build();
         FirstRecursiveObject firstRecursiveObject = new FirstRecursiveObject()
@@ -234,7 +234,7 @@ public class BValidatorBuilderTest {
         builderFirst.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builderFirst);
         builderFirst.addMember("email", FirstRecursiveObject::getEmail, new BValidatorManualBuilder<>(Email.class)
                 .addRule("emailValid", Email::isEmailValid, "Email must be valid")
-                .addRule("domainValid", Email::isDomainValid, "Domain must be valid"));
+                .addRule("domainValid", Email::isDomainValid, "Domain must be set and not empty"));
         builderFirst.addMember("secondRecursiveObject", FirstRecursiveObject::getSecondRecursiveObject, builderSecond);
 
         builderSecond.addRule("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
@@ -621,7 +621,7 @@ public class BValidatorBuilderTest {
                 .addMember("emails", Person::getEmails, new BValidatorManualBuilder<>(Email.class)
                         .setBusinessObjectName("Email")
                         .addRule("emailValid", Email::isEmailValid, "Email must be valid")
-                        .addRule("domainValid", Email::isDomainValid, "Domain must be valid")
+                        .addRule("domainValid", Email::isDomainValid, "Domain must be set and not empty")
                 );
     }
 

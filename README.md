@@ -562,7 +562,7 @@ have all its valuable rules.
 
 ### Requirements
 
-* Java 11 or youngest
+* Java 17 or youngest
 * Maven 3
 
 ### Build, test and package
