@@ -69,6 +69,10 @@ public class RuleResult {
       if(id != null && !id.isEmpty()) {
          sb.append("[").append(id).append("] ");
       }
-      return sb.append(description).append(" => ").append(result).toString();
+      return sb.append(description).append(" => ").append(asResultString(result)).toString();
+   }
+
+   private String asResultString(boolean result) {
+      return result ? "valid" : "invalid" ;
    }
 }
