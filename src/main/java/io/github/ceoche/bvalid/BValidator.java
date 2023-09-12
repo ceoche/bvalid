@@ -34,7 +34,7 @@ public class BValidator<T> {
     private final String businessObjectName;
 
     /**
-     * Hidden constructor. Only {@link BValidatorManualBuilder} can create a {@link BValidator}.
+     * Hidden constructor. Use {@link BValidatorManualBuilder} or {@link BValidatorAnnotationBuilder} can create a {@link BValidator}.
      */
     BValidator(Set<BusinessRuleObject<T>> rules, Set<BusinessMemberObject<T, ?>> members, String businessObjectName) {
         this.businessObjectName = businessObjectName;
@@ -229,7 +229,7 @@ public class BValidator<T> {
         Class<?> clazz = object.getClass();
         String className = clazz.getName();
         do {
-            if(validators.containsKey(clazz)) {
+            if (validators.containsKey(clazz)) {
                 return validators.get(clazz);
             }
             clazz = clazz.getSuperclass();

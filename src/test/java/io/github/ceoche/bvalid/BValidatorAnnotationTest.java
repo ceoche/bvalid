@@ -43,8 +43,7 @@ public class BValidatorAnnotationTest {
             new Object[][]{
                   {"validable-mock", "rule01", "mandatoryAttribute must be defined.", true},
                   {"validable-mock", "", "optionalAttribute must be defined if present.", true},
-                  {"validable-mock", "", "oneOrMoreAssociation must have at least one element.",
-                        true}
+                  {"validable-mock", "", "oneOrMoreAssociation must have at least one element.", true}
             },
             objectResult);
    }

@@ -42,8 +42,8 @@ public class BValidatorBuilderTest {
         ObjectResult result = builder.build().validate(createPersonWithIncorrectEmailAndPhone());
         System.out.println(result);
         assertFalse(result.isValid());
-        assertFalse(result.getRuleResult("Person.phones[1] [countryCodeValid]").isValid());
-        assertFalse(result.getRuleResult("Person.emails[0] [emailValid]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "Person.phones[1] [countryCodeValid]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "Person.emails[0] [emailValid]").isValid());
     }
 
     @Test
@@ -259,11 +259,11 @@ public class BValidatorBuilderTest {
                         .setAttr2("attr2")));
         assertEquals(19, countAllRulesResults(result, true));
         assertEquals(5, countAllRulesResults(result, false));
-        assertFalse(result.getRuleResult("FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
-        assertFalse(result.getRuleResult("FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [rule1]").isValid());
-        assertFalse(result.getRuleResult("FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
-        assertFalse(result.getRuleResult("FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
-        assertFalse(result.getRuleResult("FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [rule1]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
 
     }
 
@@ -348,7 +348,7 @@ public class BValidatorBuilderTest {
         );
         assertFalse(result.isValid());
         assertEquals(10, countAllRulesResults(result, false));
-        assertFalse(result.getRuleResult("CollectionRecursiveObject.secondRecursiveObjects[0].firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
+        assertFalse(ObjectResultTest.getRuleResult(result, "CollectionRecursiveObject.secondRecursiveObjects[0].firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
 
     }
 
@@ -409,14 +409,14 @@ public class BValidatorBuilderTest {
         System.out.println(result);
         assertTrue(result.isValid());
         assertEquals(19, result.getNbOfTests());
-        assertTrue(result.getRuleResult("Graphic.shapesList[0] [sqNameValid]").isValid());
-        assertTrue(result.getRuleResult("Graphic.shapesList[1] [crRadiusValid]").isValid());
-        assertTrue(result.getRuleResult("Graphic.shapesList[2] [recHeightValid]").isValid());
-        assertTrue(result.getRuleResult("Graphic.shapesArray[0] [sqNameValid]").isValid());
-        assertTrue(result.getRuleResult("Graphic.shapesArray[1] [crRadiusValid]").isValid());
-        assertTrue(result.getRuleResult("Graphic.shapesArray[2] [recHeightValid]").isValid());
-        assertTrue(result.getRuleResult("Graphic.squareOrRectangle [sqNameValid]").isValid());
-        assertTrue(result.getRuleResult("Graphic.circle [crRadiusValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesList[0] [sqNameValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesList[1] [crRadiusValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesList[2] [recHeightValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesArray[0] [sqNameValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesArray[1] [crRadiusValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesArray[2] [recHeightValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.squareOrRectangle [sqNameValid]").isValid());
+        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.circle [crRadiusValid]").isValid());
     }
 
     @Test
