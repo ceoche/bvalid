@@ -51,9 +51,9 @@ public class ObjectResultTest {
         BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
         ObjectResult result = new BValidatorAnnotationBuilder<>(BusinessObjectMocks.DefaultValidableMock.class).build().validate(object);
         String stringResult = result.toString();
-        assertTrue(stringResult.contains("validable-mock [rule01] mandatoryAttribute must be defined. => true"));
-        assertTrue(stringResult.contains("validable-mock [OneOrMoreAssociationValid] oneOrMoreAssociation must have at least one element. => true"));
-        assertTrue(stringResult.contains("validable-mock [OptionalAttributeValid] optionalAttribute must be defined if present. => true"));
+        assertTrue(stringResult.contains("validable-mock [rule01] mandatoryAttribute must be defined. => valid"));
+        assertTrue(stringResult.contains("validable-mock oneOrMoreAssociation must have at least one element. => valid"));
+        assertTrue(stringResult.contains("validable-mock optionalAttribute must be defined if present. => valid"));
     }
 
     @Test

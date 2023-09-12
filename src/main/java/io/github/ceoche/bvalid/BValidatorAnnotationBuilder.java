@@ -51,7 +51,6 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
         this.members = getMembers(assertedClass);
     }
 
-
     public BValidatorAnnotationBuilder<T> setBusinessObjectName(String businessObjectName){
         this.businessObjectName = businessObjectName;
         return this;
@@ -66,19 +65,12 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
                 .build();
     }
 
-
-
-
     private Set<BusinessRuleObject<T>> getRules(Class<T> clazz) {
         Set<BusinessRuleObject<T>> rulesResult = new LinkedHashSet<>();
         for (Method method : clazz.getMethods()) {
             if(method.isAnnotationPresent(BusinessRule.class)){
                 BusinessRule businessRule = method.getAnnotation(BusinessRule.class);
-                String id = businessRule.id();
-                if(id.isEmpty() || id.isBlank()){
-                    id = getRuleIdFromMethodName(method.getName());
-                }
-                rulesResult.add(new BusinessRuleObject<>(id, getPredicate(method), businessRule.description()));
+                rulesResult.add(new BusinessRuleObject<>(businessRule.id(), getPredicate(method), businessRule.description()));
             }
         }
         return rulesResult;
@@ -130,11 +122,6 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
             return clazz;
         }
     }
-
-    private String getRuleIdFromMethodName(String methodName){
-        return methodName.replace("is", "");
-    }
-
 
     private Class<?> getGenericTypeParameter(Method method) {
         String genericType = method.getGenericReturnType().getTypeName();

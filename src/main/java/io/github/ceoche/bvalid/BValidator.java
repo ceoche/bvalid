@@ -1,4 +1,5 @@
 /*
+ * TODO update copyright
  * Copyright 2022 Cédric Eoche-Duval
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +30,6 @@ public class BValidator<T> {
     private final Set<BusinessRuleObject<T>> rules;
 
     private final Set<BusinessMemberObject<T, ?>> members;
-
 
     private final String businessObjectName;
 

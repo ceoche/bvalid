@@ -24,10 +24,10 @@ public class BValidatorBuilderTest {
         ObjectResult result = builder.build().validate(createAllCorrectPerson());
         assertTrue(result.isValid());
         for (ObjectResult memberResult : result.getMemberResults()) {
-            assertTrue(memberResult.toString().contains("true"));
+            assertTrue(memberResult.toString().contains("valid"));
         }
         for (RuleResult ruleResult : result.getRuleResults()) {
-            assertTrue(ruleResult.toString().contains("true"));
+            assertTrue(ruleResult.toString().contains("valid"));
         }
         assertMemberResults(result, true);
         System.out.println(result);

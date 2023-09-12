@@ -33,6 +33,7 @@ __README Index__
 __BValid__ is available on Maven Central Repository
 
 ```xml
+
 <dependency>
    <groupId>io.github.ceoche</groupId>
    <artifactId>bvalid</artifactId>
@@ -110,7 +111,13 @@ public class Example {
 }
 ```
 
-Validation results can be explored using the `ObjectResult` class.
+Validation results can be explored using the `ObjectResult` class. ObjectResult comes with a method `assertValidOrThrow`
+that can be used if the model is invalid to raise an exception using a `Supplier` (the exception must have at least a
+constructor with a String as parameter):
+
+```java
+bValidator.validate(author).assertValidOrThrow(IllegalArgumentException::new);
+```
 
 ### Business Rules
 
@@ -281,7 +288,7 @@ public class DefaultRulesDemo {
    }
 
    public boolean oneToManyAssociation() {
-      // check a collection or an array as at least one element.
+      // check a collection or an array has at least one element.
       return BasicRules.hasOneOrMoreElements(collectionAttribute);
    }
 
@@ -291,7 +298,7 @@ public class DefaultRulesDemo {
    }
 
    public boolean oneToManyDefinedAssociation() {
-      // check a collection or an array as at least one element AND no null elements.
+      // check a collection or an array has at least one element AND no null elements.
       return BasicRules.hasOneOrMoreDefinedElements(collectionAttribute);
    }
 
@@ -573,7 +580,8 @@ To build, test and package the project as JAR :
 mvn clean package
 ```
 
-JAR file and javadoc will be available in `target/` directory. To make it available to any other Maven project on your machine :
+JAR file and javadoc will be available in `target/` directory. To make it available to any other Maven project on your
+machine :
 
 ```shell
 mvn install

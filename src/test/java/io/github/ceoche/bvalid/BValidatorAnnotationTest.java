@@ -20,9 +20,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static io.github.ceoche.bvalid.BusinessObjectMocks.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,8 +42,8 @@ public class BValidatorAnnotationTest {
       assertResultsContains(
             new Object[][]{
                   {"validable-mock", "rule01", "mandatoryAttribute must be defined.", true},
-                  {"validable-mock", "OptionalAttributeValid", "optionalAttribute must be defined if present.", true},
-                  {"validable-mock", "OneOrMoreAssociationValid", "oneOrMoreAssociation must have at least one element.",
+                  {"validable-mock", "", "optionalAttribute must be defined if present.", true},
+                  {"validable-mock", "", "oneOrMoreAssociation must have at least one element.",
                         true}
             },
             objectResult);
@@ -69,15 +67,11 @@ public class BValidatorAnnotationTest {
    public void testRuleAttributesResult() {
       DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
       ObjectResult objectResult = buildObjectValidator(DefaultValidableMock.class).validate(object);
-      List<String> rulesNamesFromMethods = Arrays.stream(DefaultValidableMock.class.getMethods())
-               .filter(method -> method.isAnnotationPresent(BusinessRule.class))
-               .map(method -> method.getName().replace("is",""))
-               .collect(Collectors.toList());
       for (RuleResult RuleResult : objectResult.getRuleResults()) {
          if (RuleResult.getDescription().contains("mandatoryAttribute")) {
             assertEquals("rule01", RuleResult.getId());
          } else {
-            assertTrue(rulesNamesFromMethods.contains(RuleResult.getId()));
+            assertTrue(RuleResult.getId().isEmpty());
          }
       }
    }
@@ -90,10 +84,10 @@ public class BValidatorAnnotationTest {
 
       assertResultsContains(
             new Object[][]{
-                  {"With-inheritance", "SubtypeValid", "Sub type must be defined.", true},
+                  {"With-inheritance", "", "Sub type must be defined.", true},
                   {"With-inheritance", "rule01", "mandatoryAttribute must be defined.", false},
-                  {"With-inheritance", "OptionalAttributeValid", "optionalAttribute must be defined if present.", true},
-                  {"With-inheritance", "OneOrMoreAssociationValid", "oneOrMoreAssociation must have at least one element.",
+                  {"With-inheritance", "", "optionalAttribute must be defined if present.", true},
+                  {"With-inheritance", "", "oneOrMoreAssociation must have at least one element.",
                         false}
             },
             objectResult);
@@ -112,8 +106,8 @@ public class BValidatorAnnotationTest {
       assertResultsContains(
             new Object[][]{
                   {"my-only-member", "rule01", "mandatoryAttribute must be defined.", false},
-                  {"my-only-member", "OptionalAttributeValid", "optionalAttribute must be defined if present.", false},
-                  {"my-only-member", "OneOrMoreAssociationValid", "oneOrMoreAssociation must have at least one element.",
+                  {"my-only-member", "", "optionalAttribute must be defined if present.", false},
+                  {"my-only-member", "", "oneOrMoreAssociation must have at least one element.",
                         false}
             },
             objectResult);
@@ -193,8 +187,7 @@ public class BValidatorAnnotationTest {
    @Test
    public void testNotABusinessObjectError() {
       assertThrows(IllegalBusinessObjectException.class,
-            () -> buildObjectValidator(String.class).validate(new String(
-                  "Not a validable")));
+            () -> buildObjectValidator(String.class).validate("Not a validable"));
    }
 
    @Test
