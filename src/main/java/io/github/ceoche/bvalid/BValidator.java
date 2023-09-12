@@ -198,6 +198,8 @@ public class BValidator<T> {
         }
     }
 
+
+    @SuppressWarnings("unchecked")
     private <R> List<ObjectResult> validateAnyMember(final Object memberValue, Map<Class<? extends R>, BValidator<? extends R>> validators, String name, Set<Object> visitedObjects) {
         final List<ObjectResult> results = new ArrayList<>();
         if (memberValue == null) {

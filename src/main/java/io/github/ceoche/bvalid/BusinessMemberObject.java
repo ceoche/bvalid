@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class BusinessMemberObject<T,R> {
+class BusinessMemberObject<T,R> {
 
     private final String name;
 
@@ -18,16 +18,16 @@ public class BusinessMemberObject<T,R> {
         this.validators = validators;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public Object getMemberValue(T object) {
+    Object getMemberValue(T object) {
         return getter.apply(object);
     }
 
-    void addValidator(Class<? extends R> clazz, BValidator<?> validator) {
-        this.validators.put(clazz, (BValidator<? extends R>) validator);
+    void addValidator(Class<? extends R> clazz, BValidator<? extends R> validator) {
+        this.validators.put(clazz, validator);
 
     }
 

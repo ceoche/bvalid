@@ -8,41 +8,28 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * Build a {@link BValidator} from a {@link BusinessObject} annotated class
- * using the {@link BValidatorManualBuilder}.
+ * Build a {@link BValidator} from a {@link BusinessObject} annotated class.
  *
- * @param <T>
+ * @param <T> type of the root object to create a validator for.
  * @author Achraf Achkari
  */
 public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T> {
 
     private final Set<BusinessRuleObject<T>> rules;
 
-    private final Set<BusinessMemberBuilder<T,?>> members;
+    private final Set<BusinessMemberBuilder<T, ?>> members;
 
-    private String businessObjectName = "";
-
-    @Override
-    public Set<BusinessRuleObject<T>> getRules() {
-        return rules;
-    }
-
-    @Override
-    Set<BusinessMemberBuilder<T, ?>> getMembers() {
-        return members;
-    }
-
-    @Override
-    public String getBusinessObjectName() {
-        return businessObjectName;
-    }
-
+    /**
+     * Constructor of a BValidatorBuilder for class annotated with BusinessObject.
+     *
+     * @param clazz Root class of a model to create a validator for.
+     */
     public BValidatorAnnotationBuilder(Class<T> clazz) {
         super(clazz);
         BusinessObject businessObject = clazz.getAnnotation(BusinessObject.class);
         if (businessObject != null) {
             businessObjectName = businessObject.name();
-            if(businessObjectName.isEmpty()) {
+            if (businessObjectName.isEmpty()) {
                 businessObjectName = clazz.getSimpleName();
             }
         }
@@ -51,13 +38,36 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
         this.members = getMembers(assertedClass);
     }
 
-    public BValidatorAnnotationBuilder<T> setBusinessObjectName(String businessObjectName){
-        this.businessObjectName = businessObjectName;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<BusinessRuleObject<T>> getRules() {
+        return rules;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<BusinessMemberBuilder<T, ?>> getMembers() {
+        return members;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BValidatorAnnotationBuilder<T> setBusinessObjectName(String businessObjectName) {
+        super.setBusinessObjectName(businessObjectName);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public BValidator<T> build(){
+    public BValidator<T> build() {
         return new BValidatorManualBuilder<T>(type)
                 .addAllMembers(members)
                 .addAllRules(rules)
@@ -68,7 +78,7 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
     private Set<BusinessRuleObject<T>> getRules(Class<T> clazz) {
         Set<BusinessRuleObject<T>> rulesResult = new LinkedHashSet<>();
         for (Method method : clazz.getMethods()) {
-            if(method.isAnnotationPresent(BusinessRule.class)){
+            if (method.isAnnotationPresent(BusinessRule.class)) {
                 BusinessRule businessRule = method.getAnnotation(BusinessRule.class);
                 rulesResult.add(new BusinessRuleObject<>(businessRule.id(), getPredicate(method), businessRule.description()));
             }
@@ -76,10 +86,10 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
         return rulesResult;
     }
 
-    private Set<BusinessMemberBuilder<T,?>> getMembers(Class<T> clazz) {
-        Set<BusinessMemberBuilder<T,?>> memberBuilderList = new LinkedHashSet<>();
+    private Set<BusinessMemberBuilder<T, ?>> getMembers(Class<T> clazz) {
+        Set<BusinessMemberBuilder<T, ?>> memberBuilderList = new LinkedHashSet<>();
         for (Method method : clazz.getMethods()) {
-            if(method.isAnnotationPresent(BusinessMember.class)){
+            if (method.isAnnotationPresent(BusinessMember.class)) {
                 BusinessMember businessMember = method.getAnnotation(BusinessMember.class);
                 memberBuilderList.add(new BusinessMemberBuilder<>(businessMember.name(), getFunction(method), getValidatorBuilderSupplier(method)));
             }
@@ -125,7 +135,7 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
 
     private Class<?> getGenericTypeParameter(Method method) {
         String genericType = method.getGenericReturnType().getTypeName();
-        if(genericType.contains("<") && genericType.contains(">")){
+        if (genericType.contains("<") && genericType.contains(">")) {
             String className = genericType.substring(genericType.indexOf("<") + 1, genericType.indexOf(">"));
             try {
                 return Class.forName(className);
@@ -137,13 +147,12 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
     }
 
 
-
     private Class<?> assertBusinessObjectClass(Class<?> clazz) {
         if (!Object.class.equals(clazz) && (isBusinessObject(clazz) || hasASuperClassBusinessObject(clazz.getSuperclass()))) {
             return clazz;
         } else {
-            throw new IllegalBusinessObjectException("The object's class " + clazz.getCanonicalName()
-                    + " is not annotated with @BusinessObject.");
+            throw new IllegalBusinessObjectException("Neither the class " + clazz.getCanonicalName()
+                    + "nor any of its super-class is annotated with @BusinessObject.");
         }
     }
 
@@ -166,7 +175,5 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
     private boolean isOnTopClassHierarchy(Class<?> superClass) {
         return superClass.equals(Object.class);
     }
-
-
 
 }

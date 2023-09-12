@@ -25,9 +25,14 @@ package io.github.ceoche.bvalid;
  * @see java.lang.reflect.InvocationTargetException
  */
 public class InvocationException extends RuntimeException {
-   private static final long serialVersionUID = 2812729875699036718L;
+    private static final long serialVersionUID = 2812729875699036718L;
 
-   public InvocationException(Throwable throwable) {
-      super(throwable);
-   }
+    /**
+     * Constructor of InvocationException with a cause.
+     *
+     * @param throwable cause of the exception.
+     */
+    public InvocationException(Throwable throwable) {
+        super(throwable);
+    }
 }

@@ -17,62 +17,93 @@ package io.github.ceoche.bvalid;
 
 import java.util.Objects;
 
+/**
+ * RuleResult represents a tested business rule.
+ */
 public class RuleResult {
 
-   private final String id ;
-   private final String description;
-   private final boolean result;
+    private final String id;
+    private final String description;
+    private final boolean valid;
 
-   public RuleResult(String description, boolean result) {
-      this("", description, result);
-   }
+    /**
+     * Hidden constructor without rule id.
+     *
+     * @param description description of the rule
+     * @param valid       result of the test (true for valid, false for invalid)
+     */
+    RuleResult(String description, boolean valid) {
+        this("", description, valid);
+    }
 
-   public RuleResult(String id, String description, boolean result) {
-      this.id = id;
-      this.description = description;
-      this.result = result;
-   }
+    /**
+     * Hidden constructor with rule id.
+     *
+     * @param id          requirement or assertion id of the business rule.
+     * @param description description of the rule.
+     * @param valid       result of the test (true for valid, false for invalid).
+     */
+    RuleResult(String id, String description, boolean valid) {
+        this.id = id;
+        this.description = description;
+        this.valid = valid;
+    }
 
-   public String getId() {
-      return id;
-   }
+    /**
+     * Get the requirement or assertion identifier of the rule (Useful for requirement engineering).
+     *
+     * @return the id of the rule.
+     */
+    public String getId() {
+        return id;
+    }
 
-   public String getDescription() {
-      return description;
-   }
+    /**
+     * Get the description of the business rule.
+     *
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
 
-   public boolean isValid() {
-      return result;
-   }
+    /**
+     * Is the business rule valid.
+     *
+     * @return true if valid, false otherwise.
+     */
+    public boolean isValid() {
+        return valid;
+    }
 
-   @Override
-   public boolean equals(Object o) {
-      if (this == o) {
-         return true;
-      }
-      if (!(o instanceof RuleResult)) {
-         return false;
-      }
-      RuleResult that = (RuleResult) o;
-      return result == that.result && Objects.equals(id, that.id) && Objects.equals(description,
-            that.description);
-   }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof RuleResult)) {
+            return false;
+        }
+        RuleResult that = (RuleResult) o;
+        return valid == that.valid && Objects.equals(id, that.id) && Objects.equals(description,
+                that.description);
+    }
 
-   @Override
-   public int hashCode() {
-      return Objects.hash(id, description, result);
-   }
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, description, valid);
+    }
 
-   @Override
-   public String toString() {
-      StringBuilder sb = new StringBuilder();
-      if(id != null && !id.isEmpty()) {
-         sb.append("[").append(id).append("] ");
-      }
-      return sb.append(description).append(" => ").append(asResultString(result)).toString();
-   }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (id != null && !id.isEmpty()) {
+            sb.append("[").append(id).append("] ");
+        }
+        return sb.append(description).append(" => ").append(asResultString(valid)).toString();
+    }
 
-   private String asResultString(boolean result) {
-      return result ? "valid" : "invalid" ;
-   }
+    private String asResultString(boolean result) {
+        return result ? "valid" : "invalid";
+    }
 }

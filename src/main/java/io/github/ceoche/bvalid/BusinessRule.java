@@ -21,6 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * <p>
  * Mark a method as business rule validation in an object annotated with {@link BusinessObject}. Such business rule
  * method must be a boolean expression assertion. By convention if the result is 'true', it means the business rule is
  * correct/valid, and false otherwise.
@@ -28,7 +29,6 @@ import java.lang.annotation.Target;
  * A method marked with this annotation must be public, take no parameters and return a boolean value.
  * <p>
  * example:
- * <p>
  * <pre>
  * {@code @BusinessObject(name="my-entity")
  * public class MyEntity {
@@ -47,17 +47,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface BusinessRule {
 
-   /**
-    * Identifier of the business rule. To be used in an environment that requires requirement traceability.
-    *
-    * @return the identifier of the business rule.
-    */
-   public String id() default "";
+    /**
+     * Identifier of the business rule. To be used in an environment that requires requirement traceability.
+     *
+     * @return the identifier of the business rule.
+     */
+    public String id() default "";
 
-   /**
-    * A textual description of the formal expression implemented by the method.
-    *
-    * @return
-    */
-   public String description();
+    /**
+     * A textual description of the formal expression implemented by the method.
+     *
+     * @return the description of the rule.
+     */
+    String description();
 }

@@ -53,7 +53,7 @@ public class BValidatorBuilderTest {
         assertEquals(0, builder.getMembersCount());
         assertTrue(builder.isEmpty());
         Throwable exception = assertThrows(IllegalBusinessObjectException.class, builder::build);
-        assertEquals("Rules or members must be provided for a business object: ", exception.getMessage());
+        assertEquals("Rules or members must be provided to build a validator.", exception.getMessage());
     }
 
     @Test
