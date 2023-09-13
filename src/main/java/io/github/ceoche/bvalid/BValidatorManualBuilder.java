@@ -64,17 +64,11 @@ public class BValidatorManualBuilder<T> extends AbstractBValidatorBuilder<T> {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Set<BusinessRuleObject<T>> getRules() {
         return rules;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     Set<BusinessMemberBuilder<T, ?>> getMembers() {
         return members;

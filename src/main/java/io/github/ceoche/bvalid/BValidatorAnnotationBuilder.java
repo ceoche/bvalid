@@ -53,17 +53,11 @@ public class BValidatorAnnotationBuilder<T> extends AbstractBValidatorBuilder<T>
         this.members = getMembers(assertedClass);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     Set<BusinessRuleObject<T>> getRules() {
         return rules;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     Set<BusinessMemberBuilder<T, ?>> getMembers() {
         return members;
