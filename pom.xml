@@ -4,7 +4,7 @@
 
    <groupId>io.github.ceoche</groupId>
    <artifactId>bvalid</artifactId>
-   <version>0.2.0-SNAPSHOT</version>
+   <version>0.2.0</version>
 
    <name>BValid</name>
    <description>BValid is an open-source Java library to provide easy business rules and model validation.</description>
@@ -34,7 +34,7 @@
       <url>https://github.com/ceoche/bvalid</url>
       <connection>scm:git:ssh://git@github.com/ceoche/bvalid.git</connection>
       <developerConnection>scm:git:ssh://git@github.com/ceoche/bvalid.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>0.2.0</tag>
    </scm>
 
    <properties>
