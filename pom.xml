@@ -4,7 +4,7 @@
 
    <groupId>io.github.ceoche</groupId>
    <artifactId>bvalid</artifactId>
-   <version>1.0.0-SNAPSHOT</version>
+   <version>0.2.0-SNAPSHOT</version>
 
    <name>BValid</name>
    <description>BValid is an open-source Java library to provide easy business rules and model validation.</description>
@@ -23,6 +23,10 @@
          <id>ceoche</id>
          <name>Cédric Eoche-Duval</name>
          <email>cedric.eoche.duval@gmail.com</email>
+      </developer>
+      <developer>
+         <id>achrafxx</id>
+         <url>https://github.com/achrafxx</url>
       </developer>
    </developers>
 

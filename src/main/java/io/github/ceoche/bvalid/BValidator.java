@@ -1,6 +1,6 @@
 /*
  * TODO update copyright
- * Copyright 2022 Cédric Eoche-Duval
+ * Copyright 2022-2023 Cédric Eoche-Duval
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

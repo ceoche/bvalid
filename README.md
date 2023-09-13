@@ -593,7 +593,7 @@ mvn nexus-staging:release -Prelease -DstagingRepositoryId=${STAGING_REPO}
 
 Feel free to open an issue, fork the project and/or propose a merge request.
 
-Thanks to @achrafxx and [Kereval](https://www.kereval.com) for its contribution: Programmatic builder.
+Thanks to @achrafxx and [Kereval](https://www.kereval.com) for their contribution to the Programmatic builder.
 
 ## License
 
