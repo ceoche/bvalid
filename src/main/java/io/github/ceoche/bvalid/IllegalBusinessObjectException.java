@@ -15,14 +15,28 @@
  */
 package io.github.ceoche.bvalid;
 
+/**
+ * Exception thrown by bValid in case of malformed business object.
+ */
 public class IllegalBusinessObjectException extends RuntimeException {
-   private static final long serialVersionUID = 2793010909620457756L;
+    private static final long serialVersionUID = 2793010909620457756L;
 
-   public IllegalBusinessObjectException(String s) {
-      super(s);
-   }
+    /**
+     * Constructor of IllegalBusinessObjectException with a message.
+     *
+     * @param message message of the exception
+     */
+    public IllegalBusinessObjectException(String message) {
+        super(message);
+    }
 
-   public IllegalBusinessObjectException(String s, Throwable throwable) {
-      super(s, throwable);
-   }
+    /**
+     * Constructor of IllegalBusinessObjectException with a message and a cause.
+     *
+     * @param message   message of the exception.
+     * @param throwable Cause of the exception.
+     */
+    public IllegalBusinessObjectException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
 }

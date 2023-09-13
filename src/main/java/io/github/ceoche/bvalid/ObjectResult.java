@@ -17,7 +17,6 @@ package io.github.ceoche.bvalid;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -28,122 +27,139 @@ import java.util.function.Function;
  */
 public class ObjectResult {
 
-   private final String businessObjectName;
-   private final List<RuleResult> ruleResults = new ArrayList<>();
-   private final List<ObjectResult> memberResults = new ArrayList<>();
+    private final String businessObjectName;
+    private final List<RuleResult> ruleResults = new ArrayList<>();
+    private final List<ObjectResult> memberResults = new ArrayList<>();
 
-   protected ObjectResult() {
-      this("");
-   }
+    ObjectResult() {
+        this("");
+    }
 
-   protected ObjectResult(String businessObjectName) {
-      this.businessObjectName = businessObjectName;
-   }
+    ObjectResult(String businessObjectName) {
+        this.businessObjectName = businessObjectName;
+    }
 
-   protected void addRuleResults(List<RuleResult> RuleResults) {
-      this.ruleResults.addAll(RuleResults);
-   }
+    void addRuleResults(List<RuleResult> RuleResults) {
+        this.ruleResults.addAll(RuleResults);
+    }
 
-   protected void addMemberResults(List<ObjectResult> memberResults) {
-      this.memberResults.addAll(memberResults);
-   }
+    void addMemberResults(List<ObjectResult> memberResults) {
+        this.memberResults.addAll(memberResults);
+    }
 
-   /**
-    * Get the validation result.
-    *
-    * @return true if all contained rules and members are valid, false otherwise.
-    */
-   public boolean isValid() {
-      for (RuleResult RuleResult : ruleResults) {
-         if (!RuleResult.isValid()) {
-            return false;
-         }
-      }
-      for (ObjectResult memberResult : memberResults) {
-         if (!memberResult.isValid()) {
-            return false;
-         }
-      }
-      return true;
-   }
+    /**
+     * Get the validation result.
+     *
+     * @return true if all contained rules and members are valid, false otherwise.
+     */
+    public boolean isValid() {
+        for (RuleResult RuleResult : ruleResults) {
+            if (!RuleResult.isValid()) {
+                return false;
+            }
+        }
+        for (ObjectResult memberResult : memberResults) {
+            if (!memberResult.isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-   /**
-    * <p>Assert that the result is valid or throw a Throwable that contains a detailed report using
-    * the given builder.</p>
-    * <p>Example:</p>
-    * <pre>{@code
-    * new BValidator().validate(object).assertValidOrThrow(IllegalArgumentException::new);
-    * }</pre>
-    *
-    * @param exceptionBuilder {@link Function} that takes the detailed report in {@link String} as
-    *                         input and return a {@link Throwable}.
-    * @throws T throws the Exception built by the given builder if the result is invalid.
-    */
-   public <T extends Throwable> void assertValidOrThrow(Function<String, T> exceptionBuilder) throws T {
-      if (!isValid())
-         throw exceptionBuilder.apply(this.toString());
-   }
+    /**
+     * <p>Assert that the result is valid or throw a Throwable that contains a detailed report using
+     * the given builder.</p>
+     * <p>Example:</p>
+     * <pre>{@code
+     * bValidator.validate(object).assertValidOrThrow(IllegalArgumentException::new);
+     * }</pre>
+     *
+     * @param exceptionBuilder {@link Function} that takes the detailed report in {@link String} as
+     *                         input and return a {@link Throwable}.
+     * @param <T>              Type of the exception to throw.
+     * @throws T throws the Exception built by the given builder if the result is invalid.
+     */
+    public <T extends Throwable> void assertValidOrThrow(Function<String, T> exceptionBuilder) throws T {
+        if (!isValid())
+            throw exceptionBuilder.apply(this.toString());
+    }
 
-   public String getBusinessObjectName() {
-      return businessObjectName;
-   }
 
-   public int getNbOfTests() {
-      int sum = 0;
-      sum += ruleResults.size();
-      for (ObjectResult memberResult : memberResults) {
-         sum += memberResult.getNbOfTests();
-      }
-      return sum;
-   }
+    /**
+     * Get the name of the business object concerned by this result.
+     *
+     * @return the name of the business object.
+     */
+    public String getBusinessObjectName() {
+        return businessObjectName;
+    }
 
-   /**
-    * Get a detail list of business rule tests.
-    *
-    * @return a {@link Map} of the result, where the key is the description and the value a
-    * boolean representing the
-    * result, true for valid and false otherwise.
-    */
-   public List<RuleResult> getRuleResults() {
-      return new ArrayList<>(ruleResults);
-   }
+    /**
+     * Get the number of rules tested.
+     *
+     * @return the number of rules tested.
+     */
+    public int getNbOfTests() {
+        int sum = 0;
+        sum += ruleResults.size();
+        for (ObjectResult memberResult : memberResults) {
+            sum += memberResult.getNbOfTests();
+        }
+        return sum;
+    }
 
-   public List<ObjectResult> getMemberResults() {
-      return new ArrayList<>(memberResults);
-   }
+    /**
+     * Get a detailed list of tested business rules.
+     *
+     * @return a list of the {@link RuleResult}
+     */
+    public List<RuleResult> getRuleResults() {
+        return new ArrayList<>(ruleResults);
+    }
 
-   /**
-    * Get a detail list of failed business rules. Does not include failures of members.
-    *
-    * @return a {@link List} of the failed test rules.
-    */
-   // FIXME Maybe should return failures of members ?
-   public List<RuleResult> getRuleFailures() {
-      List<RuleResult> testFailures = new ArrayList<>();
-      for (RuleResult testEntry : ruleResults) {
-         if (!testEntry.isValid()) {
-            testFailures.add(testEntry);
-         }
-      }
-      return testFailures;
-   }
+    /**
+     * Get a detailed list of tested members.
+     *
+     * @return a list of {@link ObjectResult}
+     */
+    public List<ObjectResult> getMemberResults() {
+        return new ArrayList<>(memberResults);
+    }
 
-   @Override
-   public String toString() {
-      return toString("");
-   }
+    /**
+     * Get a detail list of failed business rules. Does not include failures of members.
+     *
+     * @return a {@link List} of the failed test rules.
+     */
+    public List<RuleResult> getInvalidRules() {
+        List<RuleResult> invalidRules = new ArrayList<>();
+        for (RuleResult testEntry : ruleResults) {
+            if (!testEntry.isValid()) {
+                invalidRules.add(testEntry);
+            }
+        }
+        for (ObjectResult memberResult : memberResults) {
+            invalidRules.addAll(memberResult.getInvalidRules());
+        }
+        return invalidRules;
+    }
 
-   private String toString(final String prefix) {
-      StringBuilder sb = new StringBuilder();
-      for (RuleResult RuleResult : ruleResults) {
-         sb.append(prefix).append(businessObjectName).append(" ").append(RuleResult.toString()).append(System.lineSeparator());
-      }
-      if (!memberResults.isEmpty()) {
-         String subPrefix = prefix + businessObjectName + ".";
-         for (ObjectResult objectResult : memberResults) {
-            sb.append(objectResult.toString(subPrefix));
-         }
-      }
-      return sb.toString();
-   }
+    @Override
+    public String toString() {
+        return toString("");
+    }
+
+    private String toString(final String prefix) {
+        StringBuilder sb = new StringBuilder();
+        for (RuleResult ruleResult : ruleResults) {
+            sb.append(prefix).append(businessObjectName).append(" ").append(ruleResult.toString()).append(System.lineSeparator());
+        }
+        if (!memberResults.isEmpty()) {
+            String subPrefix = prefix + businessObjectName + ".";
+            for (ObjectResult objectResult : memberResults) {
+                sb.append(objectResult.toString(subPrefix));
+            }
+        }
+        return sb.toString();
+    }
 }

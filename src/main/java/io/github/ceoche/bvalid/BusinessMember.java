@@ -21,13 +21,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is used to create composition or association of {@link BusinessObject} through getter of the class.
+ * <p>This annotation is used to create composition or association of {@link BusinessObject} through getter of the class.
  * It Indicates to the {@link BValidator} that the return value of the annotated getter is an instance of a class
- * annotated with {@link BusinessObject} and must therefore be validated as part of the validation scheme.
- * <p>
- * Methods that are declared {@link BusinessMember} must be public, take no parameters and return an instance of class
- * annotated with {@link BusinessObject}.
- * <p>
+ * annotated with {@link BusinessObject} and must therefore be validated as part of the validation scheme.</p>
+ *
+ * <p>Methods that are declared {@link BusinessMember} must be public, take no parameters and return either an instance of a class
+ * annotated with {@link BusinessObject} or an array or a collection of instances of a class annotated with {@link BusinessObject}.</p>
  *
  * @author ceoche
  * @see BusinessObject
@@ -36,5 +35,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface BusinessMember {
-   public String name() default "";
+
+    /**
+     * Name of the business member. Will be used in reporting.
+     *
+     * @return the name of the business member.
+     */
+    String name() default "";
 }
