@@ -15,41 +15,41 @@
  */
 package io.github.ceoche.bvalid;
 
+import java.util.Set;
 import java.util.function.Function;
 
 /**
- * Utility class to hold builders of a member at runtime.
- * Class not intended to be used outside the library.
- * It's the equivalent of a {@link BusinessMember} in annotation based validation.
+ * Utility class to hold builders of a member at runtime. Class not intended to be used outside the library. It's the
+ * equivalent of a {@link BusinessMember} in annotation based validation.
  *
  * @param <T> the type of the business object that contain the member.
- * @param <R> the type of the member to validate
+ * @param <M> the unboxed type of the member to validate. As example if the getter returns a {@link java.util.List} of
+ *            Book, M will be Book.
  */
-class BusinessMemberBuilder<T, R> {
+class BusinessMemberBuilder<T, M> {
 
-    private final String name;
+   private final String name;
 
-    private final Function<T, ?> getter;
+   private final Function<T, ?> getter;
 
-    private final BValidatorBuilder<? extends R>[] validatorBuilder;
+   private final Set<BValidatorBuilder<? extends M>> validatorBuilders;
 
-    @SafeVarargs
-    BusinessMemberBuilder(String name, Function<T, ?> getter, BValidatorBuilder<? extends R>... bValidatorBuilder) {
-        this.name = name;
-        this.getter = getter;
-        this.validatorBuilder = bValidatorBuilder;
-    }
+   BusinessMemberBuilder(String name, Function<T, ?> getter, Set<BValidatorBuilder<? extends M>> bValidatorBuilder) {
+      this.name = name;
+      this.getter = getter;
+      this.validatorBuilders = bValidatorBuilder;
+   }
 
-    String getName() {
-        return name;
-    }
+   String getName() {
+      return name;
+   }
 
-    Function<T, ?> getGetter() {
-        return getter;
-    }
+   Function<T, ?> getGetter() {
+      return getter;
+   }
 
-    BValidatorBuilder<? extends R>[] getValidatorBuilders() {
-        return validatorBuilder;
-    }
+   Set<BValidatorBuilder<? extends M>> getValidatorBuilders() {
+      return validatorBuilders;
+   }
 
 }

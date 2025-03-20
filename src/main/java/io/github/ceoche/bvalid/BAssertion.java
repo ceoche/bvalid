@@ -19,42 +19,42 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
- * A business rule object is a predicate with an id and a description.
+ * A business assertion object is a predicate with a description (and an optional id).
  * It is used to validate a business object with the manual builder.
- * It's the equivalent of a {@link BusinessRule} in annotation based validation.
+ * It's the equivalent of a {@link BusinessAssertion} in annotation based validation.
  *
  * @param <T> the type of the business object on which the rule apply.
  */
-class BusinessRuleObject<T> {
+class BAssertion<T> {
 
     private final String id;
 
     private final String description;
 
-    private final Predicate<T> rule;
+    private final Predicate<T> predicate;
 
 
     /**
-     * Constructor of a BusinessRuleObject.
+     * Constructor of a {@link BAssertion} object.
      *
-     * @param rule        Java predicate (assertion) that will be applied during the validation to assess whether the rule is respected or not.
+     * @param predicate        Java predicate (assertion) that will be applied during the validation to assess whether the rule is respected or not.
      * @param description Textual description of the rule.
      */
-    BusinessRuleObject(Predicate<T> rule, String description) {
-        this("", rule, description);
+    BAssertion(Predicate<T> predicate, String description) {
+        this("", predicate, description);
     }
 
     /**
-     * Constructor of a BusinessRuleObject with a requirement id.
+     * Constructor of a {@link BAssertion} with a requirement id.
      *
      * @param id          id of the rule. Used for requirement engineering.
-     * @param rule        Java predicate (assertion) that will be applied during the validation to assess whether the rule is respected or not.
+     * @param predicate        Java predicate (assertion) that will be applied during the validation to assess whether the rule is respected or not.
      * @param description Textual description of the rule.
      */
-    BusinessRuleObject(String id, Predicate<T> rule, String description) {
+    BAssertion(String id, Predicate<T> predicate, String description) {
         this.id = id != null ? id : "";
         this.description = description;
-        this.rule = rule;
+        this.predicate = predicate;
     }
 
     /**
@@ -76,21 +76,21 @@ class BusinessRuleObject<T> {
     }
 
     Boolean apply(T object) {
-        return rule.test(object);
+        return predicate.test(object);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BusinessRuleObject)) return false;
-        BusinessRuleObject<?> that = (BusinessRuleObject<?>) o;
+        if (!(o instanceof BAssertion)) return false;
+        BAssertion<?> that = (BAssertion<?>) o;
 
         return description.equals(that.description) &&
-                rule.equals(that.rule);
+                predicate.equals(that.predicate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(description, rule);
+        return Objects.hash(description, predicate);
     }
 }

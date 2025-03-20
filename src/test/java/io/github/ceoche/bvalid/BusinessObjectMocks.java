@@ -37,7 +37,7 @@ public class BusinessObjectMocks {
 
    public static WithInheritance instantiateInheritanceWithInvalidParent() {
       WithInheritance object = new WithInheritance();
-      object.setSubtype("defined sub type");
+      object.setChildAttribute("defined sub type");
       object.setMandatoryAttribute(null);
       return object;
    }
@@ -138,42 +138,76 @@ public class BusinessObjectMocks {
          this.oneOrMoreAssociation = oneOrMoreAssociation;
       }
 
-      @BusinessRule(id = "rule01", description = "mandatoryAttribute must be defined.")
+      @BusinessAssertion(id = "rule01", description = "mandatoryAttribute must be defined.")
       public boolean isMandatoryAttributeValid() {
-         return BasicRules.isDefined(mandatoryAttribute);
+         return DefaultAssertions.isDefined(mandatoryAttribute);
       }
 
-      @BusinessRule(description = "optionalAttribute must be defined if present.")
+      @BusinessAssertion(description = "optionalAttribute must be defined if present.")
       public boolean isOptionalAttributeValid() {
-         return BasicRules.isDefinedIfPresent(optionalAttribute);
+         return DefaultAssertions.isDefinedIfPresent(optionalAttribute);
       }
 
-      @BusinessRule(description = "oneOrMoreAssociation must have at least one element.")
+      @BusinessAssertion(description = "oneOrMoreAssociation must have at least one element.")
       public boolean isOneOrMoreAssociationValid() {
-         return BasicRules.hasOneOrMoreElements(oneOrMoreAssociation);
+         return DefaultAssertions.hasOneOrMoreElements(oneOrMoreAssociation);
       }
    }
 
    @BusinessObject(name = "With-inheritance")
    public static class WithInheritance extends DefaultValidableMock {
-      private String subtype;
+      private String childAttribute;
 
-      public String getSubtype() {
-         return subtype;
+      public String getChildAttribute() {
+         return childAttribute;
       }
 
-      public void setSubtype(String subtype) {
-         this.subtype = subtype;
+      public void setChildAttribute(String childAttribute) {
+         this.childAttribute = childAttribute;
       }
 
-      @BusinessRule(description = "Sub type must be defined.")
+      @BusinessAssertion(description = "Child attribute must be defined.")
       public boolean isSubtypeValid() {
-         return BasicRules.isDefined(subtype);
+         return DefaultAssertions.isDefined(childAttribute);
       }
    }
 
    public static class WithInheritanceButWithoutAnnotation extends DefaultValidableMock {
 
+   }
+
+   @BusinessObject
+   public static class OnlyAttributes {
+      private String stringAttribute;
+      private Integer integerAttribute;
+
+      public String getStringAttribute() {
+         return stringAttribute;
+      }
+
+      public OnlyAttributes setStringAttribute(String stringAttribute) {
+         this.stringAttribute = stringAttribute;
+         return this;
+      }
+
+      public Integer getIntegerAttribute() {
+         return integerAttribute;
+      }
+
+      public OnlyAttributes setIntegerAttribute(Integer integerAttribute) {
+         this.integerAttribute = integerAttribute;
+         return this;
+      }
+
+      @BusinessAssertion(id = "R-12", description = "stringAttribute must be defined.")
+      public boolean isMandatoryAttributeValid() {
+         return DefaultAssertions.isDefined(stringAttribute);
+      }
+
+      @BusinessAssertion(description = "integerAttribute must be defined and positive.")
+      public boolean isOptionalAttributeValid() {
+         return DefaultAssertions.isDefined(integerAttribute) && integerAttribute > 0;
+      }
    }
 
    @BusinessObject
@@ -257,14 +291,14 @@ public class BusinessObjectMocks {
       }
 
       public boolean isNameValid() {
-         return BasicRules.isDefined(name);
+         return DefaultAssertions.isDefined(name);
       }
    }
 
    @BusinessObject(name = "illegalBusinessRule")
    public static class IllegalBusinessRuleObject {
 
-      @BusinessRule(description = "The object must be defined")
+      @BusinessAssertion(description = "The object must be defined")
       public boolean isValid(Object object) {
          return object != null;
       }
@@ -282,7 +316,7 @@ public class BusinessObjectMocks {
    @BusinessObject
    public static class ExceptionBusinessRuleObject {
 
-      @BusinessRule(description = "To test InvocationException")
+      @BusinessAssertion(description = "To test InvocationException")
       public boolean getAnException() {
          throw new IllegalStateException();
       }
@@ -309,7 +343,7 @@ public class BusinessObjectMocks {
          this.name = name;
       }
 
-      @BusinessRule(description = "The object name must be defined")
+      @BusinessAssertion(description = "The object name must be defined")
       public boolean isNameValid() {
           return name != null && !name.isEmpty();
       }

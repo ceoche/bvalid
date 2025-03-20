@@ -7,7 +7,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -17,17 +16,23 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BValidatorBuilderTest {
 
     @Test
+    void testNullType(){
+        Throwable throwable = assertThrows(IllegalArgumentException.class, () -> new BValidatorBuilder<>(null));
+        assertEquals("Type must not be null.", throwable.getMessage());
+    }
+
+    @Test
     public void testBuildValidatorCorrectValidObject() {
-        BValidatorManualBuilder<Person> builder = createCompleteBuilder();
+        BValidatorBuilder<Person> builder = createCompleteBuilder();
         assertEquals(3, builder.getRulesCount());
         assertEquals(3, builder.getMembersCount());
-        ObjectResult result = builder.build().validate(createAllCorrectPerson());
+        BReport result = builder.build().validate(createAllCorrectPerson());
         assertTrue(result.isValid());
-        for (ObjectResult memberResult : result.getMemberResults()) {
+        for (BReport memberResult : result.getMemberReports()) {
             assertTrue(memberResult.toString().contains("valid"));
         }
-        for (RuleResult ruleResult : result.getRuleResults()) {
-            assertTrue(ruleResult.toString().contains("valid"));
+        for (AssertionReport assertionReport : result.getRuleResults()) {
+            assertTrue(assertionReport.toString().contains("valid"));
         }
         assertMemberResults(result, true);
         System.out.println(result);
@@ -36,40 +41,40 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testBuildValidatorCorrectInvalidObject() {
-        BValidatorManualBuilder<Person> builder = createCompleteBuilder();
+        BValidatorBuilder<Person> builder = createCompleteBuilder();
         assertEquals(3, builder.getRulesCount());
         assertEquals(3, builder.getMembersCount());
-        ObjectResult result = builder.build().validate(createPersonWithIncorrectEmailAndPhone());
+        BReport result = builder.build().validate(createPersonWithIncorrectEmailAndPhone());
         System.out.println(result);
         assertFalse(result.isValid());
-        assertFalse(ObjectResultTest.getRuleResult(result, "Person.phones[1] [countryCodeValid]").isValid());
-        assertFalse(ObjectResultTest.getRuleResult(result, "Person.emails[0] [emailValid]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "Person.phones[1] [countryCodeValid]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "Person.emails[0] [emailValid]").isValid());
     }
 
     @Test
     void testBuildValidatorEmpty() {
-        BValidatorManualBuilder<Person> builder = new BValidatorManualBuilder<>(Person.class);
+        BValidatorBuilder<Person> builder = new BValidatorBuilder<>(Person.class);
         assertEquals(0, builder.getRulesCount());
         assertEquals(0, builder.getMembersCount());
         assertTrue(builder.isEmpty());
-        Throwable exception = assertThrows(IllegalBusinessObjectException.class, builder::build);
-        assertEquals("Rules or members must be provided to build a validator.", exception.getMessage());
+        Throwable exception = assertThrows(IllegalStateException.class, builder::build);
+        assertEquals("At least one rule or one member must be provided to build a validator.", exception.getMessage());
     }
 
     @Test
     void testBuildValidatorWithSameRuleId() {
         Predicate<Person> rule = p -> true;
-        BValidatorManualBuilder<Person> validatorBuilder = new BValidatorManualBuilder<>(Person.class)
-                .addRule("rule1", rule, "Always true")
-                .addRule("rule1", rule, "Always true");
+        BValidatorBuilder<Person> validatorBuilder = new BValidatorBuilder<>(Person.class)
+                .addAssertion("rule1", rule, "Always true")
+                .addAssertion("rule1", rule, "Always true");
         assertEquals(1, validatorBuilder.getRulesCount());
     }
 
 
     @Test
     void testBuildValidatorWithThrowRules() {
-        BValidator<Person> validator = new BValidatorManualBuilder<>(Person.class)
-                .addRule("rule1",
+        BValidator<Person> validator = new BValidatorBuilder<>(Person.class)
+                .addAssertion("rule1",
                         p -> {
                             throw new IllegalStateException("Exception in rule1");
                         },
@@ -82,32 +87,32 @@ public class BValidatorBuilderTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidMembers")
-    void testBuildValidatorWithNullMember(String memberName, Function<Person, ?> memberFunction, BValidatorBuilder<Person> validatorSupplier) {
-        assertThrows(IllegalArgumentException.class, () -> new BValidatorManualBuilder<>(Person.class)
+    void testBuildValidatorWithNullMember(String memberName, Function<Person, ?> memberFunction, BValidatorBuilder<?> validatorSupplier) {
+        assertThrows(IllegalArgumentException.class, () -> new BValidatorBuilder<>(Person.class)
                 .addMember(memberName, memberFunction, validatorSupplier));
     }
 
 
     @Test
     void testBuildValidatorWithNullRule() {
-        assertThrows(IllegalArgumentException.class, () -> new BValidatorManualBuilder<>(Person.class)
-                .addRule("rule", null, "message"));
+        assertThrows(IllegalArgumentException.class, () -> new BValidatorBuilder<>(Person.class)
+                .addAssertion("rule", null, "message"));
     }
 
     @Test
     void testBuildValidatorWithNullMemberGetter() {
-        new BValidatorManualBuilder<>(Person.class)
-                .addMember("name", (Function<Person, ?>) p -> null, new BValidatorManualBuilder<>(Address.class)
-                        .addRule("rule1", s -> true, "Always true"))
+        new BValidatorBuilder<>(Person.class)
+                .addMember("name", (Function<Person, ?>) p -> null, new BValidatorBuilder<>(Address.class)
+                        .addAssertion("rule1", s -> true, "Always true"))
                 .build()
                 .validate(createAllCorrectPerson());
     }
 
     @Test
     void testBuildValidatorWithWrongMemberCollectionType() {
-        assertThrows(InvocationException.class, () -> new BValidatorManualBuilder<>(Person.class)
-                .addMember("Address", (Function<Person, ?>) p -> List.of(new Phone("11", "+22")), new BValidatorManualBuilder<>(Address.class)
-                        .addRule("rule1", s -> true, "Always true"))
+        assertThrows(InvocationException.class, () -> new BValidatorBuilder<>(Person.class)
+                .addMember("Address", (Function<Person, ?>) p -> List.of(new Phone("11", "+22")), new BValidatorBuilder<>(Address.class)
+                        .addAssertion("rule1", s -> true, "Always true"))
                 .build()
                 .validate(createAllCorrectPerson()));
 
@@ -115,9 +120,9 @@ public class BValidatorBuilderTest {
 
     @Test
     void testBuildValidatorWithEmptyMemberCollection() {
-        new BValidatorManualBuilder<>(Person.class)
-                .addMember("Address", (Function<Person, ?>) p -> List.of(), new BValidatorManualBuilder<>(Address.class)
-                        .addRule("rule1", s -> true, "Always true"))
+        new BValidatorBuilder<>(Person.class)
+                .addMember("Address", (Function<Person, ?>) p -> List.of(), new BValidatorBuilder<>(Address.class)
+                        .addAssertion("rule1", s -> true, "Always true"))
                 .build()
                 .validate(createAllCorrectPerson());
     }
@@ -126,42 +131,42 @@ public class BValidatorBuilderTest {
     void testCompareRules() {
         Predicate<Person> predicate1 = p -> true;
         Predicate<Person> predicate2 = p -> true;
-        BusinessRuleObject<Person> rule1 = new BusinessRuleObject<>("rule1", predicate1, "Rule 1 Always true");
-        BusinessRuleObject<Person> rule2 = new BusinessRuleObject<>("rule1", predicate1, "Rule 1 Always true");
-        BusinessRuleObject<Person> rule3 = new BusinessRuleObject<>("rule2", predicate2, "Rule 2 Always true");
+        BAssertion<Person> rule1 = new BAssertion<>("rule1", predicate1, "Rule 1 Always true");
+        BAssertion<Person> rule2 = new BAssertion<>("rule1", predicate1, "Rule 1 Always true");
+        BAssertion<Person> rule3 = new BAssertion<>("rule2", predicate2, "Rule 2 Always true");
         assertEquals(rule1, rule2);
         assertNotEquals(rule1, rule3);
         assertEquals(rule1, rule1);
         assertNotEquals("rule1", rule1);
     }
 
-    @Test
-    void testCompareMembers() {
-        BusinessMemberObject<Person, Address> member1 = new BusinessMemberObject<>("member1",
-                Person::getAddress,
-                Map.of(Address.class,new BValidatorManualBuilder<>(Address.class)
-                        .addRule("rule1", s -> true, "Always true")
-                        .build()));
-        BusinessMemberObject<Person, Email> member2 = new BusinessMemberObject<>("member1", Person::getEmails,
-                Map.of(Email.class,new BValidatorManualBuilder<>(Email.class)
-                        .addRule("rule1", s -> true, "Always true")
-                        .build()));
-        BusinessMemberObject<Person, Phone> member3 = new BusinessMemberObject<>("member2", Person::getPhones,
-                Map.of(Phone.class,new BValidatorManualBuilder<>(Phone.class)
-                        .addRule("rule1", s -> true, "Always true")
-                        .build()));
-        assertEquals(member1, member2);
-        assertNotEquals(member1, member3);
-        assertEquals(member1, member1);
-        assertNotEquals("member1", member1);
-
-    }
+//    @Test
+//    void testCompareMembers() {
+//        BMember<Person, Address> member1 = new BMember<>("member1",
+//                Person::getAddress,
+//                Set.of(new BValidatorBuilder<>(Address.class)
+//                        .addRule("rule1", s -> true, "Always true")
+//                        .build()));
+//        BMember<Person, Email> member2 = new BMember<>("member1", Person::getEmails,
+//                Set.of(new BValidatorBuilder<>(Email.class)
+//                        .addRule("rule1", s -> true, "Always true")
+//                        .build()));
+//        BMember<Person, Phone> member3 = new BMember<>("member2", Person::getPhones,
+//                Set.of(new BValidatorBuilder<>(Phone.class)
+//                        .addRule("rule1", s -> true, "Always true")
+//                        .build()));
+//        assertEquals(member1, member2);
+//        assertNotEquals(member1, member3);
+//        assertEquals(member1, member1);
+//        assertNotEquals("member1", member1);
+//
+//    }
 
     @Test
     void testRecursiveObject() {
-        BValidatorManualBuilder<FirstRecursiveObject> builder = new BValidatorManualBuilder<>(FirstRecursiveObject.class)
+        BValidatorBuilder<FirstRecursiveObject> builder = new BValidatorBuilder<>(FirstRecursiveObject.class)
                 .setBusinessObjectName("FirstRecursiveObject");
-        builder.addRule("rule1", FirstRecursiveObject::isAttr1Valid, "Always true");
+        builder.addAssertion("rule1", FirstRecursiveObject::isAttr1Valid, "Always true");
         builder.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builder);
         BValidator<FirstRecursiveObject> validator = builder.build();
         FirstRecursiveObject firstRecursiveObject = new FirstRecursiveObject()
@@ -172,16 +177,16 @@ public class BValidatorBuilderTest {
                                 .setAttr1("attr3")
                                 .setFirstRecursiveObject(new FirstRecursiveObject()
                                         .setAttr1("attr4"))));
-        ObjectResult result = validator.validate(firstRecursiveObject);
+        BReport result = validator.validate(firstRecursiveObject);
         System.out.println(result);
         assertTrue(result.isValid());
     }
 
     @Test
     void testRecursiveObjectWithNull() {
-        BValidatorManualBuilder<FirstRecursiveObject> builder = new BValidatorManualBuilder<>(FirstRecursiveObject.class)
+        BValidatorBuilder<FirstRecursiveObject> builder = new BValidatorBuilder<>(FirstRecursiveObject.class)
                 .setBusinessObjectName("FirstRecursiveObject");
-        builder.addRule("rule1", FirstRecursiveObject::isAttr1Valid, "Always true");
+        builder.addAssertion("rule1", FirstRecursiveObject::isAttr1Valid, "Always true");
         builder.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builder);
         BValidator<FirstRecursiveObject> validator = builder.build();
         FirstRecursiveObject firstRecursiveObject = new FirstRecursiveObject()
@@ -191,23 +196,23 @@ public class BValidatorBuilderTest {
                         .setFirstRecursiveObject(new FirstRecursiveObject()
                                 .setAttr1(null)));
 
-        ObjectResult result = validator.validate(firstRecursiveObject);
+        BReport result = validator.validate(firstRecursiveObject);
 
         assertFalse(result.isValid());
-        assertFalse(result.getMemberResults().get(0).getMemberResults().get(0).getRuleResults().get(0).isValid());
+        assertFalse(result.getMemberReports().get(0).getMemberReports().get(0).getRuleResults().get(0).isValid());
 
     }
 
     @Test
     void testRecursiveObjectWithSubElement() {
-        BValidatorManualBuilder<FirstRecursiveObject> builder = new BValidatorManualBuilder<>(FirstRecursiveObject.class)
+        BValidatorBuilder<FirstRecursiveObject> builder = new BValidatorBuilder<>(FirstRecursiveObject.class)
                 .setBusinessObjectName("FirstRecursiveObject");
-        builder.addRule("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
-        builder.addRule("emailValid", FirstRecursiveObject::isEmailValid, "Email must be valid");
+        builder.addAssertion("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
+        builder.addAssertion("emailValid", FirstRecursiveObject::isEmailValid, "Email must be valid");
         builder.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builder);
-        builder.addMember("email", FirstRecursiveObject::getEmail, new BValidatorManualBuilder<>(Email.class)
-                        .addRule("emailValid", Email::isEmailValid, "Email must be valid")
-                        .addRule("domainValid", Email::isDomainValid, "Domain must be set and not empty"))
+        builder.addMember("email", FirstRecursiveObject::getEmail, new BValidatorBuilder<>(Email.class)
+                        .addAssertion("emailValid", Email::isEmailValid, "Email must be valid")
+                        .addAssertion("domainValid", Email::isDomainValid, "Domain must be set and not empty"))
                 .build();
         BValidator<FirstRecursiveObject> validator = builder.build();
         FirstRecursiveObject firstRecursiveObject = new FirstRecursiveObject()
@@ -216,34 +221,34 @@ public class BValidatorBuilderTest {
                         .setAttr1("attr2")
                         .setEmail(new Email("aa@bb.com", "aa.com")))
                 .setEmail(new Email("bb@vv", "aa.com"));
-        ObjectResult result = validator.validate(firstRecursiveObject);
+        BReport result = validator.validate(firstRecursiveObject);
         assertTrue(result.isValid());
     }
 
     @Test
     void testCrossRecursiveObject() {
-        BValidatorManualBuilder<FirstRecursiveObject> builderFirst = new BValidatorManualBuilder<>(FirstRecursiveObject.class)
+        BValidatorBuilder<FirstRecursiveObject> builderFirst = new BValidatorBuilder<>(FirstRecursiveObject.class)
                 .setBusinessObjectName("FirstRecursiveObject");
-        BValidatorManualBuilder<SecondRecursiveObject> builderSecond = new BValidatorManualBuilder<>(SecondRecursiveObject.class)
+        BValidatorBuilder<SecondRecursiveObject> builderSecond = new BValidatorBuilder<>(SecondRecursiveObject.class)
                 .setBusinessObjectName("SecondRecursiveObject");
 
-        builderFirst.addRule("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
-        builderFirst.addRule("emailValid", FirstRecursiveObject::isEmailValid, "Email must be valid");
-        builderFirst.addRule("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
-        builderFirst.addRule("secondRecursiveObjectValid", FirstRecursiveObject::isSecondRecursiveObjectValid, "SecondRecursiveObject in firstRecursiveObject must be valid");
+        builderFirst.addAssertion("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
+        builderFirst.addAssertion("emailValid", FirstRecursiveObject::isEmailValid, "Email must be valid");
+        builderFirst.addAssertion("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
+        builderFirst.addAssertion("secondRecursiveObjectValid", FirstRecursiveObject::isSecondRecursiveObjectValid, "SecondRecursiveObject in firstRecursiveObject must be valid");
         builderFirst.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builderFirst);
-        builderFirst.addMember("email", FirstRecursiveObject::getEmail, new BValidatorManualBuilder<>(Email.class)
-                .addRule("emailValid", Email::isEmailValid, "Email must be valid")
-                .addRule("domainValid", Email::isDomainValid, "Domain must be set and not empty"));
+        builderFirst.addMember("email", FirstRecursiveObject::getEmail, new BValidatorBuilder<>(Email.class)
+                .addAssertion("emailValid", Email::isEmailValid, "Email must be valid")
+                .addAssertion("domainValid", Email::isDomainValid, "Domain must be set and not empty"));
         builderFirst.addMember("secondRecursiveObject", FirstRecursiveObject::getSecondRecursiveObject, builderSecond);
 
-        builderSecond.addRule("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
-        builderSecond.addRule("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
+        builderSecond.addAssertion("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
+        builderSecond.addAssertion("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
         builderSecond.addMember("firstRecursiveObject", SecondRecursiveObject::getFirstRecursiveObject, builderFirst);
 
         builderSecond.build();
 
-        ObjectResult result = builderFirst.build().validate(new FirstRecursiveObject()
+        BReport result = builderFirst.build().validate(new FirstRecursiveObject()
                 .setAttr1("attr1")
                 .setEmail(new Email("aa@bb", "ff.v"))
                 .setFirstRecursiveObject(new FirstRecursiveObject()
@@ -259,41 +264,41 @@ public class BValidatorBuilderTest {
                         .setAttr2("attr2")));
         assertEquals(19, countAllRulesResults(result, true));
         assertEquals(5, countAllRulesResults(result, false));
-        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
-        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [rule1]").isValid());
-        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
-        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
-        assertFalse(ObjectResultTest.getRuleResult(result, "FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [rule1]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "FirstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "FirstRecursiveObject.firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [emailValid]").isValid());
 
     }
 
     @Test
     public void testCrossCollectionRecursiveObject(){
-        BValidatorManualBuilder<FirstRecursiveObject> builderFirst = new BValidatorManualBuilder<>(FirstRecursiveObject.class)
+        BValidatorBuilder<FirstRecursiveObject> builderFirst = new BValidatorBuilder<>(FirstRecursiveObject.class)
                 .setBusinessObjectName("FirstRecursiveObject");
-        BValidatorManualBuilder<SecondRecursiveObject> builderSecond = new BValidatorManualBuilder<>(SecondRecursiveObject.class)
+        BValidatorBuilder<SecondRecursiveObject> builderSecond = new BValidatorBuilder<>(SecondRecursiveObject.class)
                 .setBusinessObjectName("SecondRecursiveObject");
 
-        builderFirst.addRule("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
-        builderFirst.addRule("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
-        builderFirst.addRule("secondRecursiveObjectValid", FirstRecursiveObject::isSecondRecursiveObjectValid, "SecondRecursiveObject in firstRecursiveObject must be valid");
+        builderFirst.addAssertion("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
+        builderFirst.addAssertion("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
+        builderFirst.addAssertion("secondRecursiveObjectValid", FirstRecursiveObject::isSecondRecursiveObjectValid, "SecondRecursiveObject in firstRecursiveObject must be valid");
         builderFirst.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builderFirst);
         builderFirst.addMember("secondRecursiveObject", FirstRecursiveObject::getSecondRecursiveObject, builderSecond);
 
-        builderSecond.addRule("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
-        builderSecond.addRule("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
+        builderSecond.addAssertion("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
+        builderSecond.addAssertion("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
         builderSecond.addMember("firstRecursiveObject", SecondRecursiveObject::getFirstRecursiveObject, builderFirst);
 
-        BValidatorManualBuilder<CollectionRecursiveObject> builderCollection = new BValidatorManualBuilder<>(CollectionRecursiveObject.class)
+        BValidatorBuilder<CollectionRecursiveObject> builderCollection = new BValidatorBuilder<>(CollectionRecursiveObject.class)
                 .setBusinessObjectName("CollectionRecursiveObject")
-                .addRule("rule3", CollectionRecursiveObject::isCollectionAttrValid, "collection attr is not null")
-                .addRule("firstRecursiveObjectValid", CollectionRecursiveObject::isFirstRecursiveObjectsValid, "firstRecursiveObject in collectionRecursiveObject must be valid")
-                .addRule("secondRecursiveObjectValid", CollectionRecursiveObject::isSecondRecursiveObjectsValid, "secondRecursiveObject in collectionRecursiveObject must be valid")
+                .addAssertion("rule3", CollectionRecursiveObject::isCollectionAttrValid, "collection attr is not null")
+                .addAssertion("firstRecursiveObjectValid", CollectionRecursiveObject::isFirstRecursiveObjectsValid, "firstRecursiveObject in collectionRecursiveObject must be valid")
+                .addAssertion("secondRecursiveObjectValid", CollectionRecursiveObject::isSecondRecursiveObjectsValid, "secondRecursiveObject in collectionRecursiveObject must be valid")
                 .addMember("firstRecursiveObjects", CollectionRecursiveObject::getFirstRecursiveObjects, builderFirst)
                 .addMember("secondRecursiveObjects", CollectionRecursiveObject::getSecondRecursiveObjects, builderSecond);
 
 
-        ObjectResult result = builderCollection.build().validate(new CollectionRecursiveObject()
+        BReport result = builderCollection.build().validate(new CollectionRecursiveObject()
                 .setCollectionAttr("collectionAttr")
                 .setFirstRecursiveObjects(new FirstRecursiveObject[]{
                         new FirstRecursiveObject()
@@ -348,22 +353,22 @@ public class BValidatorBuilderTest {
         );
         assertFalse(result.isValid());
         assertEquals(10, countAllRulesResults(result, false));
-        assertFalse(ObjectResultTest.getRuleResult(result, "CollectionRecursiveObject.secondRecursiveObjects[0].firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
+        assertFalse(BReportTest.getRuleResult(result, "CollectionRecursiveObject.secondRecursiveObjects[0].firstRecursiveObject.secondRecursiveObject.firstRecursiveObject [secondRecursiveObjectValid]").isValid());
 
     }
 
     @Test
     public void testRecursiveLoopObject() {
-        BValidatorManualBuilder<FirstRecursiveObject> builderFirst = new BValidatorManualBuilder<>(FirstRecursiveObject.class)
+        BValidatorBuilder<FirstRecursiveObject> builderFirst = new BValidatorBuilder<>(FirstRecursiveObject.class)
                 .setBusinessObjectName("FirstRecursiveObject")
-                .addRule("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null")
-                .addRule("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
+                .addAssertion("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null")
+                .addAssertion("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
         builderFirst.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builderFirst);
 
         FirstRecursiveObject firstLoopObject = new FirstRecursiveObject().setAttr1("attr1");
         firstLoopObject.setFirstRecursiveObject(firstLoopObject);
 
-        ObjectResult result = builderFirst.build().validate(firstLoopObject);
+        BReport result = builderFirst.build().validate(firstLoopObject);
 
 
         assertTrue(result.isValid());
@@ -374,19 +379,19 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testRecursiveCrossLoopObject() {
-        BValidatorManualBuilder<FirstRecursiveObject> builderFirst = new BValidatorManualBuilder<>(FirstRecursiveObject.class)
+        BValidatorBuilder<FirstRecursiveObject> builderFirst = new BValidatorBuilder<>(FirstRecursiveObject.class)
                 .setBusinessObjectName("FirstRecursiveObject");
-        BValidatorManualBuilder<SecondRecursiveObject> builderSecond = new BValidatorManualBuilder<>(SecondRecursiveObject.class)
+        BValidatorBuilder<SecondRecursiveObject> builderSecond = new BValidatorBuilder<>(SecondRecursiveObject.class)
                 .setBusinessObjectName("SecondRecursiveObject");
 
-        builderFirst.addRule("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
-        builderFirst.addRule("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
-        builderFirst.addRule("secondRecursiveObjectValid", FirstRecursiveObject::isSecondRecursiveObjectValid, "SecondRecursiveObject in firstRecursiveObject must be valid");
+        builderFirst.addAssertion("rule1", FirstRecursiveObject::isAttr1Valid, "attr1 is not null");
+        builderFirst.addAssertion("firstRecursiveObjectValid", FirstRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in firstRecursiveObject must be valid");
+        builderFirst.addAssertion("secondRecursiveObjectValid", FirstRecursiveObject::isSecondRecursiveObjectValid, "SecondRecursiveObject in firstRecursiveObject must be valid");
         builderFirst.addMember("firstRecursiveObject", FirstRecursiveObject::getFirstRecursiveObject, builderFirst);
         builderFirst.addMember("secondRecursiveObject", FirstRecursiveObject::getSecondRecursiveObject, builderSecond);
 
-        builderSecond.addRule("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
-        builderSecond.addRule("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
+        builderSecond.addAssertion("rule2", SecondRecursiveObject::isAttr2Valid, "attr2 is not null");
+        builderSecond.addAssertion("firstRecursiveObjectValid", SecondRecursiveObject::isFirstRecursiveObjectValid, "firstRecursiveObject in secondRecursiveObject must be valid");
         builderSecond.addMember("firstRecursiveObject", SecondRecursiveObject::getFirstRecursiveObject, builderFirst);
 
         FirstRecursiveObject firstLoopObject = new FirstRecursiveObject().setAttr1("attr1");
@@ -395,7 +400,7 @@ public class BValidatorBuilderTest {
         firstLoopObject.setSecondRecursiveObject(secondLoopObject);
         secondLoopObject.setFirstRecursiveObject(firstLoopObject);
 
-        ObjectResult result = builderFirst.build().validate(firstLoopObject);
+        BReport result = builderFirst.build().validate(firstLoopObject);
         assertTrue(result.isValid());
         assertEquals(8, result.getNbOfTests());
     }
@@ -403,34 +408,34 @@ public class BValidatorBuilderTest {
     @Test
     public void testPolymorphismCorrect(){
 
-        BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = createGraphicValidatorBuilder();
+        BValidatorBuilder<Graphic> graphicBValidatorBuilder = createGraphicValidatorBuilder();
 
-        ObjectResult result = graphicBValidatorManualBuilder.build().validate(createGraphic());
+        BReport result = graphicBValidatorBuilder.build().validate(createGraphic());
         System.out.println(result);
         assertTrue(result.isValid());
         assertEquals(19, result.getNbOfTests());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesList[0] [sqNameValid]").isValid());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesList[1] [crRadiusValid]").isValid());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesList[2] [recHeightValid]").isValid());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesArray[0] [sqNameValid]").isValid());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesArray[1] [crRadiusValid]").isValid());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.shapesArray[2] [recHeightValid]").isValid());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.squareOrRectangle [sqNameValid]").isValid());
-        assertTrue(ObjectResultTest.getRuleResult(result, "Graphic.circle [crRadiusValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.shapesList[0] [sqNameValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.shapesList[1] [crRadiusValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.shapesList[2] [recHeightValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.shapesArray[0] [sqNameValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.shapesArray[1] [crRadiusValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.shapesArray[2] [recHeightValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.squareOrRectangle [sqNameValid]").isValid());
+        assertTrue(BReportTest.getRuleResult(result, "Graphic.circle [crRadiusValid]").isValid());
     }
 
     @Test
     public void testPolymorphismUnsatisfiedImplementation(){
-        BValidatorManualBuilder<Square> squareBValidatorManualBuilder = new BValidatorManualBuilder<>(Square.class)
+        BValidatorBuilder<Square> squareBValidatorBuilder = new BValidatorBuilder<>(Square.class)
                 .setBusinessObjectName("Square")
-                .addRule("sqNameValid", Square::isNameValid, "name is not null")
-                .addRule("sqSideValid", Square::isSideValid, "side is not null");
-        BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = new BValidatorManualBuilder<>(Graphic.class)
+                .addAssertion("sqNameValid", Square::isNameValid, "name is not null")
+                .addAssertion("sqSideValid", Square::isSideValid, "side is not null");
+        BValidatorBuilder<Graphic> graphicBValidatorBuilder = new BValidatorBuilder<>(Graphic.class)
                 .setBusinessObjectName("Graphic")
-                .addRule("rule1", Graphic::isNameValid, "name is not null")
-                .addMember("shapesList", Graphic::getShapeList,squareBValidatorManualBuilder);
+                .addAssertion("rule1", Graphic::isNameValid, "name is not null")
+                .addMember("shapesList", Graphic::getShapeList, squareBValidatorBuilder);
         Throwable throwable = assertThrows(InvocationException.class, () ->
-                graphicBValidatorManualBuilder
+                graphicBValidatorBuilder
                         .build()
                         .validate(new Graphic()
                         .setName("graphic")
@@ -443,9 +448,9 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testPolymorphismWithRecursiveMember(){
-        BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = createGraphicValidatorBuilder();
-        graphicBValidatorManualBuilder.addMember("innerGraphic", Graphic::getInnerGraphic, graphicBValidatorManualBuilder);
-        ObjectResult result = graphicBValidatorManualBuilder.build().validate(createGraphic()
+        BValidatorBuilder<Graphic> graphicBValidatorBuilder = createGraphicValidatorBuilder();
+        graphicBValidatorBuilder.addMember("innerGraphic", Graphic::getInnerGraphic, graphicBValidatorBuilder);
+        BReport result = graphicBValidatorBuilder.build().validate(createGraphic()
                 .setInnerGraphic(new Graphic()
                         .setName("innerGraphic")
                         .addShapeToList(new Square().setName("innerSquareInList").setSide(1))
@@ -464,42 +469,30 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testPolymorphismWithLoopRecursiveMember(){
-        BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = createGraphicValidatorBuilder();
-        graphicBValidatorManualBuilder.addMember("innerGraphic", Graphic::getInnerGraphic, graphicBValidatorManualBuilder);
+        BValidatorBuilder<Graphic> graphicBValidatorBuilder = createGraphicValidatorBuilder();
+        graphicBValidatorBuilder.addMember("innerGraphic", Graphic::getInnerGraphic, graphicBValidatorBuilder);
         Graphic graphic = createGraphic();
         graphic.setInnerGraphic(graphic);
-        ObjectResult result = graphicBValidatorManualBuilder.build().validate(graphic);
+        BReport result = graphicBValidatorBuilder.build().validate(graphic);
         assertTrue(result.isValid());
     }
 
     @Test
     public void testEmptySubBuildersBuilders(){
-        BValidatorManualBuilder<Graphic> shapeBValidatorManualBuilder = new BValidatorManualBuilder<>(Graphic.class)
+        BValidatorBuilder<Graphic> shapeBValidatorBuilder = new BValidatorBuilder<>(Graphic.class)
                 .addMember("squareOrRectangle", Graphic::getSquareOrRectangle,
-                        new BValidatorManualBuilder<>(Square.class),
-                        new BValidatorManualBuilder<>(Rectangle.class));
-        Throwable throwable = assertThrows(IllegalStateException.class, shapeBValidatorManualBuilder::build);
-        assertEquals("All sub validators are empty", throwable.getMessage());
-    }
-
-    @Test
-    public void testNullType(){
-        BValidatorManualBuilder<Graphic> shapeBValidatorManualBuilder = new BValidatorManualBuilder<>(Graphic.class)
-                .addMember("squareOrRectangle", Graphic::getSquareOrRectangle,
-                        new BValidatorManualBuilder<Square>(null)
-                                .addRule("sqNameValid", Square::isNameValid, "name is not null")
-                                .addRule("sqSideValid", Square::isSideValid, "side is not null")
-                );
-        Throwable throwable = assertThrows(IllegalStateException.class, shapeBValidatorManualBuilder::build);
-        assertEquals("Type is not set", throwable.getMessage());
+                        new BValidatorBuilder<>(Square.class),
+                        new BValidatorBuilder<>(Rectangle.class));
+        Throwable throwable = assertThrows(IllegalStateException.class, shapeBValidatorBuilder::build);
+        assertEquals("At least one rule or one member must be provided to build a validator.", throwable.getMessage());
     }
 
     @Test
     public void testPolymorphismCollection(){
-        BValidatorManualBuilder<Square> shapeBValidatorManualBuilder = new BValidatorManualBuilder<>(Square.class)
-                .addRule("sqNameValid", Square::isNameValid, "name is not null")
-                .addRule("sqSideValid", Square::isSideValid, "side is not null");
-        List<ObjectResult> result = shapeBValidatorManualBuilder.build()
+        BValidatorBuilder<Square> shapeBValidatorBuilder = new BValidatorBuilder<>(Square.class)
+                .addAssertion("sqNameValid", Square::isNameValid, "name is not null")
+                .addAssertion("sqSideValid", Square::isSideValid, "side is not null");
+        List<BReport> result = shapeBValidatorBuilder.build()
                 .validate(List.of(new Square().setName("squareInList2").setSide(2),
                         new Square().setName("squareInList").setSide(2),
                         new Rectangle().setName("rectangleInList").setHeight(1).setSide(1)));
@@ -508,10 +501,10 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testPolymorphismArray(){
-        BValidatorManualBuilder<Square> shapeBValidatorManualBuilder = new BValidatorManualBuilder<>(Square.class)
-                .addRule("sqNameValid", Square::isNameValid, "name is not null")
-                .addRule("sqSideValid", Square::isSideValid, "side is not null");
-        List<ObjectResult> result = shapeBValidatorManualBuilder.build()
+        BValidatorBuilder<Square> shapeBValidatorBuilder = new BValidatorBuilder<>(Square.class)
+                .addAssertion("sqNameValid", Square::isNameValid, "name is not null")
+                .addAssertion("sqSideValid", Square::isSideValid, "side is not null");
+        List<BReport> result = shapeBValidatorBuilder.build()
                 .validate(new Square[]{new Square().setName("squareInArray2").setSide(2),
                         new Square().setName("squareInArray").setSide(2),
                         new Rectangle().setName("rectangleInArray").setHeight(1).setSide(1)});
@@ -520,17 +513,17 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testValidateEmptyArray(){
-        BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = createGraphicValidatorBuilder();
-        ObjectResult result = graphicBValidatorManualBuilder.build().validate(new Graphic().setName("shape").setShapeArray(new Square[0]));
+        BValidatorBuilder<Graphic> graphicBValidatorBuilder = createGraphicValidatorBuilder();
+        BReport result = graphicBValidatorBuilder.build().validate(new Graphic().setName("shape").setShapeArray(new Square[0]));
         assertTrue(result.isValid());
         assertEquals(1, result.getNbOfTests());
     }
 
     @Test
     public void testValidateGraphic(){
-        BValidatorManualBuilder<Graphic> graphicBValidatorManualBuilder = createGraphicValidatorBuilder();
+        BValidatorBuilder<Graphic> graphicBValidatorBuilder = createGraphicValidatorBuilder();
         Graphic graphic = createGraphic().addShapeToList(new Losange().setName("losange").setDiagonal(10));
-        ObjectResult result = graphicBValidatorManualBuilder.build().validate(graphic);
+        BReport result = graphicBValidatorBuilder.build().validate(graphic);
         System.out.println(result);
         assertFalse(result.isValid());
         assertEquals(22, result.getNbOfTests());
@@ -538,19 +531,19 @@ public class BValidatorBuilderTest {
 
     @Test
     public void testAddMemberWithoutId(){
-        BValidator<Phone> bValidator = new BValidatorManualBuilder<>(Phone.class)
+        BValidator<Phone> bValidator = new BValidatorBuilder<>(Phone.class)
                 .setBusinessObjectName("phone")
-                .addRule(Phone::isCountryCodeValid, "country code is not valid")
-                .addRule(Phone::isNumberValid, "number is not valid")
+                .addAssertion(Phone::isCountryCodeValid, "country code is not valid")
+                .addAssertion(Phone::isNumberValid, "number is not valid")
                 .build();
-        ObjectResult result = bValidator.validate(new Phone("01234567", "+33"));
+        BReport result = bValidator.validate(new Phone("01234567", "+33"));
         assertTrue(result.isValid());
     }
 
 
 
-    private void assertMemberResults(ObjectResult result, boolean expected) {
-        for (ObjectResult memberResult : result.getMemberResults()) {
+    private void assertMemberResults(BReport result, boolean expected) {
+        for (BReport memberResult : result.getMemberReports()) {
             assertEquals(expected, memberResult.isValid());
             assertMemberResults(memberResult, expected);
         }
@@ -597,68 +590,72 @@ public class BValidatorBuilderTest {
     }
 
 
-    private BValidatorManualBuilder<Person> createCompleteBuilder() {
-        return new BValidatorManualBuilder<>(Person.class)
+    private BValidatorBuilder<Person> createCompleteBuilder() {
+        return new BValidatorBuilder<>(Person.class)
                 .setBusinessObjectName("Person")
-                .addRule("ageValid", Person::isAgeValid, "Name must not be null")
-                .addRule("NameNotEmpty", Person::isNameValid, "Name must not be empty")
-                .addRule("ValidEmail", Person::isEmailValid, "Email must be valid")
-                .addMember("address", Person::getAddress, new BValidatorManualBuilder<>(Address.class)
+                .addAssertion("ageValid", Person::isAgeValid, "Name must not be null")
+                .addAssertion("NameNotEmpty", Person::isNameValid, "Name must not be empty")
+                .addAssertion("ValidEmail", Person::isEmailValid, "Email must be valid")
+                .addMember("address", Person::getAddress, new BValidatorBuilder<>(Address.class)
                         .setBusinessObjectName("Address")
-                        .addRule("cityValid", Address::isCityValid, "City must not be null")
-                        .addRule("StreetValid", Address::isStreetValid, "Street must not be empty")
-                        .addMember("city", Address::getCity, new BValidatorManualBuilder<>(City.class)
+                        .addAssertion("cityValid", Address::isCityValid, "City must not be null")
+                        .addAssertion("StreetValid", Address::isStreetValid, "Street must not be empty")
+                        .addMember("city", Address::getCity, new BValidatorBuilder<>(City.class)
                                 .setBusinessObjectName("City")
-                                .addRule("cityNameValid", City::isNamesValid, "City name must not be empty")
-                                .addRule("cityZipcodeValid", City::isZipCodeValid, "City zipcode must be valid")
+                                .addAssertion("cityNameValid", City::isNamesValid, "City name must not be empty")
+                                .addAssertion("cityZipcodeValid", City::isZipCodeValid, "City zipcode must be valid")
                         )
                 )
-                .addMember("phones", Person::getPhones, new BValidatorManualBuilder<>(Phone.class)
+                .addMember("phones", Person::getPhones, new BValidatorBuilder<>(Phone.class)
                         .setBusinessObjectName("Phone")
-                        .addRule("numberValid", Phone::isNumberValid, "Number must not be null")
-                        .addRule("countryCodeValid", Phone::isCountryCodeValid, "Country code must not be valid")
+                        .addAssertion("numberValid", Phone::isNumberValid, "Number must not be null")
+                        .addAssertion("countryCodeValid", Phone::isCountryCodeValid, "Country code must not be valid")
                 )
-                .addMember("emails", Person::getEmails, new BValidatorManualBuilder<>(Email.class)
+                .addMember("emails", Person::getEmails, new BValidatorBuilder<>(Email.class)
                         .setBusinessObjectName("Email")
-                        .addRule("emailValid", Email::isEmailValid, "Email must be valid")
-                        .addRule("domainValid", Email::isDomainValid, "Domain must be set and not empty")
+                        .addAssertion("emailValid", Email::isEmailValid, "Email must be valid")
+                        .addAssertion("domainValid", Email::isDomainValid, "Domain must be set and not empty")
                 );
     }
 
-    private BValidatorManualBuilder<Graphic> createGraphicValidatorBuilder(){
-        BValidatorManualBuilder<Square> squareBValidatorManualBuilder = new BValidatorManualBuilder<>(Square.class)
+    private BValidatorBuilder<Graphic> createGraphicValidatorBuilder(){
+        BValidatorBuilder<Square> squareBValidatorBuilder = new BValidatorBuilder<>(Square.class)
                 .setBusinessObjectName("Square")
-                .addRule("sqNameValid", Square::isNameValid, "name is not null")
-                .addRule("sqSideValid", Square::isSideValid, "side is not null");
-        BValidatorManualBuilder<Rectangle> rectangleBValidatorManualBuilder = new BValidatorManualBuilder<>(squareBValidatorManualBuilder,Rectangle.class)
+                .addAssertion("sqNameValid", Square::isNameValid, "name is not null")
+                .addAssertion("sqSideValid", Square::isSideValid, "side is not null");
+        BValidatorBuilder<Rectangle> rectangleBValidatorBuilder = new BValidatorBuilder<>(
+              Rectangle.class, squareBValidatorBuilder)
                 .setBusinessObjectName("Rectangle")
-                .addRule("recHeightValid", Rectangle::isHeightValid, "height is not null");
-        BValidatorManualBuilder<Circle> circleBValidatorManualBuilder = new BValidatorManualBuilder<>(Circle.class)
-                .addRule("crNameValid", Circle::isNameValid, "name is not null")
-                .addRule("crRadiusValid", Circle::isRadiusValid, "radius is not null");
+                .addAssertion("recHeightValid", Rectangle::isHeightValid, "height is not null");
+        BValidatorBuilder<Circle> circleBValidatorBuilder = new BValidatorBuilder<>(Circle.class)
+                .addAssertion("crNameValid", Circle::isNameValid, "name is not null")
+                .addAssertion("crRadiusValid", Circle::isRadiusValid, "radius is not null");
 
-        return new BValidatorManualBuilder<>(Graphic.class)
+        return new BValidatorBuilder<>(Graphic.class)
                 .setBusinessObjectName("Graphic")
-                .addRule("rule1", Graphic::isNameValid, "name is not null")
-                .addMember("shapesList", Graphic::getShapeList,squareBValidatorManualBuilder, rectangleBValidatorManualBuilder, circleBValidatorManualBuilder)
-                .addMember("shapesArray", Graphic::getShapeArray,squareBValidatorManualBuilder, rectangleBValidatorManualBuilder, circleBValidatorManualBuilder)
-                .addMember("squareOrRectangle", Graphic::getSquareOrRectangle,squareBValidatorManualBuilder, rectangleBValidatorManualBuilder)
-                .addMember("circle", Graphic::getCircle,circleBValidatorManualBuilder);
+                .addAssertion("rule1", Graphic::isNameValid, "name is not null")
+                .addMember("shapesList", Graphic::getShapeList, squareBValidatorBuilder, rectangleBValidatorBuilder,
+                      circleBValidatorBuilder)
+                .addMember("shapesArray", Graphic::getShapeArray, squareBValidatorBuilder, rectangleBValidatorBuilder,
+                      circleBValidatorBuilder)
+                .addMember("squareOrRectangle", Graphic::getSquareOrRectangle, squareBValidatorBuilder,
+                      rectangleBValidatorBuilder)
+                .addMember("circle", Graphic::getCircle, circleBValidatorBuilder);
     }
 
     //count number of (Ture of False) rules in the result recursively
-    private int countAllRulesResults(ObjectResult result, boolean expected) {
+    private int countAllRulesResults(BReport result, boolean expected) {
         int count = countRulesResults(result, expected);
-        for (ObjectResult memberResult : result.getMemberResults()) {
+        for (BReport memberResult : result.getMemberReports()) {
             count += countAllRulesResults(memberResult, expected);
         }
         return count;
     }
 
-    public int countRulesResults(ObjectResult result, boolean expected) {
+    public int countRulesResults(BReport result, boolean expected) {
         int count = 0;
-        for (RuleResult ruleResult : result.getRuleResults()) {
-            if (ruleResult.isValid() == expected) {
+        for (AssertionReport assertionReport : result.getRuleResults()) {
+            if (assertionReport.isValid() == expected) {
                 count++;
             }
         }

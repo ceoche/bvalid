@@ -22,9 +22,9 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Mark a method as business rule validation in an object annotated with {@link BusinessObject}. Such business rule
- * method must be a boolean expression assertion. By convention if the result is 'true', it means the business rule is
- * correct/valid, and false otherwise.
+ * Mark a method as business assertion validation in an object annotated with {@link BusinessObject}. Such business
+ * assertion method must be a boolean expression assertion. By convention if the result is 'true', it means the business
+ * assertion is correct/valid, and false otherwise.
  * <p>
  * A method marked with this annotation must be public, take no parameters and return a boolean value.
  * <p>
@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  *
  *    public String name;
  *
- *    {@literal @}BusinessRule(description = "name must be defined.")
+ *    @BusinessRule(description = "name must be defined.")
  *    public boolean isNameValid() {
  *       return name != null && !name.trim().isEmpty();
  *    }
@@ -45,19 +45,20 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface BusinessRule {
+public @interface BusinessAssertion {
 
-    /**
-     * Identifier of the business rule. To be used in an environment that requires requirement traceability.
-     *
-     * @return the identifier of the business rule.
-     */
-    public String id() default "";
+   /**
+    * Optional identifier of the business assertion. Can be used in an environment that requires requirement
+    * traceability.
+    *
+    * @return the identifier of the business assertion.
+    */
+   public String id() default "";
 
-    /**
-     * A textual description of the formal expression implemented by the method.
-     *
-     * @return the description of the rule.
-     */
-    String description();
+   /**
+    * A textual description of the formal expression implemented by the method.
+    *
+    * @return the description of the rule.
+    */
+   String description();
 }

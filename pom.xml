@@ -7,7 +7,7 @@
    <version>0.2.1-SNAPSHOT</version>
 
    <name>BValid</name>
-   <description>BValid is an open-source Java library to provide easy business rules and model validation.</description>
+   <description>BValid is an open-source Java library to provide easy business assertions and model validation.</description>
    <url>https://github.com/ceoche/bvalid</url>
 
    <licenses>
@@ -38,8 +38,8 @@
    </scm>
 
    <properties>
-      <maven.compiler.source>11</maven.compiler.source>
-      <maven.compiler.target>11</maven.compiler.target>
+      <maven.compiler.source>17</maven.compiler.source>
+      <maven.compiler.target>17</maven.compiler.target>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
    </properties>
 
@@ -53,12 +53,12 @@
          <plugin>
             <groupId>org.pitest</groupId>
             <artifactId>pitest-maven</artifactId>
-            <version>1.9.1</version>
+            <version>1.18.2</version>
             <dependencies>
                <dependency>
                   <groupId>org.pitest</groupId>
                   <artifactId>pitest-junit5-plugin</artifactId>
-                  <version>1.0.0</version>
+                  <version>1.2.2</version>
                </dependency>
             </dependencies>
          </plugin>
@@ -69,7 +69,7 @@
             <executions>
                <execution>
                   <id>generate-javadoc</id>
-                  <phase>generate-resources</phase>
+                  <phase>prepare-package</phase>
                   <goals>
                      <goal>javadoc</goal>
                   </goals>

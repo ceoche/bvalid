@@ -18,9 +18,9 @@ package io.github.ceoche.bvalid;
 import java.util.Objects;
 
 /**
- * RuleResult represents a tested business rule.
+ * Report of a tested business assertion.
  */
-public class RuleResult {
+public class AssertionReport {
 
     private final String id;
     private final String description;
@@ -32,18 +32,18 @@ public class RuleResult {
      * @param description description of the rule
      * @param valid       result of the test (true for valid, false for invalid)
      */
-    RuleResult(String description, boolean valid) {
+    AssertionReport(String description, boolean valid) {
         this("", description, valid);
     }
 
     /**
      * Hidden constructor with rule id.
      *
-     * @param id          requirement or assertion id of the business rule.
+     * @param id          requirement or assertion id of the business assertion.
      * @param description description of the rule.
      * @param valid       result of the test (true for valid, false for invalid).
      */
-    RuleResult(String id, String description, boolean valid) {
+    AssertionReport(String id, String description, boolean valid) {
         this.id = id;
         this.description = description;
         this.valid = valid;
@@ -59,7 +59,7 @@ public class RuleResult {
     }
 
     /**
-     * Get the description of the business rule.
+     * Get the description of the business assertion.
      *
      * @return the description
      */
@@ -68,7 +68,7 @@ public class RuleResult {
     }
 
     /**
-     * Is the business rule valid.
+     * Is the business assertion valid.
      *
      * @return true if valid, false otherwise.
      */
@@ -81,10 +81,10 @@ public class RuleResult {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof RuleResult)) {
+        if (!(o instanceof AssertionReport)) {
             return false;
         }
-        RuleResult that = (RuleResult) o;
+        AssertionReport that = (AssertionReport) o;
         return valid == that.valid && Objects.equals(id, that.id) && Objects.equals(description,
                 that.description);
     }

@@ -28,125 +28,125 @@ import java.util.Collection;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BasicRulesTest {
+public class DefaultAssertionsTest {
 
    @Test
    void testStringDefined() {
-      assertTrue(BasicRules.isDefined("This a defined string"));
+      assertTrue(DefaultAssertions.isDefined("This a defined string"));
    }
 
    @ParameterizedTest
    @NullAndEmptySource
    void testStringNotDefined(String nullOrEmpty) {
-      assertFalse(BasicRules.isDefined(nullOrEmpty));
+      assertFalse(DefaultAssertions.isDefined(nullOrEmpty));
    }
 
    @Test
    void testObjectDefined() {
-      assertTrue(BasicRules.isDefined(new StringBuilder("defined")));
+      assertTrue(DefaultAssertions.isDefined(new StringBuilder("defined")));
    }
 
    @Test
    void testObjectNotDefined() {
       StringBuilder sb = null;
-      assertFalse(BasicRules.isDefined(sb));
+      assertFalse(DefaultAssertions.isDefined(sb));
    }
 
    @Test
    void testOptionalString() {
-      assertTrue(BasicRules.isDefinedIfPresent("Optional String"));
-      assertTrue(BasicRules.isDefinedIfPresent(null));
+      assertTrue(DefaultAssertions.isDefinedIfPresent("Optional String"));
+      assertTrue(DefaultAssertions.isDefinedIfPresent(null));
    }
 
    @Test
    void testWrongOptionalString() {
-      assertFalse(BasicRules.isDefinedIfPresent("  "));
+      assertFalse(DefaultAssertions.isDefinedIfPresent("  "));
    }
 
    @Test
    void testOneOrMoreElementArrayValid() {
-      assertTrue(BasicRules.hasOneOrMoreElements(new Integer[]{1, null, 3}));
+      assertTrue(DefaultAssertions.hasOneOrMoreElements(new Integer[]{1, null, 3}));
    }
 
    @Test
    void testOneOrMoreElementArrayInvalid() {
-      assertFalse(BasicRules.hasOneOrMoreElements(new Integer[]{}));
-      assertFalse(BasicRules.hasOneOrMoreElements((Object[]) null));
+      assertFalse(DefaultAssertions.hasOneOrMoreElements(new Integer[]{}));
+      assertFalse(DefaultAssertions.hasOneOrMoreElements((Object[]) null));
    }
 
    @Test
    void testOneOrMoreElementListValid() {
-      assertTrue(BasicRules.hasOneOrMoreElements(Arrays.asList(1, null, 3)));
+      assertTrue(DefaultAssertions.hasOneOrMoreElements(Arrays.asList(1, null, 3)));
    }
 
    @Test
    void testOneOrMoreElementListInvalid() {
-      assertFalse(BasicRules.hasOneOrMoreElements(new ArrayList<>()));
-      assertFalse(BasicRules.hasOneOrMoreElements((Collection<?>) null));
+      assertFalse(DefaultAssertions.hasOneOrMoreElements(new ArrayList<>()));
+      assertFalse(DefaultAssertions.hasOneOrMoreElements((Collection<?>) null));
    }
 
    @Test
    void testHasDefinedElementList() {
-      assertTrue(BasicRules.hasDefinedElements(Arrays.asList(1, 2, 3)));
-      assertTrue(BasicRules.hasDefinedElements(
+      assertTrue(DefaultAssertions.hasDefinedElements(Arrays.asList(1, 2, 3)));
+      assertTrue(DefaultAssertions.hasDefinedElements(
             new NonNullList<>(Arrays.asList(1, 2, 3))
       ));
    }
 
    @Test
    void testHasDefinedElementListInvalid() {
-      assertFalse(BasicRules.hasDefinedElements((Collection<?>) null));
-      assertFalse(BasicRules.hasDefinedElements(Arrays.asList(1, null, 3)));
+      assertFalse(DefaultAssertions.hasDefinedElements((Collection<?>) null));
+      assertFalse(DefaultAssertions.hasDefinedElements(Arrays.asList(1, null, 3)));
    }
 
    @Test
    void testHasDefinedElementArray() {
-      assertTrue(BasicRules.hasDefinedElements(new Integer[]{1, 2, 3}));
+      assertTrue(DefaultAssertions.hasDefinedElements(new Integer[]{1, 2, 3}));
    }
 
    @Test
    void testHasDefinedElementArrayInvalid() {
-      assertFalse(BasicRules.hasDefinedElements(new Integer[]{1, 2, null}));
+      assertFalse(DefaultAssertions.hasDefinedElements(new Integer[]{1, 2, null}));
    }
 
    @Test
    void testHasOneOrMoreDefinedElementArrayValid() {
-      assertTrue(BasicRules.hasOneOrMoreDefinedElements(new Integer[]{1, 2, 3}));
+      assertTrue(DefaultAssertions.hasOneOrMoreDefinedElements(new Integer[]{1, 2, 3}));
    }
 
    @Test
    void testHasOneOrMoreDefinedElementArrayInvalid() {
-      assertFalse(BasicRules.hasOneOrMoreDefinedElements(new Integer[]{}));
-      assertFalse(BasicRules.hasOneOrMoreDefinedElements(new Integer[]{1, null, 3}));
+      assertFalse(DefaultAssertions.hasOneOrMoreDefinedElements(new Integer[]{}));
+      assertFalse(DefaultAssertions.hasOneOrMoreDefinedElements(new Integer[]{1, null, 3}));
    }
 
    @Test
    void testHasOneOrMoreDefinedElementListValid() {
-      assertTrue(BasicRules.hasOneOrMoreDefinedElements(Arrays.asList(1, 2, 3)));
+      assertTrue(DefaultAssertions.hasOneOrMoreDefinedElements(Arrays.asList(1, 2, 3)));
    }
 
    @Test
    void testHasOneOrMoreDefinedElementListInvalid() {
-      assertFalse(BasicRules.hasOneOrMoreDefinedElements(new ArrayList<>()));
-      assertFalse(BasicRules.hasOneOrMoreDefinedElements(Arrays.asList(1, null, 3)));
+      assertFalse(DefaultAssertions.hasOneOrMoreDefinedElements(new ArrayList<>()));
+      assertFalse(DefaultAssertions.hasOneOrMoreDefinedElements(Arrays.asList(1, null, 3)));
    }
 
    @Test
    void testPatternMatches() {
-      assertTrue(BasicRules.matches("^[^\\s\\.{}\\$]+$", "validId"));
+      assertTrue(DefaultAssertions.matches("^[^\\s\\.{}\\$]+$", "validId"));
    }
 
    @ParameterizedTest
    @ValueSource(strings = {"idWith space", "idWith.dot", "idWith{bracket", "idWithBracket}",
          "idWith$"})
    void testPatternMatchesInvalid(String subject) {
-      assertFalse(BasicRules.matches("^[^\\s\\.{}\\$]+$", subject));
+      assertFalse(DefaultAssertions.matches("^[^\\s\\.{}\\$]+$", subject));
    }
 
    @Test
    void testPatternMatchesError() {
-      assertFalse(BasicRules.matches(null, "toto"));
-      assertFalse(BasicRules.matches(".*", null));
+      assertFalse(DefaultAssertions.matches(null, "toto"));
+      assertFalse(DefaultAssertions.matches(".*", null));
    }
 
 }

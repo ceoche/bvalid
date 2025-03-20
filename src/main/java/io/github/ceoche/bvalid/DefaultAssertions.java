@@ -20,14 +20,14 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 /**
- * {@link BasicRules} provides basic expressions methods for business model constraints about
- * mandatory fields and cardinalities.
+ * {@link DefaultAssertions} provides a collection of expressions such as "is defined", "has at least one element"
+ * for business model constraints about mandatory fields and cardinalities.
  *
  * @author ceoche
  */
-public class BasicRules {
+public class DefaultAssertions {
 
-   private BasicRules() {
+   private DefaultAssertions() {
    }
 
    /**
@@ -37,7 +37,7 @@ public class BasicRules {
     * @return true if the attribute is not null and not blank (trimmed and not empty)
     */
    public static boolean isDefined(String attributeValue) {
-      return attributeValue != null && !attributeValue.trim().isEmpty();
+      return attributeValue != null && !attributeValue.isBlank();
    }
 
    /**
@@ -65,7 +65,7 @@ public class BasicRules {
    }
 
    /**
-    * Verify whether a collection attribute as at least one element.
+    * Verify whether a collection attribute has at least one element.
     *
     * @param collection to verify
     * @return true if the collection is not null and has one or more elements, false otherwise.
@@ -75,7 +75,7 @@ public class BasicRules {
    }
 
    /**
-    * Verify whether an array attribute as at lease one element.
+    * Verify whether an array attribute has at lease one element.
     *
     * @param objects array to verify
     * @return true if the array is not null and has one or more element, false otherwise.

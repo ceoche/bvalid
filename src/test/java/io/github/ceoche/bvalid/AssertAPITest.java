@@ -29,7 +29,7 @@ public class AssertAPITest {
       BValidator<ArrayBusinessMember> validator = getValidator(ArrayBusinessMember.class);
       Assertions.assertThrows(
             IllegalArgumentException.class,
-            () -> validator.validate(object).assertValidOrThrow(IllegalArgumentException::new)
+            () -> validator.validate(object).orThrow(IllegalArgumentException::new)
       );
    }
 
@@ -38,12 +38,12 @@ public class AssertAPITest {
       DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
       BValidator<DefaultValidableMock> validator = getValidator(DefaultValidableMock.class);
       Assertions.assertDoesNotThrow(
-            () -> validator.validate(object).assertValidOrThrow(IllegalArgumentException::new)
+            () -> validator.validate(object).orThrow(IllegalArgumentException::new)
       );
    }
 
    private <T> BValidator<T> getValidator(Class<T> clazz) {
-      return new BValidatorAnnotationBuilder<>(clazz).build();
+      return new AnnotationResolver<>(clazz).buildValidator();
    }
 
 }

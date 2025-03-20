@@ -17,20 +17,21 @@ package io.github.ceoche.bvalid;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
-class BusinessMemberObject<T,R> {
+class BMember<T, M> {
 
     private final String name;
 
     private final Function<T, ?> getter;
 
-    private final Map<Class<? extends R>,BValidator<? extends R>> validators;
+    private final Map<Class<? extends M>, BValidator<? extends M>> validators = new java.util.HashMap<>();
 
-    BusinessMemberObject(String name, Function<T, ?> getter, Map<Class<? extends R>,BValidator<? extends R>> validators) {
+    BMember(String name, Function<T, ?> getter, Set<BValidator<? extends M>> validators) {
         this.name = name;
         this.getter = getter;
-        this.validators = validators;
+        validators.forEach(this::addValidator);
     }
 
     String getName() {
@@ -41,21 +42,19 @@ class BusinessMemberObject<T,R> {
         return getter.apply(object);
     }
 
-    void addValidator(Class<? extends R> clazz, BValidator<? extends R> validator) {
-        this.validators.put(clazz, validator);
-
+    void addValidator(BValidator<? extends M> validator) {
+        this.validators.put(validator.getType(), validator);
     }
 
-    public Map<Class<? extends R>, BValidator<? extends R>> getValidators() {
+    Map<Class<? extends M>, BValidator<? extends M>> getValidators() {
         return validators;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BusinessMemberObject)) return false;
-        BusinessMemberObject<?, ?> that = (BusinessMemberObject<?, ?>) o;
-        return Objects.equals(name, that.name);
+        if (!(o instanceof BMember<?, ?> that)) return false;
+       return Objects.equals(name, that.name);
     }
 
     @Override

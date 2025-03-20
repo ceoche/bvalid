@@ -20,31 +20,31 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Aggregate all {@link BusinessRule} and {@link BusinessMember} test results of a
+ * Aggregate all {@link BusinessAssertion} and {@link BusinessMember} test results of a
  * {@link BusinessObject} .
  *
  * @author ceoche
  */
-public class ObjectResult {
+public class BReport {
 
     private final String businessObjectName;
-    private final List<RuleResult> ruleResults = new ArrayList<>();
-    private final List<ObjectResult> memberResults = new ArrayList<>();
+    private final List<AssertionReport> assertionReports = new ArrayList<>();
+    private final List<BReport> memberReports = new ArrayList<>();
 
-    ObjectResult() {
+    BReport() {
         this("");
     }
 
-    ObjectResult(String businessObjectName) {
+    BReport(String businessObjectName) {
         this.businessObjectName = businessObjectName;
     }
 
-    void addRuleResults(List<RuleResult> RuleResults) {
-        this.ruleResults.addAll(RuleResults);
+    void addRuleReports(List<AssertionReport> assertionReports) {
+        this.assertionReports.addAll(assertionReports);
     }
 
-    void addMemberResults(List<ObjectResult> memberResults) {
-        this.memberResults.addAll(memberResults);
+    void addMemberReports(List<BReport> memberReports) {
+        this.memberReports.addAll(memberReports);
     }
 
     /**
@@ -53,12 +53,12 @@ public class ObjectResult {
      * @return true if all contained rules and members are valid, false otherwise.
      */
     public boolean isValid() {
-        for (RuleResult RuleResult : ruleResults) {
-            if (!RuleResult.isValid()) {
+        for (AssertionReport AssertionReport : assertionReports) {
+            if (!AssertionReport.isValid()) {
                 return false;
             }
         }
-        for (ObjectResult memberResult : memberResults) {
+        for (BReport memberResult : memberReports) {
             if (!memberResult.isValid()) {
                 return false;
             }
@@ -79,7 +79,7 @@ public class ObjectResult {
      * @param <T>              Type of the exception to throw.
      * @throws T throws the Exception built by the given builder if the result is invalid.
      */
-    public <T extends Throwable> void assertValidOrThrow(Function<String, T> exceptionBuilder) throws T {
+    public <T extends Throwable> void orThrow(Function<String, T> exceptionBuilder) throws T {
         if (!isValid())
             throw exceptionBuilder.apply(this.toString());
     }
@@ -101,44 +101,44 @@ public class ObjectResult {
      */
     public int getNbOfTests() {
         int sum = 0;
-        sum += ruleResults.size();
-        for (ObjectResult memberResult : memberResults) {
+        sum += assertionReports.size();
+        for (BReport memberResult : memberReports) {
             sum += memberResult.getNbOfTests();
         }
         return sum;
     }
 
     /**
-     * Get a detailed list of tested business rules.
+     * Get a detailed list of tested business assertions.
      *
-     * @return a list of the {@link RuleResult}
+     * @return a list of the {@link AssertionReport}
      */
-    public List<RuleResult> getRuleResults() {
-        return new ArrayList<>(ruleResults);
+    public List<AssertionReport> getRuleResults() {
+        return new ArrayList<>(assertionReports);
     }
 
     /**
      * Get a detailed list of tested members.
      *
-     * @return a list of {@link ObjectResult}
+     * @return a list of {@link BReport}
      */
-    public List<ObjectResult> getMemberResults() {
-        return new ArrayList<>(memberResults);
+    public List<BReport> getMemberReports() {
+        return new ArrayList<>(memberReports);
     }
 
     /**
-     * Get a detail list of failed business rules. Does not include failures of members.
+     * Get a detail list of failed business assertions. Does not include failures of members.
      *
      * @return a {@link List} of the failed test rules.
      */
-    public List<RuleResult> getInvalidRules() {
-        List<RuleResult> invalidRules = new ArrayList<>();
-        for (RuleResult testEntry : ruleResults) {
+    public List<AssertionReport> getInvalidRules() {
+        List<AssertionReport> invalidRules = new ArrayList<>();
+        for (AssertionReport testEntry : assertionReports) {
             if (!testEntry.isValid()) {
                 invalidRules.add(testEntry);
             }
         }
-        for (ObjectResult memberResult : memberResults) {
+        for (BReport memberResult : memberReports) {
             invalidRules.addAll(memberResult.getInvalidRules());
         }
         return invalidRules;
@@ -151,13 +151,13 @@ public class ObjectResult {
 
     private String toString(final String prefix) {
         StringBuilder sb = new StringBuilder();
-        for (RuleResult ruleResult : ruleResults) {
-            sb.append(prefix).append(businessObjectName).append(" ").append(ruleResult.toString()).append(System.lineSeparator());
+        for (AssertionReport assertionReport : assertionReports) {
+            sb.append(prefix).append(businessObjectName).append(" ").append(assertionReport.toString()).append(System.lineSeparator());
         }
-        if (!memberResults.isEmpty()) {
+        if (!memberReports.isEmpty()) {
             String subPrefix = prefix + businessObjectName + ".";
-            for (ObjectResult objectResult : memberResults) {
-                sb.append(objectResult.toString(subPrefix));
+            for (BReport report : memberReports) {
+                sb.append(report.toString(subPrefix));
             }
         }
         return sb.toString();
