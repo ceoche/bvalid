@@ -17,8 +17,13 @@ package io.github.ceoche.bvalid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -28,11 +33,12 @@ import java.util.function.Predicate;
  *
  * @param <T> type of the root object to create a validator for.
  *
- * @author Achraf Achkari
+ * @author Achraf Achkari, Cédric Eoche-Duval
  */
 public class AnnotationResolver<T> {
 
    private final Class<T> objectClass;
+   private final Map<Class<?>, Set<Class<?>>> memberSubTypes = new LinkedHashMap<>();
 
    /**
     * Construct a new {@link AnnotationResolver} for the given business object class.
@@ -44,6 +50,16 @@ public class AnnotationResolver<T> {
     */
    public AnnotationResolver(Class<T> objectClass) {
       this.objectClass = (Class<T>) assertBusinessObjectClass(objectClass);
+   }
+
+   public <M> AnnotationResolver<T> addMemberSubTypes(Class<M> memberClass, Class<? extends M>... subTypes) {
+      if (memberSubTypes.containsKey(memberClass)) {
+         memberSubTypes.get(memberClass).addAll(Arrays.asList(subTypes));
+      } else {
+         HashSet<Class<?>> modifiableSet = new HashSet<>(Arrays.asList(subTypes));
+         memberSubTypes.put(memberClass, modifiableSet);
+      }
+      return this;
    }
 
    /**
@@ -97,13 +113,17 @@ public class AnnotationResolver<T> {
       return rulesResult;
    }
 
-   private Set<BusinessMemberBuilder<? super T, ?>> getMembers(Class<T> clazz) {
-      Set<BusinessMemberBuilder<? super T, ?>> memberBuilderList = new LinkedHashSet<>();
+   private Map<String, BusinessMemberBuilder<? super T, ?>> getMembers(Class<T> clazz) {
+      Map<String, BusinessMemberBuilder<? super T, ?>> memberBuilderList = new LinkedHashMap<>();
       for (Method method : clazz.getMethods()) {
          if (method.isAnnotationPresent(BusinessMember.class)) {
             BusinessMember businessMember = method.getAnnotation(BusinessMember.class);
-            memberBuilderList.add(new BusinessMemberBuilder<>(businessMember.name(), getFunction(method),
-                  Set.of(getValidatorBuilderFromReturnType(method))));
+            String name = DefaultAssertions.isDefined(businessMember.name()) ?
+                  businessMember.name() :
+                  getUnboxedReturnType(method).getSimpleName();
+            memberBuilderList.put(name, new BusinessMemberBuilder<>(name, getFunction(method),
+                  getValidatorBuildersFromReturnType(method))
+            );
          }
       }
       return memberBuilderList;
@@ -131,9 +151,15 @@ public class AnnotationResolver<T> {
       };
    }
 
-   private BValidatorBuilder<?> getValidatorBuilderFromReturnType(Method method) throws InvocationException {
+   private Set<BValidatorBuilder<?>> getValidatorBuildersFromReturnType(Method method) throws InvocationException {
       Class<?> clazz = getUnboxedReturnType(method);
-      return new AnnotationResolver<>(clazz).getBuilder();
+      Set<BValidatorBuilder<?>> memberAndSubTypesBuilder = new HashSet<>();
+
+      memberAndSubTypesBuilder.add(new AnnotationResolver<>(clazz).getBuilder());
+      memberSubTypes.getOrDefault(clazz, Collections.emptySet()).stream()
+            .map(subType -> new AnnotationResolver<>(subType).getBuilder())
+            .forEach(memberAndSubTypesBuilder::add);
+      return memberAndSubTypesBuilder;
    }
 
    private Class<?> getUnboxedReturnType(Method method) {

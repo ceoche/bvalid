@@ -16,10 +16,14 @@
 
 package io.github.ceoche.bvalid;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class NonNullList<T> extends ArrayList<T> {
+
+   @Serial
+   private static final long serialVersionUID = -2841378163843538665L;
 
    public NonNullList(Collection<? extends T> c) {
       super(c);

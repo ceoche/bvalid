@@ -23,27 +23,6 @@ import org.junit.jupiter.api.Test;
 
 public class AssertAPITest {
 
-   @Test
-   void testAssertAPIInvalid() {
-      ArrayBusinessMember object = BusinessObjectMocks.instantiateBusinessMemberArray();
-      BValidator<ArrayBusinessMember> validator = getValidator(ArrayBusinessMember.class);
-      Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> validator.validate(object).orThrow(IllegalArgumentException::new)
-      );
-   }
 
-   @Test
-   void testAssertAPIValid() {
-      DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
-      BValidator<DefaultValidableMock> validator = getValidator(DefaultValidableMock.class);
-      Assertions.assertDoesNotThrow(
-            () -> validator.validate(object).orThrow(IllegalArgumentException::new)
-      );
-   }
-
-   private <T> BValidator<T> getValidator(Class<T> clazz) {
-      return new AnnotationResolver<>(clazz).buildValidator();
-   }
 
 }

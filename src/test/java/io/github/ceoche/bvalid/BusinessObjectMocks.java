@@ -118,24 +118,27 @@ public class BusinessObjectMocks {
          return mandatoryAttribute;
       }
 
-      public void setMandatoryAttribute(String mandatoryAttribute) {
+      public DefaultValidableMock setMandatoryAttribute(String mandatoryAttribute) {
          this.mandatoryAttribute = mandatoryAttribute;
+         return this;
       }
 
       public String getOptionalAttribute() {
          return optionalAttribute;
       }
 
-      public void setOptionalAttribute(String optionalAttribute) {
+      public DefaultValidableMock setOptionalAttribute(String optionalAttribute) {
          this.optionalAttribute = optionalAttribute;
+         return this;
       }
 
       public List<String> getOneOrMoreAssociation() {
          return oneOrMoreAssociation;
       }
 
-      public void setOneOrMoreAssociation(List<String> oneOrMoreAssociation) {
+      public DefaultValidableMock setOneOrMoreAssociation(List<String> oneOrMoreAssociation) {
          this.oneOrMoreAssociation = oneOrMoreAssociation;
+         return this;
       }
 
       @BusinessAssertion(id = "rule01", description = "mandatoryAttribute must be defined.")

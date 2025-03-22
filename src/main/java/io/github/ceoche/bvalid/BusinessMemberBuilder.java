@@ -15,6 +15,7 @@
  */
 package io.github.ceoche.bvalid;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -37,7 +38,7 @@ class BusinessMemberBuilder<T, M> {
    BusinessMemberBuilder(String name, Function<T, ?> getter, Set<BValidatorBuilder<? extends M>> bValidatorBuilder) {
       this.name = name;
       this.getter = getter;
-      this.validatorBuilders = bValidatorBuilder;
+      this.validatorBuilders = new HashSet<>(bValidatorBuilder);
    }
 
    String getName() {
@@ -50,6 +51,10 @@ class BusinessMemberBuilder<T, M> {
 
    Set<BValidatorBuilder<? extends M>> getValidatorBuilders() {
       return validatorBuilders;
+   }
+
+   void addValidatorBuilder(BValidatorBuilder<?> builder) {
+      validatorBuilders.add((BValidatorBuilder<? extends M>) builder);
    }
 
 }

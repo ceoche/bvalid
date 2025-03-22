@@ -4,6 +4,7 @@ import io.github.ceoche.bvalid.mock.Address;
 import io.github.ceoche.bvalid.mock.City;
 import io.github.ceoche.bvalid.mock.Person;
 import io.github.ceoche.bvalid.mock.Phone;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,7 @@ public class BReportTest {
     private static BValidator<Person> personValidatorWithPhones;
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         addressValidator = new BValidatorBuilder<>(Address.class)
                 .setBusinessObjectName("address")
                 .addAssertion( "CityValid", Address::isCityValid, "City must not be null")
@@ -40,14 +41,14 @@ public class BReportTest {
     }
 
     @Test
-    public void testGetNbOfTests(){
+    void testGetNbOfTests(){
         BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
         BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         assertEquals(3, result.getNbOfTests());
     }
 
     @Test
-    public void testToString(){
+    void testToString(){
         BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
         BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         String stringResult = result.toString();
@@ -57,7 +58,32 @@ public class BReportTest {
     }
 
     @Test
-    public void testGetRuleResultCorrect(){
+    void testAssertAPIInvalid() {
+        BusinessObjectMocks.ArrayBusinessMember object = BusinessObjectMocks.instantiateBusinessMemberArray();
+        BValidator<BusinessObjectMocks.ArrayBusinessMember> validator = getValidator(
+              BusinessObjectMocks.ArrayBusinessMember.class);
+        assertThrows(
+              IllegalArgumentException.class,
+              () -> validator.validate(object).orThrow(IllegalArgumentException::new)
+        );
+    }
+
+    @Test
+    void testAssertAPIValid() {
+        BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
+        BValidator<BusinessObjectMocks.DefaultValidableMock> validator = getValidator(
+              BusinessObjectMocks.DefaultValidableMock.class);
+        Assertions.assertDoesNotThrow(
+              () -> validator.validate(object).orThrow(IllegalArgumentException::new)
+        );
+    }
+
+    private <T> BValidator<T> getValidator(Class<T> clazz) {
+        return new AnnotationResolver<>(clazz).buildValidator();
+    }
+
+    @Test
+    void testGetRuleResultCorrect(){
         BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
         BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         AssertionReport assertionReport = getRuleResult(result, "validable-mock [rule01]");
@@ -65,7 +91,7 @@ public class BReportTest {
     }
 
     @Test
-    public void testGetRuleResultIncorrectRoot(){
+    void testGetRuleResultIncorrectRoot(){
         BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
         object.setMandatoryAttribute("  ");
         BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
@@ -74,7 +100,7 @@ public class BReportTest {
     }
 
     @Test
-    public void testGetRuleResultIncorrectRule(){
+    void testGetRuleResultIncorrectRule(){
         BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
         object.setMandatoryAttribute("  ");
         BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
@@ -82,7 +108,7 @@ public class BReportTest {
     }
 
     @Test
-    public void testGetRuleResultWithMemberCorrect(){
+    void testGetRuleResultWithMemberCorrect(){
         Address address = new Address("street", new City("city",-12345), "country");
         BReport result = addressValidator.validate(address);
         assertTrue(getRuleResult(result, "address [CityValid]").isValid());
@@ -92,7 +118,7 @@ public class BReportTest {
     }
 
     @Test
-    public void testGetRuleResultWithMemberIncorrect(){
+    void testGetRuleResultWithMemberIncorrect(){
         Address address = new Address("street", new City("",-12345), "country");
         BReport result = addressValidator.validate(address);
         Throwable throwable = assertThrows(IllegalArgumentException.class ,() -> getRuleResult(result, "address.wrongMember [cityNameValid]"));
@@ -100,7 +126,7 @@ public class BReportTest {
     }
 
     @Test
-    public void testGetRuleResultWithListMemberCorrect(){
+    void testGetRuleResultWithListMemberCorrect(){
         Person person = new Person(null,null,null,null,
                 List.of(new Phone("123456789", "+33"), new Phone("987654321", "aa"))
         );

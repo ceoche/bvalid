@@ -16,8 +16,11 @@
 package io.github.ceoche.bvalid;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -35,7 +38,7 @@ public class BValidatorBuilder<T> {
    private String businessObjectName = "";
 
    private final Set<BAssertion<? super T>> rules = new LinkedHashSet<>();
-   private final Set<BusinessMemberBuilder<? super T, ?>> memberBuilders = new LinkedHashSet<>();
+   private final Map<String, BusinessMemberBuilder<? super T, ?>> memberBuilders = new LinkedHashMap<>();
 
    /**
     * Constructor of BValidatorManualBuilder
@@ -47,6 +50,7 @@ public class BValidatorBuilder<T> {
    public BValidatorBuilder(Class<T> type) {
       if (type != null) {
          this.type = type;
+         this.businessObjectName = type.getSimpleName();
       } else {
          throw new IllegalArgumentException("Type must not be null.");
       }
@@ -64,7 +68,7 @@ public class BValidatorBuilder<T> {
    public BValidatorBuilder(Class<T> type, BValidatorBuilder<? super T> builder) {
       this(type);
       rules.addAll(builder.rules);
-      memberBuilders.addAll(builder.memberBuilders);
+      memberBuilders.putAll(builder.memberBuilders);
    }
 
    /**
@@ -142,18 +146,28 @@ public class BValidatorBuilder<T> {
       if (name == null || getter == null || isThereNullBuilder(bValidatorBuilders)) {
          throw new IllegalArgumentException("Name, getter and bValidatorBuilders must not be null");
       }
-      memberBuilders.add(new BusinessMemberBuilder<>(name, getter, Set.of(bValidatorBuilders)));
+      memberBuilders.put(name, new BusinessMemberBuilder<>(name, getter, Set.of(bValidatorBuilders)));
       return this;
    }
 
-
-   BValidatorBuilder<T> addAllMembers(Set<BusinessMemberBuilder<? super T, ?>> members) {
-      this.memberBuilders.addAll(members);
-      return this;
-   }
-
-   BValidatorBuilder<T> addAllRules(Set<BAssertion<? super T>> rules) {
-      this.rules.addAll(rules);
+   /**
+    * Add subtypes validators to a member of the business object.
+    *
+    * @param name               the name of the member to complete
+    * @param bValidatorBuilders the validators builders of the possible subtypes of the field to add
+    *
+    * @return the builder
+    *
+    * @throws NoSuchElementException if the member with the given name is not found in the builder.
+    * @throws ClassCastException     if the type covered by the given bValidatorBuilders are not subtypes of the member
+    *                                type.
+    */
+   public BValidatorBuilder<T> addMemberSubTypes(String memberName,
+                                                 BValidatorBuilder<?>... bValidatorBuilders) {
+      BusinessMemberBuilder<? super T, ?> businessMemberBuilder = getMemberBuilders(memberName);
+      for (BValidatorBuilder<?> bValidatorBuilder : bValidatorBuilders) {
+         businessMemberBuilder.addValidatorBuilder(bValidatorBuilder);
+      }
       return this;
    }
 
@@ -197,6 +211,23 @@ public class BValidatorBuilder<T> {
       return build(cache);
    }
 
+   BValidatorBuilder<T> addAllMembers(Map<String, BusinessMemberBuilder<? super T, ?>> members) {
+      this.memberBuilders.putAll(members);
+      return this;
+   }
+
+   BValidatorBuilder<T> addAllRules(Set<BAssertion<? super T>> rules) {
+      this.rules.addAll(rules);
+      return this;
+   }
+
+   private BusinessMemberBuilder<? super T, ?> getMemberBuilders(String memberName) {
+      return Optional.ofNullable(memberBuilders.get(memberName))
+            .orElseThrow(
+                  () -> new NoSuchElementException("No member with name " + memberName + " found in the builder.")
+            );
+   }
+
    private BValidator<T> build(BuildingCache cache) {
       assertBuilderNotEmpty();
 
@@ -212,7 +243,7 @@ public class BValidatorBuilder<T> {
          );
          cache.put(this, validator);
          membersPlaceholder.addAll(
-               this.memberBuilders.stream()
+               this.memberBuilders.values().stream()
                      .map(businessMemberBuilder -> buildMember(businessMemberBuilder, cache))
                      .collect(Collectors.toSet())
          );
