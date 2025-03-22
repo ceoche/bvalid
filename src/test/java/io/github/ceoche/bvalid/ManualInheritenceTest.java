@@ -32,9 +32,9 @@ class ManualInheritenceTest {
       assertReportContains(
             new Object[][]{
                   {"ParentHasMember", "", "Member must be defined.", true},
-                  {"ParentHasMember", "rule01", "mandatoryAttribute must be defined.", true},
-                  {"ParentHasMember", "", "optionalAttribute must be defined if present.", true},
-                  {"ParentHasMember", "", "oneOrMoreAssociation must have at least one element.", true}
+                  {"my-only-member", "rule01", "mandatoryAttribute must be defined.", true},
+                  {"my-only-member", "", "optionalAttribute must be defined if present.", true},
+                  {"my-only-member", "", "oneOrMoreAssociation must have at least one element.", true}
             },
             report
       );

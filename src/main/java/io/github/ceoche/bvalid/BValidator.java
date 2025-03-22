@@ -1,5 +1,4 @@
 /*
- * TODO update copyright
  * Copyright 2022-2023 Cédric Eoche-Duval
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -139,10 +138,9 @@ public class BValidator<T> {
       return validate(Arrays.asList(array), name, visitedObjects);
    }
 
-   //FIXME clean un correlation between BVallidator and member
-   private <R, F extends R> BReport validateMember(final F object, final BValidator<? extends R> validator,
+   private <M, O extends M> BReport validateMember(final O object, final BValidator<? extends M> validator,
                                                    final String memberName, Set<Object> visitedObjects) {
-      return ((BValidator<F>) validator).validate(object, memberName, visitedObjects);
+      return ((BValidator<O>) validator).validate(object, memberName, visitedObjects);
    }
 
    private <R, F extends R> List<BReport> validateMemberCollection(final Collection<F> collection,
@@ -241,7 +239,7 @@ public class BValidator<T> {
       return (memberValue instanceof Object[]);
    }
 
-   private <R> BValidator<? extends R> getValidatorByType(Map<Class<? extends R>, BValidator<? extends R>> validators,
+   private <M> BValidator<? extends M> getValidatorByType(Map<Class<? extends M>, BValidator<? extends M>> validators,
                                                           Object object) {
       Class<?> clazz = object.getClass();
       String className = clazz.getName();

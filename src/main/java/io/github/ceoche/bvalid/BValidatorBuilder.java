@@ -153,7 +153,7 @@ public class BValidatorBuilder<T> {
    /**
     * Add subtypes validators to a member of the business object.
     *
-    * @param name               the name of the member to complete
+    * @param memberName               the name of the member to complete
     * @param bValidatorBuilders the validators builders of the possible subtypes of the field to add
     *
     * @return the builder
