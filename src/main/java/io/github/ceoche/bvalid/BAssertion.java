@@ -15,16 +15,8 @@
  */
 package io.github.ceoche.bvalid;
 
-import java.util.Objects;
 import java.util.function.Predicate;
 
-/**
- * A business assertion object is a predicate with a description (and an optional id).
- * It is used to validate a business object with the manual builder.
- * It's the equivalent of a {@link BusinessAssertion} in annotation based validation.
- *
- * @param <T> the type of the business object on which the rule apply.
- */
 class BAssertion<T> {
 
     private final String id;
@@ -33,64 +25,27 @@ class BAssertion<T> {
 
     private final Predicate<T> predicate;
 
-
-    /**
-     * Constructor of a {@link BAssertion} object.
-     *
-     * @param predicate        Java predicate (assertion) that will be applied during the validation to assess whether the rule is respected or not.
-     * @param description Textual description of the rule.
-     */
-    BAssertion(Predicate<T> predicate, String description) {
-        this("", predicate, description);
-    }
-
-    /**
-     * Constructor of a {@link BAssertion} with a requirement id.
-     *
-     * @param id          id of the rule. Used for requirement engineering.
-     * @param predicate        Java predicate (assertion) that will be applied during the validation to assess whether the rule is respected or not.
-     * @param description Textual description of the rule.
-     */
     BAssertion(String id, Predicate<T> predicate, String description) {
         this.id = id != null ? id : "";
         this.description = description;
         this.predicate = predicate;
     }
 
-    /**
-     * Get the id of the rule.
-     *
-     * @return the id of the rule.
-     */
     String getId() {
         return id;
     }
 
-    /**
-     * Get the description of the rule
-     *
-     * @return the description.
-     */
     String getDescription() {
         return description;
     }
 
     Boolean apply(T object) {
-        return predicate.test(object);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BAssertion)) return false;
-        BAssertion<?> that = (BAssertion<?>) o;
-
-        return description.equals(that.description) &&
-                predicate.equals(that.predicate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(description, predicate);
+        try {
+            return predicate.test(object);
+        } catch (InvocationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InvocationException(e);
+        }
     }
 }

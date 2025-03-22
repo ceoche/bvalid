@@ -35,9 +35,9 @@ import java.lang.annotation.Target;
  *
  *    public String name;
  *
- *    @BusinessRule(description = "name must be defined.")
+ *    @BusinessAssertion(description = "name must be defined.")
  *    public boolean isNameValid() {
- *       return name != null && !name.trim().isEmpty();
+ *       return name != null && !name.isBlank();
  *    }
  * }}</pre>
  *

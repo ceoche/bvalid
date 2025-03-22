@@ -19,7 +19,7 @@ package io.github.ceoche.bvalid;
 import java.util.*;
 import java.util.concurrent.LinkedTransferQueue;
 
-public class BusinessObjectMocks {
+public class ObjectMocks {
 
    public static DefaultValidableMock instantiateValid() {
       DefaultValidableMock object = new DefaultValidableMock();
@@ -50,19 +50,19 @@ public class BusinessObjectMocks {
    }
 
    public static IllegalBusinessObject instantiateWithoutAssertions() {
-      IllegalBusinessObject object= new IllegalBusinessObject();
+      IllegalBusinessObject object = new IllegalBusinessObject();
       object.setName("value");
       return object;
    }
 
-   public static OnlyBusinessMembers instantiateBusinessMemberInvalid() {
-      OnlyBusinessMembers onlyBusinessMembers = new OnlyBusinessMembers();
-      onlyBusinessMembers.setValidableMock((DefaultValidableMock) instantiateInvalid());
-      return onlyBusinessMembers;
+   public static OnlyBusinessMember instantiateBusinessMemberInvalid() {
+      OnlyBusinessMember onlyBusinessMember = new OnlyBusinessMember();
+      onlyBusinessMember.setValidableMock((DefaultValidableMock) instantiateInvalid());
+      return onlyBusinessMember;
    }
 
-   public static OnlyBusinessMembers instantiateBusinessMemberNull() {
-      return new OnlyBusinessMembers();
+   public static OnlyBusinessMember instantiateBusinessMemberNull() {
+      return new OnlyBusinessMember();
    }
 
    public static CollectionBusinessMembers instantiateBusinessMemberCollection() {
@@ -70,8 +70,10 @@ public class BusinessObjectMocks {
       DefaultValidableMock invalidMock = (DefaultValidableMock) instantiateInvalid();
       CollectionBusinessMembers collecBusinessMember = new CollectionBusinessMembers();
       collecBusinessMember.setValidableMockList(Arrays.asList(new DefaultValidableMock[]{validMock, invalidMock}));
-      collecBusinessMember.setValidableMockSet(new HashSet<DefaultValidableMock>(collecBusinessMember.getValidableMockList()));
-      collecBusinessMember.setValidableMockQueue(new LinkedTransferQueue<DefaultValidableMock>(collecBusinessMember.getValidableMockList()));
+      collecBusinessMember.setValidableMockSet(
+            new HashSet<DefaultValidableMock>(collecBusinessMember.getValidableMockList()));
+      collecBusinessMember.setValidableMockQueue(
+            new LinkedTransferQueue<DefaultValidableMock>(collecBusinessMember.getValidableMockList()));
       return collecBusinessMember;
    }
 
@@ -99,13 +101,23 @@ public class BusinessObjectMocks {
       return new ExceptionBusinessMemberObject();
    }
 
-    public static BusinessObjectWithNoAnnotation instantiateBusinessObjectWithNoAnnotation() {
-        BusinessObjectWithNoAnnotation object = new BusinessObjectWithNoAnnotation();
-        object.setName("noAnnotation");
-        object.setMandatoryAttribute("mandatory");
-        object.getOneOrMoreAssociation().add("one association");
-        return object;
-    }
+   public static BusinessObjectWithNoAnnotation instantiateBusinessObjectWithNoAnnotation() {
+      BusinessObjectWithNoAnnotation object = new BusinessObjectWithNoAnnotation();
+      object.setName("noAnnotation");
+      object.setMandatoryAttribute("mandatory");
+      object.getOneOrMoreAssociation().add("one association");
+      return object;
+   }
+
+   public static MemberIsNotBO instantiateMemberIsNotBO() {
+      return new MemberIsNotBO().setMember(
+            new NotABusinessObject().setAttribute("attribute")
+      );
+   }
+
+   public static ParentHasMember instantiateParentHasMember() {
+      return (ParentHasMember) new ParentHasMember().setValidableMock(instantiateValid());
+   }
 
    @BusinessObject(name = "validable-mock")
    public static class DefaultValidableMock {
@@ -214,7 +226,7 @@ public class BusinessObjectMocks {
    }
 
    @BusinessObject
-   public static class OnlyBusinessMembers {
+   public static class OnlyBusinessMember {
 
       private DefaultValidableMock validableMock;
 
@@ -223,8 +235,16 @@ public class BusinessObjectMocks {
          return validableMock;
       }
 
-      public void setValidableMock(DefaultValidableMock validableMock) {
+      public OnlyBusinessMember setValidableMock(DefaultValidableMock validableMock) {
          this.validableMock = validableMock;
+         return this;
+      }
+   }
+
+   public static class ParentHasMember extends OnlyBusinessMember {
+      @BusinessAssertion(description = "Member must be defined.")
+      public boolean isAttributeDefined() {
+         return DefaultAssertions.isDefined(getValidableMock());
       }
    }
 
@@ -281,6 +301,36 @@ public class BusinessObjectMocks {
       }
    }
 
+   @BusinessObject(name = "recursive")
+   public static class Recursive {
+      private String name;
+      private Recursive reference;
+
+      public String getName() {
+         return name;
+      }
+
+      public Recursive setName(String name) {
+         this.name = name;
+         return this;
+      }
+
+      @BusinessMember(name = "reference")
+      public Recursive getReference() {
+         return reference;
+      }
+
+      public Recursive setReference(Recursive reference) {
+         this.reference = reference;
+         return this;
+      }
+
+      @BusinessAssertion(description = "Name must be defined.")
+      public boolean isNameDefined() {
+         return DefaultAssertions.isDefined(name);
+      }
+   }
+
    @BusinessObject(name = "without-assertions")
    public static class IllegalBusinessObject {
       private String name;
@@ -301,7 +351,7 @@ public class BusinessObjectMocks {
    @BusinessObject(name = "illegalBusinessRule")
    public static class IllegalBusinessRuleObject {
 
-      @BusinessAssertion(description = "The object must be defined")
+      @BusinessAssertion(description = "An assertion must not take any parameter.")
       public boolean isValid(Object object) {
          return object != null;
       }
@@ -320,7 +370,7 @@ public class BusinessObjectMocks {
    public static class ExceptionBusinessRuleObject {
 
       @BusinessAssertion(description = "To test InvocationException")
-      public boolean getAnException() {
+      public boolean isThrowingAnException() {
          throw new IllegalStateException();
       }
    }
@@ -329,7 +379,7 @@ public class BusinessObjectMocks {
    public static class ExceptionBusinessMemberObject {
 
       @BusinessMember
-      public DefaultValidableMock getMember() {
+      public DefaultValidableMock getMemberException() {
          throw new IllegalStateException();
       }
    }
@@ -348,8 +398,36 @@ public class BusinessObjectMocks {
 
       @BusinessAssertion(description = "The object name must be defined")
       public boolean isNameValid() {
-          return name != null && !name.isEmpty();
+         return name != null && !name.isEmpty();
       }
 
+   }
+
+   @BusinessObject
+   public static class MemberIsNotBO {
+      private NotABusinessObject member;
+
+      @BusinessMember
+      public NotABusinessObject getMember() {
+         return member;
+      }
+
+      public MemberIsNotBO setMember(NotABusinessObject member) {
+         this.member = member;
+         return this;
+      }
+   }
+
+   public static class NotABusinessObject {
+      private String attribute;
+
+      public String getAttribute() {
+         return attribute;
+      }
+
+      public NotABusinessObject setAttribute(String attribute) {
+         this.attribute = attribute;
+         return this;
+      }
    }
 }

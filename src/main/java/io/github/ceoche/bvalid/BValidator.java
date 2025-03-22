@@ -38,10 +38,10 @@ public class BValidator<T> {
    private final Set<BMember<? super T, ?>> members;
 
    /**
-    * Hidden constructor. Use {@link BValidatorBuilder} or {@link AnnotationResolver} can create a
-    * {@link BValidator}.
+    * Hidden constructor. Use {@link BValidatorBuilder} or {@link AnnotationResolver} can create a {@link BValidator}.
     */
-   BValidator(Class<T> type, String objectName, Set<BAssertion<? super T>> assertions, Set<BMember<? super T, ?>> members) {
+   BValidator(Class<T> type, String objectName, Set<BAssertion<? super T>> assertions,
+              Set<BMember<? super T, ?>> members) {
       this.type = type;
       this.objectName = objectName;
       this.assertions = assertions;
@@ -117,8 +117,9 @@ public class BValidator<T> {
       if (object == null) {
          throw new NullPointerException("The object to validate cannot be null");
       }
+      visitedObjects.add(object);
       final BReport result = new BReport(name);
-      List<AssertionReport> assertionReports = this.validateBusinessRules(object);
+      List<AssertionReport> assertionReports = this.validateBusinessAssertions(object);
       List<BReport> memberResults = this.validateBusinessMembers(object, visitedObjects);
       result.addRuleReports(assertionReports);
       result.addMemberReports(memberResults);
@@ -145,8 +146,7 @@ public class BValidator<T> {
    }
 
    private <R, F extends R> List<BReport> validateMemberCollection(final Collection<F> collection,
-                                                                   final Map<Class<? extends R>, BValidator<?
-                                                                         extends R>> validators,
+                                                                   final Map<Class<? extends R>, BValidator<? extends R>> validators,
                                                                    final String memberName,
                                                                    Set<Object> visitedObjects) {
       List<BReport> results = new ArrayList<>();
@@ -165,7 +165,7 @@ public class BValidator<T> {
    }
 
 
-   private List<AssertionReport> validateBusinessRules(final T object) {
+   private List<AssertionReport> validateBusinessAssertions(final T object) {
       final List<AssertionReport> results = new ArrayList<>();
       for (final BAssertion<? super T> rule : assertions) {
          results.add(new AssertionReport(rule.getId(), rule.getDescription(), rule.apply(object)));
@@ -179,17 +179,13 @@ public class BValidator<T> {
          try {
             final Object memberValue = getMemberValue(object, member);
             if (!isObjectAlreadyVisited(memberValue, visitedObjects)) {
-               visitedObjects.add(memberValue);
                results.addAll(validateAnyMember(memberValue, member.getValidators(), member.getName(), visitedObjects));
             }
-         } catch (IllegalArgumentException e) {
-            throw new IllegalBusinessObjectException(
-                  "Method '" + member.getName() + "' does not respect BusinessMember " +
-                        "method format (should be public with no arguments and return an object " +
-                        "value that is a BusinessObject or a group of BusinessObject).", e);
+         } catch (IllegalBusinessObjectException e) {
+            throw e;
          } catch (ClassCastException e) {
             throw new IllegalBusinessObjectException("Wrong member type", e);
-         } catch (final Throwable e) {
+         } catch (final Exception e) {
             if (e.getCause() != null) {
                throw new InvocationException(e.getCause());
             }

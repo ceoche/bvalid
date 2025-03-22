@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -52,6 +53,15 @@ public class AnnotationResolver<T> {
       this.objectClass = (Class<T>) assertBusinessObjectClass(objectClass);
    }
 
+   /**
+    * Declare known subtypes to a member. The resolver will also visit them and build validators for them.
+    *
+    * @param memberClass the class of the member.
+    * @param subTypes    classes to add as subtypes to the member
+    * @param <M>         the type of the member
+    *
+    * @return this resolver
+    */
    public <M> AnnotationResolver<T> addMemberSubTypes(Class<M> memberClass, Class<? extends M>... subTypes) {
       if (memberSubTypes.containsKey(memberClass)) {
          memberSubTypes.get(memberClass).addAll(Arrays.asList(subTypes));
@@ -73,10 +83,7 @@ public class AnnotationResolver<T> {
     * @throws TypeResolutionException if the resolver fails to resolve types of members.
     */
    public BValidatorBuilder<T> getBuilder() {
-      return new BValidatorBuilder<T>(objectClass)
-            .setBusinessObjectName(getObjectName(objectClass))
-            .addAllRules(getRules(objectClass))
-            .addAllMembers(getMembers(objectClass));
+      return getBuilder(new HashMap<>());
    }
 
    /**
@@ -90,6 +97,14 @@ public class AnnotationResolver<T> {
     */
    public BValidator<T> buildValidator() {
       return getBuilder().build();
+   }
+
+   private BValidatorBuilder<T> getBuilder(Map<Class<?>, BValidatorBuilder<?>> visitedClasses) {
+      BValidatorBuilder<T> thisBuilder = new BValidatorBuilder<>(objectClass)
+            .setObjectName(getObjectName(objectClass))
+            .addAllRules(getRules(objectClass));
+      visitedClasses.put(objectClass, thisBuilder);
+      return thisBuilder.addAllMembers(getMembers(objectClass, visitedClasses));
    }
 
    private String getObjectName(Class<T> clazz) {
@@ -113,7 +128,8 @@ public class AnnotationResolver<T> {
       return rulesResult;
    }
 
-   private Map<String, BusinessMemberBuilder<? super T, ?>> getMembers(Class<T> clazz) {
+   private Map<String, BusinessMemberBuilder<? super T, ?>> getMembers(Class<T> clazz,
+                                                                       Map<Class<?>, BValidatorBuilder<?>> visitedClasses) {
       Map<String, BusinessMemberBuilder<? super T, ?>> memberBuilderList = new LinkedHashMap<>();
       for (Method method : clazz.getMethods()) {
          if (method.isAnnotationPresent(BusinessMember.class)) {
@@ -121,8 +137,11 @@ public class AnnotationResolver<T> {
             String name = DefaultAssertions.isDefined(businessMember.name()) ?
                   businessMember.name() :
                   getUnboxedReturnType(method).getSimpleName();
-            memberBuilderList.put(name, new BusinessMemberBuilder<>(name, getFunction(method),
-                  getValidatorBuildersFromReturnType(method))
+            memberBuilderList.put(name,
+                  new BusinessMemberBuilder<>(
+                        name, getFunction(method),
+                        getValidatorBuildersFromReturnType(method, visitedClasses)
+                  )
             );
          }
       }
@@ -151,11 +170,17 @@ public class AnnotationResolver<T> {
       };
    }
 
-   private Set<BValidatorBuilder<?>> getValidatorBuildersFromReturnType(Method method) throws InvocationException {
+   private Set<BValidatorBuilder<?>> getValidatorBuildersFromReturnType(Method method,
+                                                                        Map<Class<?>, BValidatorBuilder<?>> visitedClasses)
+         throws InvocationException {
       Class<?> clazz = getUnboxedReturnType(method);
       Set<BValidatorBuilder<?>> memberAndSubTypesBuilder = new HashSet<>();
 
-      memberAndSubTypesBuilder.add(new AnnotationResolver<>(clazz).getBuilder());
+      memberAndSubTypesBuilder.add(
+            visitedClasses.containsKey(clazz) ?
+                  visitedClasses.get(clazz) :
+                  new AnnotationResolver<>(clazz).getBuilder(visitedClasses)
+      );
       memberSubTypes.getOrDefault(clazz, Collections.emptySet()).stream()
             .map(subType -> new AnnotationResolver<>(subType).getBuilder())
             .forEach(memberAndSubTypesBuilder::add);
@@ -188,12 +213,16 @@ public class AnnotationResolver<T> {
 
 
    private Class<?> assertBusinessObjectClass(Class<?> clazz) {
-      if (!Object.class.equals(clazz) && (isBusinessObject(clazz) || hasASuperClassBusinessObject(
-            clazz.getSuperclass()))) {
-         return clazz;
+      if(clazz != null) {
+         if (!Object.class.equals(clazz) && (isBusinessObject(clazz) || hasASuperClassBusinessObject(
+               clazz.getSuperclass()))) {
+            return clazz;
+         } else {
+            throw new IllegalBusinessObjectException("Neither the class " + clazz.getCanonicalName()
+                  + "nor any of its super-class is annotated with @BusinessObject.");
+         }
       } else {
-         throw new IllegalBusinessObjectException("Neither the class " + clazz.getCanonicalName()
-               + "nor any of its super-class is annotated with @BusinessObject.");
+         throw new IllegalArgumentException("Cannot resolve a null class.");
       }
    }
 

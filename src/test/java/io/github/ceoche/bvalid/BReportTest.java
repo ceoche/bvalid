@@ -21,19 +21,19 @@ public class BReportTest {
     @BeforeAll
     static void setUp() {
         addressValidator = new BValidatorBuilder<>(Address.class)
-                .setBusinessObjectName("address")
+                .setObjectName("address")
                 .addAssertion( "CityValid", Address::isCityValid, "City must not be null")
                 .addAssertion("StreetValid", Address::isStreetValid, "Street must not be empty")
                 .addMember("city", Address::getCity, new BValidatorBuilder<>(City.class)
-                        .setBusinessObjectName("city")
+                        .setObjectName("city")
                         .addAssertion("cityNameValid", City::isNamesValid, "City name must not be empty")
                         .addAssertion("cityZipcodeValid", City::isZipCodeValid, "City zipcode must be valid")
                 )
                 .build();
         personValidatorWithPhones = new BValidatorBuilder<>(Person.class)
-                .setBusinessObjectName("person")
+                .setObjectName("person")
                 .addMember("phones", Person::getPhones, new BValidatorBuilder<>(Phone.class)
-                        .setBusinessObjectName("Phone")
+                        .setObjectName("Phone")
                         .addAssertion("numberValid", Phone::isNumberValid, "Number must not be null")
                         .addAssertion("countryCodeValid", Phone::isCountryCodeValid, "Country code must not be valid")
                 )
@@ -42,15 +42,15 @@ public class BReportTest {
 
     @Test
     void testGetNbOfTests(){
-        BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
-        BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
+        ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
+        BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         assertEquals(3, result.getNbOfTests());
     }
 
     @Test
     void testToString(){
-        BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
-        BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
+        ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
+        BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         String stringResult = result.toString();
         assertTrue(stringResult.contains("validable-mock [rule01] mandatoryAttribute must be defined. => valid"));
         assertTrue(stringResult.contains("validable-mock oneOrMoreAssociation must have at least one element. => valid"));
@@ -59,9 +59,9 @@ public class BReportTest {
 
     @Test
     void testAssertAPIInvalid() {
-        BusinessObjectMocks.ArrayBusinessMember object = BusinessObjectMocks.instantiateBusinessMemberArray();
-        BValidator<BusinessObjectMocks.ArrayBusinessMember> validator = getValidator(
-              BusinessObjectMocks.ArrayBusinessMember.class);
+        ObjectMocks.ArrayBusinessMember object = ObjectMocks.instantiateBusinessMemberArray();
+        BValidator<ObjectMocks.ArrayBusinessMember> validator = getValidator(
+              ObjectMocks.ArrayBusinessMember.class);
         assertThrows(
               IllegalArgumentException.class,
               () -> validator.validate(object).orThrow(IllegalArgumentException::new)
@@ -70,9 +70,9 @@ public class BReportTest {
 
     @Test
     void testAssertAPIValid() {
-        BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
-        BValidator<BusinessObjectMocks.DefaultValidableMock> validator = getValidator(
-              BusinessObjectMocks.DefaultValidableMock.class);
+        ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
+        BValidator<ObjectMocks.DefaultValidableMock> validator = getValidator(
+              ObjectMocks.DefaultValidableMock.class);
         Assertions.assertDoesNotThrow(
               () -> validator.validate(object).orThrow(IllegalArgumentException::new)
         );
@@ -84,26 +84,26 @@ public class BReportTest {
 
     @Test
     void testGetRuleResultCorrect(){
-        BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
-        BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
+        ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
+        BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         AssertionReport assertionReport = getRuleResult(result, "validable-mock [rule01]");
         assertTrue(assertionReport.isValid());
     }
 
     @Test
     void testGetRuleResultIncorrectRoot(){
-        BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
+        ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
         object.setMandatoryAttribute("  ");
-        BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
+        BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         Throwable throwable = assertThrows(IllegalArgumentException.class ,() -> getRuleResult(result, "wrongRoot [rule01]"));
         assertEquals("Rule path does not start with the root object name", throwable.getMessage());
     }
 
     @Test
     void testGetRuleResultIncorrectRule(){
-        BusinessObjectMocks.DefaultValidableMock object = BusinessObjectMocks.instantiateValid();
+        ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
         object.setMandatoryAttribute("  ");
-        BReport result = new AnnotationResolver<>(BusinessObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
+        BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
         assertNull(getRuleResult(result, "validable-mock [wrongRule]"));
     }
 

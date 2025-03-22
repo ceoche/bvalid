@@ -35,7 +35,7 @@ public class BValidatorBuilder<T> {
 
    private final Class<T> type;
 
-   private String businessObjectName = "";
+   private String objectName = "";
 
    private final Set<BAssertion<? super T>> rules = new LinkedHashSet<>();
    private final Map<String, BusinessMemberBuilder<? super T, ?>> memberBuilders = new LinkedHashMap<>();
@@ -50,7 +50,7 @@ public class BValidatorBuilder<T> {
    public BValidatorBuilder(Class<T> type) {
       if (type != null) {
          this.type = type;
-         this.businessObjectName = type.getSimpleName();
+         this.objectName = type.getSimpleName();
       } else {
          throw new IllegalArgumentException("Type must not be null.");
       }
@@ -84,12 +84,12 @@ public class BValidatorBuilder<T> {
     * Define the name of the business object to build a validator for. It is recommended to set the name of the root
     * object for a better reporting.
     *
-    * @param businessObjectName name of the business object.
+    * @param objectName name of the business object.
     *
     * @return this instance of BValidatorBuilder.
     */
-   public BValidatorBuilder<T> setBusinessObjectName(String businessObjectName) {
-      this.businessObjectName = businessObjectName;
+   public BValidatorBuilder<T> setObjectName(String objectName) {
+      this.objectName = objectName;
       return this;
    }
 
@@ -237,7 +237,7 @@ public class BValidatorBuilder<T> {
          Set<BMember<? super T, ?>> membersPlaceholder = new LinkedHashSet<>();
          BValidator<T> validator = new BValidator<>(
                this.type,
-               this.businessObjectName,
+               this.objectName,
                this.rules,
                membersPlaceholder
          );

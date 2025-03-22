@@ -21,7 +21,7 @@ class Assertions4BValid {
          AssertionReport expectedAssertionReport = buildExpectedAssertionReport(expectedResultRaw);
          assertTrue(assertMemberReport(actualReport, (String) expectedResultRaw[MEMBER_NAME])
                      .getRuleResults().contains(expectedAssertionReport),
-               "actualResults should contains the entry: " + expectedAssertionReport);
+               "actualResults should contains the entry: '" + expectedAssertionReport + "'");
       }
    }
 

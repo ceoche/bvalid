@@ -294,7 +294,7 @@ class Example {
   public static void main(String[] args) {
 
     BValidator<Author> authorValidator = new BValidatorBuilder<>(Author.class)
-            .setBusinessObjectName(
+            .setObjectName(
                     "author") // optional, but we recommend to set it for better error messages.
             .addAssertion(Author::isNameValid, "Author's name must be defined.")
             .build();
@@ -333,7 +333,7 @@ class Example {
 
   public static void main(String[] args) {
     BValidator<Book> bValidator = new BValidatorBuilder<>(Book.class)
-            .setBusinessObjectName(
+            .setObjectName(
                     "Book") // optional, but we recommend to set it for better error messages.
             .addAssertion(Book::isAuthorValid, "Author must not be null.")
             .addMember("author", Book::getAuthor,
@@ -359,7 +359,7 @@ class Example {
 
   public static void main(String[] args) {
     BValidator<Library> bValidator = new BValidatorBuilder<>(Library.class)
-            .setBusinessObjectName(
+            .setObjectName(
                     "library") // optional, but we recommend to set it for better error messages.
             .addMember("books", Library::getBooks,
                     new BValidatorBuilder<>(Book.class)
@@ -412,7 +412,7 @@ class Example {
 
   public static void main(String[] args) {
     BValidator<Library> bValidator = new BValidatorBuilder<>(Library.class)
-            .setBusinessObjectName(
+            .setObjectName(
                     "library") // optional, but we recommend to set it for better error messages.
             .addMember("books", Library::getBooks,
                     new BValidatorBuilder<>(Book.class)
@@ -473,7 +473,8 @@ class Example {
     BValidatorBuilder<Author> authorValidatorBuilder = new BValidatorBuilder<>(Author.class)
             .addAssertion(Author::isNameValid, "Author's name must be defined.");
     BValidator<Library> bValidator = new BValidatorBuilder<>(Library.class)
-            .setBusinessObjectName("library") // optional, but we recommend to set it for better error messages.
+            .setObjectName(
+                    "library") // optional, but we recommend to set it for better error messages.
             .addMember("books", Library::getBooks,
                     new BValidatorBuilder<>(Book.class)
                             .addAssertion(Book::isAuthorValid, "Author must be defined.")
