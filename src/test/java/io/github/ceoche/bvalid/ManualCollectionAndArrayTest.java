@@ -45,7 +45,7 @@ class ManualCollectionAndArrayTest {
       assertFalse(results.isEmpty());
       for (int index = 0; index < results.size(); index++) {
          assertTrue(results.get(index).isValid());
-         assertEquals("validable-mock[" + index + "]", results.get(index).getBusinessObjectName(),
+         assertEquals("validable-mock[" + index + "]", results.get(index).getObjectName(),
                "Results' name of BusinessObjects in a collection should be incremented like an " +
                      "array.");
       }

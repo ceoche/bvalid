@@ -58,10 +58,10 @@ public class BReportTest {
     }
 
     @Test
-    void testGetNbOfTests(){
+    void testGetNbOfAssertions(){
         ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
         BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
-        assertEquals(3, result.getNbOfTests());
+        assertEquals(3, result.getNbOfAssertions());
     }
 
     @Test
@@ -179,14 +179,14 @@ public class BReportTest {
     public static AssertionReport getRuleResult(BReport result, String rulePath) {
         String[] path = rulePath.split("[\\.\\s]");
         BReport currentReport = result;
-        if(!path[0].equals(result.getBusinessObjectName())) {
+        if(!path[0].equals(result.getObjectName())) {
             throw new IllegalArgumentException("Rule path does not start with the root object name");
         }
         if(path.length == 1) {
             throw new IllegalArgumentException("Rule path must contain at least one member");
         }
         if(elementIsRule(path[1])) {
-            for (AssertionReport assertionReport : currentReport.getRuleResults()) {
+            for (AssertionReport assertionReport : currentReport.getAssertionReports()) {
                 if(assertionReport.getId().equals(path[1].substring(1, path[1].length() - 1))) {
                     return assertionReport;
                 }
@@ -194,7 +194,7 @@ public class BReportTest {
         }
         else {
             BReport memberResult = result.getMemberReports().stream()
-                    .filter(bReport -> bReport.getBusinessObjectName().equals(path[1]))
+                    .filter(bReport -> bReport.getObjectName().equals(path[1]))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Rule path does not match any member"));
             return getRuleResult(memberResult, rulePath.substring(rulePath.indexOf(".") + 1));

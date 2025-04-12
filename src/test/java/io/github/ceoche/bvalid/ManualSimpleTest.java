@@ -66,7 +66,7 @@ class ManualSimpleTest {
    void testAssertionIdReport() {
       DefaultValidableMock object = ObjectMocks.instantiateValid();
       BReport report = buildObjectValidator(DefaultValidableMock.class).validate(object);
-      for (AssertionReport AssertionReport : report.getRuleResults()) {
+      for (AssertionReport AssertionReport : report.getAssertionReports()) {
          if (AssertionReport.getDescription().contains("mandatoryAttribute")) {
             assertEquals("rule01", AssertionReport.getId());
          } else {

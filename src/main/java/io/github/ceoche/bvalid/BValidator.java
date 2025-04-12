@@ -70,7 +70,7 @@ public class BValidator<T> {
 
 
    /**
-    * Verify if an array of objects is valid by running business assertions tests methods listed in
+    * Verify if an collection of objects is valid by running business assertions tests methods listed in
     * {@link BValidator#assertions} and by validating all members accessible from the {@link BValidator#members}. The
     * validation will test all business assertions and store the results in an {@link BReport}.
     *
@@ -90,7 +90,7 @@ public class BValidator<T> {
    }
 
    /**
-    * Verify if a collections of type T is valid by running business assertions tests methods listed in
+    * Verify if a array of type T is valid by running business assertions tests methods listed in
     * {@link BValidator#assertions} and by validating all members accessible from the {@link BValidator#members}. The
     * validation will test all business assertions and store the results in an {@link BReport}.
     *
@@ -121,7 +121,7 @@ public class BValidator<T> {
       final BReport result = new BReport(name);
       List<AssertionReport> assertionReports = this.validateBusinessAssertions(object);
       List<BReport> memberResults = this.validateBusinessMembers(object, visitedObjects);
-      result.addRuleReports(assertionReports);
+      result.addAssertionReports(assertionReports);
       result.addMemberReports(memberResults);
       return result;
    }

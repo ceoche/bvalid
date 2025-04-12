@@ -33,11 +33,11 @@ class Assertions4BValid {
    static void assertReportContains(Object[][] expectedReportMatrix,
                                     BReport actualReport) {
 
-      assertTrue(expectedReportMatrix.length <= actualReport.getNbOfTests());
+      assertTrue(expectedReportMatrix.length <= actualReport.getNbOfAssertions());
       for (Object[] expectedResultRaw : expectedReportMatrix) {
          AssertionReport expectedAssertionReport = buildExpectedAssertionReport(expectedResultRaw);
          assertTrue(assertMemberReport(actualReport, (String) expectedResultRaw[MEMBER_NAME])
-                     .getRuleResults().contains(expectedAssertionReport),
+                     .getAssertionReports().contains(expectedAssertionReport),
                "actualResults should contains the entry: '" + expectedAssertionReport + "'");
       }
    }
@@ -62,7 +62,7 @@ class Assertions4BValid {
    }
 
    private static Optional<BReport> getMemberReport(BReport report, String memberName) {
-      if (report.getBusinessObjectName().equals(memberName)) {
+      if (report.getObjectName().equals(memberName)) {
          return Optional.of(report);
       } else {
          for (BReport businessMemberReport : report.getMemberReports()) {
