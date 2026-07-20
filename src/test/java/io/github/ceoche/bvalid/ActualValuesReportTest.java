@@ -75,9 +75,56 @@ class ActualValuesReportTest {
       assertTrue(phoneReport.getAssertionReports().get(1).toString().contains("Actual values : {countryCode=aa} - "));
    }
 
+   @Test
+   void testAnnotationActualValues() {
+      ObjectMocks.BusinessObjectWithNoAnnotation object = ObjectMocks.instantiateBusinessObjectWithNoAnnotation();
+      BValidator<ObjectMocks.BusinessObjectWithNoAnnotation> validator = new AnnotationResolver<>(ObjectMocks.BusinessObjectWithNoAnnotation.class).buildValidator();
+      BReport report = validator.validate(object);
+      assertTrue(report.isValid());
+
+      AssertionReport assertionReport = report.getAssertionReports().getFirst();
+      assertTrue(assertionReport.isValid());
+
+      assertEquals(1, assertionReport.getActualValues().size());
+      assertEquals("noAnnotation", assertionReport.getActualValues().get("name"));
+   }
+
+   @Test
+   void testIllegalSupplierName() {
+      AnnotationResolver<IllegalSupplierNameObject> resolver = new AnnotationResolver<>(IllegalSupplierNameObject.class);
+      InvocationException e = assertThrows(InvocationException.class, resolver::buildValidator);
+      assertInstanceOf(NoSuchMethodException.class, e.getCause());
+      assertTrue(e.getMessage().contains("getname()"));
+   }
+
    private BReport findReport(BReport report, String objectName) {
       return report.getMemberReports().stream().filter(
             r -> objectName.equals(r.getObjectName())
       ).findFirst().orElseThrow();
+   }
+
+   @BusinessObject(name = "IllegalSupplierName")
+   public static class IllegalSupplierNameObject {
+
+      private String name;
+
+      public String getName() {
+         return name;
+      }
+
+      public IllegalSupplierNameObject setName(String name) {
+         this.name = name;
+         return this;
+      }
+
+      @BusinessAssertion(
+            description = "An assertion must not take any parameter.",
+            actualValueSuppliers = {
+                  @BusinessAssertion.ActualValueSupplier(attributeName = "name", supplier = "getname"),
+            }
+      )
+      public boolean isValid(Object object) {
+         return object != null;
+      }
    }
 }

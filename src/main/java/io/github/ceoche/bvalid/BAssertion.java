@@ -31,10 +31,6 @@ class BAssertion<T> {
 
    private final Set<ActualValueSupplier<T>> actualValueSuppliers;
 
-   BAssertion(String id, Predicate<T> predicate, String description) {
-      this(id, predicate, description, Set.of());
-   }
-
    BAssertion(String id, Predicate<T> predicate, String description, Set<ActualValueSupplier<T>> actualValueSuppliers) {
       this.id = id != null ? id : "";
       this.description = description;
