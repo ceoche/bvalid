@@ -173,19 +173,13 @@ public class BReport {
 
    @Override
    public String toString() {
-      return toString("");
-   }
-
-   private String toString(final String prefix) {
       StringBuilder sb = new StringBuilder();
       for (AssertionReport assertionReport : assertionReports) {
-         sb.append(prefix).append(objectName).append(" ").append(assertionReport.toString())
-               .append(System.lineSeparator());
+         sb.append(assertionReport).append(System.lineSeparator());
       }
       if (!memberReports.isEmpty()) {
-         String subPrefix = prefix + objectName + ".";
          for (BReport report : memberReports) {
-            sb.append(report.toString(subPrefix));
+            sb.append(report.toString());
          }
       }
       return sb.toString();

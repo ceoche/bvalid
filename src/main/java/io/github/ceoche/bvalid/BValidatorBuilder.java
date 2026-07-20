@@ -16,13 +16,7 @@
  */
 package io.github.ceoche.bvalid;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -95,21 +89,23 @@ public class BValidatorBuilder<T> {
    }
 
    /**
-    * Add a rule in form of Java Predicate {@link Predicate<T>} to the validator.
+    * Adds a custom assertion to the validator with a specified rule, description, and optional actual values.
     *
-    * @param id          the requirement id of the rule
-    * @param rule        the rule to add
-    * @param description the description of the rule
-    *
-    * @return the builder
-    *
-    * @throws IllegalArgumentException if the rule is null
+    * @param id          the unique identifier for the assertion. Can be an empty string if not specified.
+    * @param rule        the predicate representing the business rule to apply. Must not be null.
+    * @param description the description of the assertion, providing details about the rule.
+    * @param actualValueSuppliers a set of functions representing the actual values used in the assertion's description.
+    *                     Can be empty if no values are required.
+    * @return the current instance of {@code BValidatorBuilder}, allowing method chaining.
+    * @throws IllegalArgumentException if the rule is null.
     */
-   public BValidatorBuilder<T> addAssertion(String id, Predicate<T> rule, String description) {
+   @SafeVarargs
+   public final BValidatorBuilder<T> addAssertion(String id, Predicate<T> rule, String description, ActualValueSupplier<T>... actualValueSuppliers) {
       if (rule == null) {
          throw new IllegalArgumentException("Rule predicate must not be null");
       }
-      rules.add(new BAssertion<>(id, rule, description));
+      Set<ActualValueSupplier<T>> supplierSet = new LinkedHashSet<>(Arrays.asList(actualValueSuppliers));
+      rules.add(new BAssertion<>(id, rule, description, supplierSet));
       return this;
    }
 
@@ -123,8 +119,9 @@ public class BValidatorBuilder<T> {
     *
     * @throws IllegalArgumentException if the rule is null
     */
-   public BValidatorBuilder<T> addAssertion(Predicate<T> rule, String description) {
-      addAssertion("", rule, description);
+   @SafeVarargs
+   public final BValidatorBuilder<T> addAssertion(Predicate<T> rule, String description, ActualValueSupplier<T>... actualValueSuppliers) {
+      addAssertion("", rule, description, actualValueSuppliers);
       return this;
    }
 
@@ -295,6 +292,7 @@ public class BValidatorBuilder<T> {
          return cache.containsKey(bValidatorBuilder);
       }
 
+      @SuppressWarnings("unchecked")
       public <T> BValidator<T> get(BValidatorBuilder<T> bValidatorBuilder) {
          return (BValidator<T>) cache.get(bValidatorBuilder);
       }

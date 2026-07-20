@@ -54,7 +54,7 @@ public @interface BusinessAssertion {
     *
     * @return the identifier of the business assertion.
     */
-   public String id() default "";
+   String id() default "";
 
    /**
     * A textual description of the formal expression implemented by the method.

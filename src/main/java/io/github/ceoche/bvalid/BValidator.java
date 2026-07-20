@@ -65,7 +65,7 @@ public class BValidator<T> {
     * @throws NullPointerException           if the given object is null.
     */
    public BReport validate(final T object) {
-      return this.validate(object, objectName, new HashSet<>());
+      return this.validate(object, objectName, new HashSet<>(), "");
    }
 
 
@@ -106,21 +106,22 @@ public class BValidator<T> {
     * @throws NullPointerException           if the given object is null.
     */
    public List<BReport> validate(final T[] array) {
-      return this.validate(array, objectName, new HashSet<>());
+      return validate(Arrays.asList(array), objectName, new HashSet<>());
    }
 
    Class<T> getType() {
       return type;
    }
 
-   private BReport validate(T object, String name, Set<Object> visitedObjects) {
+   private BReport validate(T object, String name, Set<Object> visitedObjects, String location) {
       if (object == null) {
          throw new NullPointerException("The object to validate cannot be null");
       }
       visitedObjects.add(object);
       final BReport result = new BReport(name);
-      List<AssertionReport> assertionReports = this.validateBusinessAssertions(object);
-      List<BReport> memberResults = this.validateBusinessMembers(object, visitedObjects);
+      location = location.isEmpty() ? name : location + "." + name;
+      List<AssertionReport> assertionReports = this.validateBusinessAssertions(object, location);
+      List<BReport> memberResults = this.validateBusinessMembers(object, visitedObjects, location);
       result.addAssertionReports(assertionReports);
       result.addMemberReports(memberResults);
       return result;
@@ -130,55 +131,56 @@ public class BValidator<T> {
       List<BReport> results = new ArrayList<>();
       int index = -1;
       for (T object : collection) {
-         results.add(this.validate(object, name + "[" + ++index + "]", visitedObjects));
+         results.add(this.validate(object, name + "[" + ++index + "]", visitedObjects, ""));
       }
       return results;
    }
 
-   private List<BReport> validate(T[] array, String name, Set<Object> visitedObjects) {
-      return validate(Arrays.asList(array), name, visitedObjects);
-   }
-
+   @SuppressWarnings("unchecked")
    private <M, O extends M> BReport validateMember(final O object, final BValidator<? extends M> validator,
-                                                   final String memberName, Set<Object> visitedObjects) {
-      return ((BValidator<O>) validator).validate(object, memberName, visitedObjects);
+                                                   final String memberName, Set<Object> visitedObjects,
+                                                   final String location) {
+      return ((BValidator<O>) validator).validate(object, memberName, visitedObjects, location);
    }
 
+   @SuppressWarnings("unchecked")
    private <R, F extends R> List<BReport> validateMemberCollection(final Collection<F> collection,
                                                                    final Map<Class<? extends R>, BValidator<? extends R>> validators,
                                                                    final String memberName,
-                                                                   Set<Object> visitedObjects) {
+                                                                   Set<Object> visitedObjects,
+                                                                   String location) {
       List<BReport> results = new ArrayList<>();
       int index = -1;
       for (F object : collection) {
          results.add(((BValidator<F>) getValidatorByType(validators, object)).validate(object,
-               memberName + "[" + ++index + "]", visitedObjects));
+               memberName + "[" + ++index + "]", visitedObjects, location));
       }
       return results;
    }
 
    private <R> List<BReport> validateMemberArray(final R[] array,
                                                  final Map<Class<? extends R>, BValidator<? extends R>> validators,
-                                                 final String memberName, Set<Object> visitedObjects) {
-      return validateMemberCollection(Arrays.asList(array), validators, memberName, visitedObjects);
+                                                 final String memberName, Set<Object> visitedObjects,
+                                                 final String location) {
+      return validateMemberCollection(Arrays.asList(array), validators, memberName, visitedObjects, location);
    }
 
-
-   private List<AssertionReport> validateBusinessAssertions(final T object) {
+   private List<AssertionReport> validateBusinessAssertions(final T object, String location) {
       final List<AssertionReport> results = new ArrayList<>();
       for (final BAssertion<? super T> rule : assertions) {
-         results.add(new AssertionReport(rule.getId(), rule.getDescription(), rule.apply(object)));
+         Map<String, String> actualValues = rule.resolveActualValues(object);
+         results.add(new AssertionReport(rule.getId(), rule.getDescription(), rule.apply(object), location, actualValues));
       }
       return results;
    }
 
-   private List<BReport> validateBusinessMembers(final T object, Set<Object> visitedObjects) {
+   private List<BReport> validateBusinessMembers(final T object, Set<Object> visitedObjects, String location) {
       final List<BReport> results = new ArrayList<>();
       for (final BMember<? super T, ?> member : members) {
          try {
             final Object memberValue = getMemberValue(object, member);
             if (!isObjectAlreadyVisited(memberValue, visitedObjects)) {
-               results.addAll(validateAnyMember(memberValue, member.getValidators(), member.getName(), visitedObjects));
+               results.addAll(validateAnyMember(memberValue, member.getValidators(), member.getName(), visitedObjects, location));
             }
          } catch (IllegalBusinessObjectException e) {
             throw e;
@@ -211,7 +213,7 @@ public class BValidator<T> {
    @SuppressWarnings("unchecked")
    private <M> List<BReport> validateAnyMember(final Object memberValue,
                                                Map<Class<? extends M>, BValidator<? extends M>> validators,
-                                               String name, Set<Object> visitedObjects) {
+                                               String name, Set<Object> visitedObjects, String location) {
       final List<BReport> results = new ArrayList<>();
       if (memberValue == null) {
          return Collections.emptyList();
@@ -219,15 +221,15 @@ public class BValidator<T> {
       if (isValidCollection(memberValue)) {
          if (!((Collection<?>) memberValue).isEmpty()) {
             results.addAll(
-                  this.validateMemberCollection((Collection<M>) memberValue, validators, name, visitedObjects));
+                  this.validateMemberCollection((Collection<M>) memberValue, validators, name, visitedObjects, location));
          }
       } else if (isValidArray(memberValue)) {
          if (((Object[]) memberValue).length > 0) {
-            results.addAll(this.validateMemberArray((M[]) memberValue, validators, name, visitedObjects));
+            results.addAll(this.validateMemberArray((M[]) memberValue, validators, name, visitedObjects, location));
          }
       } else {
          results.add(
-               this.validateMember(memberValue, getValidatorByType(validators, memberValue), name, visitedObjects));
+               this.validateMember(memberValue, getValidatorByType(validators, memberValue), name, visitedObjects, location));
       }
       return results;
    }
