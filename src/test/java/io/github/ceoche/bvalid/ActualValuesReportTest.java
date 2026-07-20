@@ -55,6 +55,8 @@ class ActualValuesReportTest {
       assertEquals("Person Address must not be null => valid", report.getAssertionReports().getFirst().toString());
       assertTrue(report.getAssertionReports().get(1).toString().contains("Actual values : {age=25} - "));
       assertTrue(report.getAssertionReports().get(2).toString().contains("Actual values : {name=Jean} - "));
+      assertEquals(1, report.getAssertionReports().get(1).getActualValues().size());
+      assertEquals("25", report.getAssertionReports().get(1).getActualValues().get("age"));
 
       BReport emailReport = findReport(report, "emails[0]");
       assertTrue(emailReport.getAssertionReports().getFirst().toString().contains("Actual values : {domain=test.com} - "));

@@ -21,6 +21,7 @@ import io.github.ceoche.bvalid.mock.Address;
 import io.github.ceoche.bvalid.mock.City;
 import io.github.ceoche.bvalid.mock.Person;
 import io.github.ceoche.bvalid.mock.Phone;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,14 @@ public class BReportTest {
       ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
       BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
       assertEquals(3, result.getNbOfAssertions());
+   }
+
+   @Test
+   void testGetLocationAssertions() {
+      ObjectMocks.DefaultValidableMock object = ObjectMocks.instantiateValid();
+      BReport result = new AnnotationResolver<>(ObjectMocks.DefaultValidableMock.class).buildValidator().validate(object);
+      AssertionReport report = result.getAssertionReports().getFirst();
+      assertEquals("validable-mock", report.getLocation());
    }
 
    @Test
@@ -160,6 +169,12 @@ public class BReportTest {
       assertTrue(Objects.requireNonNull(getRuleResult(result, "person.phones[1] [numberValid]")).isValid());
       assertFalse(Objects.requireNonNull(getRuleResult(result, "person.phones[1] [countryCodeValid]")).isValid());
    }
+
+   @Test
+   void testEqualsVerifierAssertionReport() {
+      EqualsVerifier.forClass(AssertionReport.class).verify();
+   }
+
 
    // get RuleResult path from root, ex: "person.address.street[streetNameValid]"
 
