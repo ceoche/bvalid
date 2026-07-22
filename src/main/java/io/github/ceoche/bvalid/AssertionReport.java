@@ -116,7 +116,7 @@ public class AssertionReport {
     * @return the location as a string, or null if no location is set.
     */
    public String getLocation() {
-      return location;
+      return asLocationString();
    }
 
    /**
