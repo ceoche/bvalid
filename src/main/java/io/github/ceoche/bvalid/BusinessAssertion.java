@@ -99,12 +99,9 @@ public @interface BusinessAssertion {
       String attributeName();
 
       /**
-       * Specifies an optional list of supplier identifiers that can provide values
-       * relevant to the business assertion being validated. The supplied values
-       * may be used for enhancing the contextual understanding or providing
-       * necessary data for assertion evaluation.
+       * Provides the supplier used to deliver the actual value in the context of business assertions.
        *
-       * @return an array of value supplier identifiers associated with the business assertion.
+       * @return the supplier as a String.
        */
       String supplier();
    }

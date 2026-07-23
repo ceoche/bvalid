@@ -57,11 +57,17 @@ class BAssertion<T> {
    }
 
    Map<String, String> resolveActualValues(T object) {
-      Map<String, String> actualValues = new LinkedHashMap<>();
-      for (ActualValueSupplier<T> actualValueSupplier : actualValueSuppliers) {
-         String value = actualValueSupplier.actualValue().apply(object).toString();
-         actualValues.put(actualValueSupplier.name(), value);
+      try {
+         Map<String, String> actualValues = new LinkedHashMap<>();
+         for (ActualValueSupplier<T> actualValueSupplier : actualValueSuppliers) {
+            String value = actualValueSupplier.actualValue().apply(object).toString();
+            actualValues.put(actualValueSupplier.name(), value);
+         }
+         return actualValues;
+      } catch (InvocationException e) {
+         throw e;
+      } catch (Exception e) {
+         throw new InvocationException(e);
       }
-      return actualValues;
    }
 }

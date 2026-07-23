@@ -113,14 +113,18 @@ class ManualSimpleTest {
    void testExceptionWhileValidatingRule() {
       ExceptionBusinessRuleObject object = ObjectMocks.instantiateExceptionBusinessRule();
       BValidator<ExceptionBusinessRuleObject> validator = buildObjectValidator(ExceptionBusinessRuleObject.class);
-      assertThrows(InvocationException.class, () -> validator.validate(object), "Should have raised an " + InvocationException.class.getCanonicalName());
+      InvocationException e = assertThrows(InvocationException.class, () -> validator.validate(object), "Should have raised an " + InvocationException.class.getCanonicalName());
+      assertEquals(IllegalStateException.class, e.getCause().getClass(),
+            "The original exception of the assertion should be wrapped as cause.");
    }
 
    @Test
    void testExceptionWhileGettingMember() {
       ExceptionBusinessMemberObject object = ObjectMocks.instantiateExceptionBusinessMember();
       BValidator<ExceptionBusinessMemberObject> validator = buildObjectValidator(ExceptionBusinessMemberObject.class);
-      assertThrows(InvocationException.class, () -> validator.validate(object), "Should have raised an " + InvocationException.class.getCanonicalName());
+      InvocationException e = assertThrows(InvocationException.class, () -> validator.validate(object), "Should have raised an " + InvocationException.class.getCanonicalName());
+      assertEquals(IllegalStateException.class, e.getCause().getClass(),
+            "The original exception of the assertion should be wrapped as cause.");
    }
 
    @SuppressWarnings("unchecked")

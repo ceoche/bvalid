@@ -97,6 +97,19 @@ class ActualValuesReportTest {
       assertTrue(e.getMessage().contains("getname()"));
    }
 
+   @Test
+   void testNullValueSupplier() {
+      BValidator<City> validator = new BValidatorBuilder<>(City.class)
+            .setObjectName("City")
+            .addAssertion(City::isNamesValid, "City name must not be empty", new ActualValueSupplier<>(null, c -> {
+               throw new RuntimeException("");
+            }))
+            .addAssertion(City::isZipCodeValid, "City zipcode must be valid", new ActualValueSupplier<>("zipcode", City::getZipCode))
+            .build();
+      City city = new City("", 22);
+      assertThrows(InvocationException.class, () -> validator.validate(city));
+   }
+
    private BReport findReport(BReport report, String objectName) {
       return report.getMemberReports().stream().filter(
             r -> objectName.equals(r.getObjectName())
