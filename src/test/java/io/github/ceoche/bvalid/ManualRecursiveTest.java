@@ -37,12 +37,13 @@ class ManualRecursiveTest {
       assertFalse(report.isValid());
       assertReportContains(
             new Object[][]{
-                  {"recursive", "", "Name must be defined.", false},
-                  {"reference", "", "Name must be defined.", true}
+                  {"recursive", "", "Name must be defined.", false, "recursive"},
+                  {"reference", "", "Name must be defined.", true, "recursive.reference"}
             },
             report);
    }
 
+   @SuppressWarnings("unchecked")
    protected  <T> BValidator<T> buildObjectValidator(Class<T> clazz) {
       if (clazz.equals(Recursive.class)) {
          BValidatorBuilder<Recursive> builder = new BValidatorBuilder<>(Recursive.class)

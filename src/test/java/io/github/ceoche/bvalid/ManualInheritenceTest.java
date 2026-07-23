@@ -48,10 +48,10 @@ class ManualInheritenceTest {
       assertTrue(report.isValid(), "the business object must be valid");
       assertReportContains(
             new Object[][]{
-                  {"ParentHasMember", "", "Member must be defined.", true},
-                  {"my-only-member", "rule01", "mandatoryAttribute must be defined.", true},
-                  {"my-only-member", "", "optionalAttribute must be defined if present.", true},
-                  {"my-only-member", "", "oneOrMoreAssociation must have at least one element.", true}
+                  {"ParentHasMember", "", "Member must be defined.", true, "ParentHasMember"},
+                  {"my-only-member", "rule01", "mandatoryAttribute must be defined.", true, "ParentHasMember.my-only-member"},
+                  {"my-only-member", "", "optionalAttribute must be defined if present.", true, "ParentHasMember.my-only-member"},
+                  {"my-only-member", "", "oneOrMoreAssociation must have at least one element.", true, "ParentHasMember.my-only-member"}
             },
             report
       );
@@ -78,10 +78,10 @@ class ManualInheritenceTest {
 
       assertReportContains(
             new Object[][]{
-                  {"With-inheritance", "", "Child attribute must be defined.", true},
-                  {"With-inheritance", "rule01", "mandatoryAttribute must be defined.", false},
-                  {"With-inheritance", "", "optionalAttribute must be defined if present.", true},
-                  {"With-inheritance", "", "oneOrMoreAssociation must have at least one element.", false}
+                  {"With-inheritance", "", "Child attribute must be defined.", true, "With-inheritance"},
+                  {"With-inheritance", "rule01", "mandatoryAttribute must be defined.", false, "With-inheritance"},
+                  {"With-inheritance", "", "optionalAttribute must be defined if present.", true, "With-inheritance"},
+                  {"With-inheritance", "", "oneOrMoreAssociation must have at least one element.", false, "With-inheritance"}
             },
             report);
    }
@@ -99,14 +99,15 @@ class ManualInheritenceTest {
       assertFalse(report.isValid());
       assertReportContains(
             new Object[][]{
-                  {"my-only-member", "", "Child attribute must be defined.", false},
-                  {"my-only-member", "rule01", "mandatoryAttribute must be defined.", true},
-                  {"my-only-member", "", "optionalAttribute must be defined if present.", true},
-                  {"my-only-member", "", "oneOrMoreAssociation must have at least one element.", true}
+                  {"my-only-member", "", "Child attribute must be defined.", false, "OnlyBusinessMember.my-only-member"},
+                  {"my-only-member", "rule01", "mandatoryAttribute must be defined.", true, "OnlyBusinessMember.my-only-member"},
+                  {"my-only-member", "", "optionalAttribute must be defined if present.", true, "OnlyBusinessMember.my-only-member"},
+                  {"my-only-member", "", "oneOrMoreAssociation must have at least one element.", true, "OnlyBusinessMember.my-only-member"}
             },
             report);
    }
 
+   @SuppressWarnings("unchecked")
    protected <R> BValidator<R> buildObjectValidator(Class<R> clazz) {
       if (WithInheritance.class.equals(clazz)) {
          return (BValidator<R>) getWithInheritanceBValidatorBuilder().build();

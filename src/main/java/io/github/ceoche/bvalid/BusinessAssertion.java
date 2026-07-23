@@ -23,11 +23,14 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Mark a method as business assertion validation in an object annotated with {@link BusinessObject}. Such business
+ * Mark a method as business assertion validation in an object annotated with {@link BusinessObject}. Such a business
  * assertion method must be a boolean expression assertion. By convention if the result is 'true', it means the business
  * assertion is correct/valid, and false otherwise.
  * <p>
- * A method marked with this annotation must be public, take no parameters and return a boolean value.
+ * A method marked with this annotation must be public, take no parameters, and return a boolean value.
+ * <p>
+ * This annotation can also reference actualValueSuppliers i.e., getters methods for the attributes
+ * it is validating.
  * <p>
  * example:
  * <pre>
@@ -36,7 +39,16 @@ import java.lang.annotation.Target;
  *
  *    public String name;
  *
- *    @BusinessAssertion(description = "name must be defined.")
+ *    public String getName() {
+ *       return name;
+ *    }
+ *
+ *    @BusinessAssertion(
+ *       description = "name must be defined.",
+ *       actualValueSuppliers = {
+ *          @ActualValueSupplier(attributeName = "name", supplier = "getName"),
+ *       }
+ *    )
  *    public boolean isNameValid() {
  *       return name != null && !name.isBlank();
  *    }
@@ -54,7 +66,7 @@ public @interface BusinessAssertion {
     *
     * @return the identifier of the business assertion.
     */
-   public String id() default "";
+   String id() default "";
 
    /**
     * A textual description of the formal expression implemented by the method.
@@ -62,4 +74,35 @@ public @interface BusinessAssertion {
     * @return the description of the rule.
     */
    String description();
+
+   /**
+    * Specifies an array of {@link ActualValueSupplier} entries that provide contextual data
+    * or evaluated values associated with the business assertion.
+    *
+    * @return an array of {@link ActualValueSupplier} instances, representing the suppliers
+    *         needed for providing relevant attribute values for the associated validation logic.
+    */
+   ActualValueSupplier[] actualValueSuppliers() default { };
+
+   /**
+    * Annotation representing a supplier of actual values for use in business assertions.
+    * This annotation is used to provide additional contextual data or evaluated
+    * values that are associated with the validation logic of a business assertion.
+    */
+   @interface ActualValueSupplier {
+
+      /**
+       * Retrieves the name of the attribute associated with this supplier annotation.
+       *
+       * @return the name of the attribute as a String.
+       */
+      String attributeName();
+
+      /**
+       * Provides the supplier used to deliver the actual value in the context of business assertions.
+       *
+       * @return the supplier as a String.
+       */
+      String supplier();
+   }
 }
