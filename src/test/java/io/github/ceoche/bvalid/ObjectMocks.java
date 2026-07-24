@@ -86,6 +86,13 @@ public class ObjectMocks {
       return arrayBusinessMember;
    }
 
+   public static MapBusinessMember instantiateMapBusinessMember() {
+      DefaultValidableMock validMock = instantiateValid();
+      MapBusinessMember mock = new MapBusinessMember();
+      mock.addValidableMockMap("valid", validMock);
+      return mock;
+   }
+
    public static IllegalBusinessRuleObject instantiateIllegalBusinessRule() {
       return new IllegalBusinessRuleObject();
    }
@@ -299,6 +306,21 @@ public class ObjectMocks {
 
       public void setValidableMockArray(DefaultValidableMock[] validableMockArray) {
          this.validableMockArray = validableMockArray;
+      }
+   }
+
+   @BusinessObject
+   public static class MapBusinessMember {
+
+      private final Map<String, DefaultValidableMock> validableMockMap = new LinkedHashMap<>();
+
+      @BusinessMember(name = "map")
+      public Map<String, DefaultValidableMock> getValidableMockMap() {
+        return validableMockMap;
+      }
+
+      public void addValidableMockMap(String key, DefaultValidableMock mock) {
+         validableMockMap.put(key, mock);
       }
    }
 

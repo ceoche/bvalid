@@ -109,6 +109,26 @@ public class BValidator<T> {
       return validate(Arrays.asList(array), objectName, new HashSet<>());
    }
 
+   /**
+    * Validates the given map of business objects, running business assertion tests and validating all
+    * members for each object. The validation process generates a list of {@link BReport}, where each
+    * report holds the results of the business assertions and member validations.
+    *
+    * @param map the map containing business objects to validate, keyed by their respective names.
+    * @return a list of {@link BReport} objects that encapsulate the results of the validation
+    *         process for each object in the map.
+    * @throws InvocationException            if an exception occurs while invoking a
+    *                                        {@link java.util.function.Predicate} or a
+    *                                        {@link java.util.function.Function}. The original
+    *                                        exception will be wrapped as a cause.
+    * @throws IllegalBusinessObjectException if an error occurs while validating a member
+    *                                        (e.g., wrong return type).
+    * @throws NullPointerException           if the given map is null or contains null values.
+    */
+   public List<BReport> validate(final Map<Object, T> map) {
+      return validate(map, objectName, new HashSet<>());
+   }
+
    Class<T> getType() {
       return type;
    }
@@ -132,6 +152,14 @@ public class BValidator<T> {
       int index = -1;
       for (T object : collection) {
          results.add(this.validate(object, name + "[" + ++index + "]", visitedObjects, ""));
+      }
+      return results;
+   }
+
+   private List<BReport> validate(Map<Object, T> map, String name, Set<Object> visitedObjects) {
+      List<BReport> results = new ArrayList<>();
+      for (Map.Entry<Object, T> entry : map.entrySet()) {
+         results.add(this.validate(entry.getValue(), name + "[" + entry.getKey().toString() + "]", visitedObjects, ""));
       }
       return results;
    }
@@ -163,6 +191,20 @@ public class BValidator<T> {
                                                  final String memberName, Set<Object> visitedObjects,
                                                  final String location) {
       return validateMemberCollection(Arrays.asList(array), validators, memberName, visitedObjects, location);
+   }
+
+   @SuppressWarnings("unchecked")
+   private <R, F extends R> List<BReport> validateMemberMap(final Map<Object, F> map,
+                                                                   final Map<Class<? extends R>, BValidator<? extends R>> validators,
+                                                                   final String memberName,
+                                                                   Set<Object> visitedObjects,
+                                                                   String location) {
+      List<BReport> results = new ArrayList<>();
+      for (Map.Entry<Object, F> entry : map.entrySet()) {
+         results.add(((BValidator<F>) getValidatorByType(validators, entry.getValue())).validate(entry.getValue(),
+               memberName + "[" + entry.getKey().toString() + "]", visitedObjects, location));
+      }
+      return results;
    }
 
    private List<AssertionReport> validateBusinessAssertions(final T object, String location) {
@@ -227,11 +269,23 @@ public class BValidator<T> {
          if (((Object[]) memberValue).length > 0) {
             results.addAll(this.validateMemberArray((M[]) memberValue, validators, name, visitedObjects, location));
          }
+      } else if (isValidMap(memberValue)) {
+         if (!((Map<?, ?>) memberValue).isEmpty()) {
+            results.addAll(
+                  this.validateMemberMap((Map<Object, M>) memberValue, validators, name, visitedObjects, location));
+         }
       } else {
          results.add(
                this.validateMember(memberValue, getValidatorByType(validators, memberValue), name, visitedObjects, location));
       }
       return results;
+   }
+
+   private boolean isValidMap(Object memberValue) {
+      if (memberValue instanceof Map<?, ?> map) {
+         return map.keySet().iterator().next() instanceof String;
+      }
+      return false;
    }
 
    private boolean isValidCollection(Object memberValue) {
