@@ -60,8 +60,9 @@ class BAssertion<T> {
       try {
          Map<String, String> actualValues = new LinkedHashMap<>();
          for (ActualValueSupplier<T> actualValueSupplier : actualValueSuppliers) {
-            String value = actualValueSupplier.actualValue().apply(object).toString();
-            actualValues.put(actualValueSupplier.name(), value);
+            Object value = actualValueSupplier.actualValue().apply(object);
+            String result = value == null ? "null" : value.toString();
+            actualValues.put(actualValueSupplier.name(), result);
          }
          return actualValues;
       } catch (InvocationException e) {

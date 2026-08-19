@@ -139,12 +139,19 @@ public class BValidator<T> {
       }
       visitedObjects.add(object);
       final BReport result = new BReport(name);
-      location = location.isEmpty() ? name : location + "." + name;
+      location = appendPath(location, name);
       List<AssertionReport> assertionReports = this.validateBusinessAssertions(object, location);
       List<BReport> memberResults = this.validateBusinessMembers(object, visitedObjects, location);
       result.addAssertionReports(assertionReports);
       result.addMemberReports(memberResults);
       return result;
+   }
+
+   private String appendPath(String location, String name) {
+      if (name.isEmpty()) {
+         return location;
+      }
+      return location.isEmpty() ? name : location + "." + name;
    }
 
    private List<BReport> validate(Collection<T> collection, String name, Set<Object> visitedObjects) {
@@ -283,6 +290,9 @@ public class BValidator<T> {
 
    private boolean isValidMap(Object memberValue) {
       if (memberValue instanceof Map<?, ?> map) {
+         if (map.isEmpty()) {
+            return true;
+         }
          return map.keySet().iterator().next() instanceof String;
       }
       return false;
