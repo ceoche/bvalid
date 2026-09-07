@@ -18,6 +18,8 @@ package io.github.ceoche.bvalid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +52,7 @@ public class AnnotationResolver<T> {
     * @throws IllegalBusinessObjectException if the class is neither annotated with {@link BusinessObject} nor any of
     *                                        its super-class.
     */
+   @SuppressWarnings("unchecked")
    public AnnotationResolver(Class<T> objectClass) {
       this.objectClass = (Class<T>) assertBusinessObjectClass(objectClass);
    }
@@ -63,7 +66,8 @@ public class AnnotationResolver<T> {
     *
     * @return this resolver
     */
-   public <M> AnnotationResolver<T> addMemberSubTypes(Class<M> memberClass, Class<? extends M>... subTypes) {
+   @SafeVarargs
+   public final <M> AnnotationResolver<T> addMemberSubTypes(Class<M> memberClass, Class<? extends M>... subTypes) {
       if (memberSubTypes.containsKey(memberClass)) {
          memberSubTypes.get(memberClass).addAll(Arrays.asList(subTypes));
       } else {
@@ -122,11 +126,30 @@ public class AnnotationResolver<T> {
       for (Method method : clazz.getMethods()) {
          if (method.isAnnotationPresent(BusinessAssertion.class)) {
             BusinessAssertion businessAssertion = method.getAnnotation(BusinessAssertion.class);
-            rulesResult.add(
-                  new BAssertion<>(businessAssertion.id(), getPredicate(method), businessAssertion.description()));
+            Set<ActualValueSupplier<T>> actualValueSuppliers = getActualValueSuppliers(clazz, businessAssertion);
+            rulesResult.add(new BAssertion<>(
+                  businessAssertion.id(),
+                  getPredicate(method),
+                  businessAssertion.description(),
+                  actualValueSuppliers)
+            );
          }
       }
       return rulesResult;
+   }
+
+   private Set<ActualValueSupplier<T>> getActualValueSuppliers(Class<T> clazz, BusinessAssertion businessAssertion) {
+      Set<ActualValueSupplier<T>> actualValueSuppliers = new LinkedHashSet<>();
+      for (BusinessAssertion.ActualValueSupplier supplier : businessAssertion.actualValueSuppliers()) {
+         try {
+            Method supplierMethod = clazz.getMethod(supplier.supplier());
+            Function<T, ?> supplierFunction = getFunction(supplierMethod);
+            actualValueSuppliers.add(new ActualValueSupplier<>(supplier.attributeName(), supplierFunction));
+         } catch (NoSuchMethodException e) {
+            throw new InvocationException(e);
+         }
+      }
+      return actualValueSuppliers;
    }
 
    private Map<String, BusinessMemberBuilder<? super T, ?>> getMembers(Class<T> clazz,
@@ -193,25 +216,24 @@ public class AnnotationResolver<T> {
       if (clazz.isArray()) {
          return clazz.getComponentType();
       } else if (Collection.class.isAssignableFrom(clazz)) {
-         return getGenericTypeParameter(method);
+         return getGenericTypeParameter(method, 0);
+      } else if (Map.class.isAssignableFrom(clazz)) {
+         return getGenericTypeParameter(method, 1); // We consider the value type of the map
       } else {
          return clazz;
       }
    }
 
-   private Class<?> getGenericTypeParameter(Method method) {
-      String genericType = method.getGenericReturnType().getTypeName();
-      if (genericType.contains("<") && genericType.contains(">")) {
-         String className = genericType.substring(genericType.indexOf("<") + 1, genericType.indexOf(">"));
-         try {
-            return Class.forName(className);
-         } catch (ClassNotFoundException e) {
-            throw new TypeResolutionException(e);
+   private Class<?> getGenericTypeParameter(Method method, int typeIndex) {
+      Type genericType = method.getGenericReturnType();
+      if (genericType instanceof ParameterizedType pt) {
+         Type memberType = pt.getActualTypeArguments()[typeIndex];
+         if (memberType instanceof Class<?> memberClass) {
+            return memberClass;
          }
       }
       throw new TypeResolutionException("Cannot resolve the generic return type of method " + method.getName());
    }
-
 
    private Class<?> assertBusinessObjectClass(Class<?> clazz) {
       if(clazz != null) {

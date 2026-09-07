@@ -16,37 +16,59 @@
  */
 package io.github.ceoche.bvalid;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 class BAssertion<T> {
 
-    private final String id;
+   private final String id;
 
-    private final String description;
+   private final String description;
 
-    private final Predicate<T> predicate;
+   private final Predicate<T> predicate;
 
-    BAssertion(String id, Predicate<T> predicate, String description) {
-        this.id = id != null ? id : "";
-        this.description = description;
-        this.predicate = predicate;
-    }
+   private final Set<ActualValueSupplier<T>> actualValueSuppliers;
 
-    String getId() {
-        return id;
-    }
+   BAssertion(String id, Predicate<T> predicate, String description, Set<ActualValueSupplier<T>> actualValueSuppliers) {
+      this.id = id != null ? id : "";
+      this.description = description;
+      this.predicate = predicate;
+      this.actualValueSuppliers = actualValueSuppliers;
+   }
 
-    String getDescription() {
-        return description;
-    }
+   String getId() {
+      return id;
+   }
 
-    Boolean apply(T object) {
-        try {
-            return predicate.test(object);
-        } catch (InvocationException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InvocationException(e);
-        }
-    }
+   String getDescription() {
+      return description;
+   }
+
+   Boolean apply(T object) {
+      try {
+         return predicate.test(object);
+      } catch (InvocationException e) {
+         throw e;
+      } catch (Exception e) {
+         throw new InvocationException(e);
+      }
+   }
+
+   Map<String, String> resolveActualValues(T object) {
+      try {
+         Map<String, String> actualValues = new LinkedHashMap<>();
+         for (ActualValueSupplier<T> actualValueSupplier : actualValueSuppliers) {
+            Object value = actualValueSupplier.actualValue().apply(object);
+            String result = value == null ? "null" : value.toString();
+            actualValues.put(actualValueSupplier.name(), result);
+         }
+         return actualValues;
+      } catch (InvocationException e) {
+         throw e;
+      } catch (Exception e) {
+         throw new InvocationException(e);
+      }
+   }
 }

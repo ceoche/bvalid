@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Assertions4BValid {
 
+   static final int LOCATION = 4;
    static final int RESULT = 3;
    static final int DESCRIPTION = 2;
    static final int RULE_ID = 1;
@@ -45,11 +46,13 @@ class Assertions4BValid {
    private static AssertionReport buildExpectedAssertionReport(Object[] expectedReport) {
       if (((String) expectedReport[RULE_ID]).isEmpty()) {
          return new AssertionReport((String) expectedReport[DESCRIPTION],
-               (Boolean) expectedReport[RESULT]);
+               (Boolean) expectedReport[RESULT],
+               (String) expectedReport[LOCATION]);
       } else {
          return new AssertionReport((String) expectedReport[RULE_ID],
                (String) expectedReport[DESCRIPTION],
-               (Boolean) expectedReport[RESULT]);
+               (Boolean) expectedReport[RESULT],
+               (String) expectedReport[LOCATION]);
       }
    }
 

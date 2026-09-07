@@ -22,7 +22,6 @@ import io.github.ceoche.bvalid.ObjectMocks.OnlyBusinessMember;
 import io.github.ceoche.bvalid.ObjectMocks.WithInheritance;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnnotationInheritenceTest extends ManualInheritenceTest{
