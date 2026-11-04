@@ -148,10 +148,9 @@ public class BValidator<T> {
    }
 
    private String appendPath(String location, String name) {
-      if (name.isEmpty()) {
-         return location;
-      }
-      return location.isEmpty() ? name : location + "." + name;
+      return (location.isEmpty() || name.isEmpty())
+              ? location + name
+              : location + "." + name;
    }
 
    private List<BReport> validate(Collection<T> collection, String name, Set<Object> visitedObjects) {

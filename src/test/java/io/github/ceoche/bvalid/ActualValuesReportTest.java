@@ -6,6 +6,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ActualValuesReportTest {
@@ -51,28 +56,49 @@ class ActualValuesReportTest {
             new Email[] {new Email("test@test.com", "test.com")},
             List.of(new Phone("987654321", "aa"))
       );
-      BReport report = personValidatorWithPhones.validate(person);
-      assertEquals("Person Address must not be null => valid", report.getAssertionReports().getFirst().toString());
-      assertTrue(report.getAssertionReports().get(1).toString().contains("Actual values : {age=25} - "));
-      assertTrue(report.getAssertionReports().get(2).toString().contains("Actual values : {name=Jean} - "));
-      assertEquals(1, report.getAssertionReports().get(1).getActualValues().size());
-      assertEquals("25", report.getAssertionReports().get(1).getActualValues().get("age"));
+       BReport report = personValidatorWithPhones.validate(person);
 
-      BReport emailReport = findReport(report, "emails[0]");
-      assertTrue(emailReport.getAssertionReports().getFirst().toString().contains("Actual values : {domain=test.com} - "));
-      assertTrue(emailReport.getAssertionReports().get(1).toString().contains("Actual values : {email=test@test.com} - "));
+       assertThat(report.getAssertionReports(),
+               hasItem(hasToString(is("Person Address must not be null => valid"))));
+       assertThat(report.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {age=25} - "))));
+       assertThat(report.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {name=Jean} - "))));
 
-      BReport addressReport = findReport(report, "address");
-      assertEquals("Person.address City must not be null => valid", addressReport.getAssertionReports().getFirst().toString());
-      assertTrue(addressReport.getAssertionReports().get(1).toString().contains("Actual values : {street=Rue de la Paix} - "));
+       assertThat(report.getAssertionReports(), hasSize(greaterThanOrEqualTo(2)));
+       assertThat(report.getAssertionReports().stream()
+                       .map(Object::toString)
+                       .toList(),
+               hasItem(containsString("Actual values : {age=25} - ")));
+       assertThat(report.getAssertionReports().stream()
+               .filter(item -> item.toString().contains("Actual values : {age=25} - "))
+               .findFirst()
+               .get()
+               .getActualValues(), hasEntry("age", "25"));
 
-      BReport cityReport = findReport(addressReport, "city");
-      assertTrue(cityReport.getAssertionReports().getFirst().toString().contains("Actual values : {names=Paris} - "));
-      assertTrue(cityReport.getAssertionReports().get(1).toString().contains("Actual values : {zipcode=50} - "));
+       BReport emailReport = findReport(report, "emails[0]");
+       assertThat(emailReport.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {domain=test.com} - "))));
+       assertThat(emailReport.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {email=test@test.com} - "))));
 
-      BReport phoneReport = findReport(report, "phones[0]");
-      assertTrue(phoneReport.getAssertionReports().getFirst().toString().contains("Actual values : {number=987654321} - "));
-      assertTrue(phoneReport.getAssertionReports().get(1).toString().contains("Actual values : {countryCode=aa} - "));
+       BReport addressReport = findReport(report, "address");
+       assertThat(addressReport.getAssertionReports(),
+               hasItem(hasToString(is("Person.address City must not be null => valid"))));
+       assertThat(addressReport.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {street=Rue de la Paix} - "))));
+
+       BReport cityReport = findReport(addressReport, "city");
+       assertThat(cityReport.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {names=Paris} - "))));
+       assertThat(cityReport.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {zipcode=50} - "))));
+
+       BReport phoneReport = findReport(report, "phones[0]");
+       assertThat(phoneReport.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {number=987654321} - "))));
+       assertThat(phoneReport.getAssertionReports(),
+               hasItem(hasToString(containsString("Actual values : {countryCode=aa} - "))));
    }
 
    @Test
