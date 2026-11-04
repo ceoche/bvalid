@@ -7,31 +7,34 @@ This project is under [Apache License, Version 2.0](#license).
 __README Index__
 
 <!-- TOC -->
+
 * [BValid](#bvalid)
-  * [Project set-up](#project-set-up)
-  * [Usage](#usage)
-    * [Usage with Annotations](#usage-with-annotations)
-      * [Business Object](#business-object)
-      * [Validation](#validation)
-      * [business assertions](#business-assertions)
-      * [Business member composition](#business-member-composition)
-      * [Business object inheritance](#business-object-inheritance)
-      * [Subtyping of business objects](#subtyping-of-business-objects)
-    * [Usage with Programmatic Builder (No annotations)](#usage-with-programmatic-builder-no-annotations)
-      * [Programmatic business assertions](#programmatic-business-assertions)
-      * [Programmatic business members](#programmatic-business-members)
-      * [Business objects with inheritance](#business-objects-with-inheritance)
-      * [Subtyping of business members](#subtyping-of-business-members)
-      * [Complex use cases](#complex-use-cases)
-    * [Default assertions](#default-assertions)
-  * [Ideas behind BValid](#ideas-behind-bvalid)
-  * [Sources and build](#sources-and-build)
-    * [Requirements](#requirements)
-    * [Build, test and package](#build-test-and-package)
-    * [Mutation testing](#mutation-testing)
-    * [Release a new version of BValid](#release-a-new-version-of-bvalid)
-  * [Contribute](#contribute)
-  * [License](#license)
+    * [Project set-up](#project-set-up)
+    * [Usage](#usage)
+        * [Usage with Annotations](#usage-with-annotations)
+            * [Business Object](#business-object)
+            * [Validation](#validation)
+            * [business assertions](#business-assertions)
+            * [Business member composition](#business-member-composition)
+            * [Business object inheritance](#business-object-inheritance)
+            * [ActualValues supplier in business rules](#actualvalues-supplier-in-business-rules)
+            * [Subtyping of business objects](#subtyping-of-business-objects)
+        * [Usage with Programmatic Builder (No annotations)](#usage-with-programmatic-builder-no-annotations)
+            * [Programmatic business assertions](#programmatic-business-assertions)
+            * [Programmatic business members](#programmatic-business-members)
+            * [Business objects with inheritance](#business-objects-with-inheritance)
+            * [Subtyping of business members](#subtyping-of-business-members)
+            * [Complex use cases](#complex-use-cases)
+        * [Default assertions](#default-assertions)
+    * [Ideas behind BValid](#ideas-behind-bvalid)
+    * [Sources and build](#sources-and-build)
+        * [Requirements](#requirements)
+        * [Build, test and package](#build-test-and-package)
+        * [Mutation testing](#mutation-testing)
+        * [Release a new version of BValid](#release-a-new-version-of-bvalid)
+    * [Contribute](#contribute)
+    * [License](#license)
+
 <!-- TOC -->
 
 ## Project set-up
@@ -41,15 +44,16 @@ __BValid__ is available on Maven Central Repository
 ```xml
 
 <dependency>
-   <groupId>io.github.ceoche</groupId>
-   <artifactId>bvalid</artifactId>
-   <version>1.0.0</version>
+    <groupId>io.github.ceoche</groupId>
+    <artifactId>bvalid</artifactId>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 ## Usage
 
-__BValid__ is a validation tool running a collection of assertions (or constraints) on a business object to assess whether this
+__BValid__ is a validation tool running a collection of assertions (or constraints) on a business object to assess
+whether this
 object is valid or not.
 
 ### Usage with Annotations
@@ -67,21 +71,21 @@ import io.github.ceoche.bvalid.BusinessAssertion;
 @BusinessObject
 public class Author {
 
-   private String name;
+    private String name;
 
-   public String getName() {
-      return name;
-   }
+    public String getName() {
+        return name;
+    }
 
-   public Author setName(String name) {
-      this.name = name;
-      return this;
-   }
+    public Author setName(String name) {
+        this.name = name;
+        return this;
+    }
 
-   @BusinessAssertion("Author's name must be defined.")
-   public boolean isNameValid() {
-      return DefaultAssertions.isDefined(name);
-   }
+    @BusinessAssertion("Author's name must be defined.")
+    public boolean isNameValid() {
+        return DefaultAssertions.isDefined(name);
+    }
 }
 ```
 
@@ -98,21 +102,21 @@ import io.github.ceoche.bvalid.BReport;
 
 public class Example {
 
-  public static void main(String[] args) {
+    public static void main(String[] args) {
 
-    Author author = new Author();
-    author.setName("Jules Verne");
+        Author author = new Author();
+        author.setName("Jules Verne");
 
-    BValidator<Author> authorValidator = new AnnotationResolver<>(Author.class).buildValidator();
-    BReport report = authorValidator.validate(author);
+        BValidator<Author> authorValidator = new AnnotationResolver<>(Author.class).buildValidator();
+        BReport report = authorValidator.validate(author);
 
-    if (report.isValid()) {
-      // do something...
-    } else {
-      // print report as plain text.
-      System.out.println(report);
+        if (report.isValid()) {
+            // do something...
+        } else {
+            // print report as plain text.
+            System.out.println(report);
+        }
     }
-  }
 
 }
 ```
@@ -125,7 +129,11 @@ constructor with a String as parameter):
 bReport.orThrow(IllegalArgumentException::new);
 
 // or in one line with the validation
-validator.valiate(object).orThrow(IllegalArgumentException::new);
+validator.
+
+valiate(object).
+
+orThrow(IllegalArgumentException::new);
 ```
 
 #### business assertions
@@ -141,16 +149,17 @@ import io.github.ceoche.bvalid.BusinessAssertion;
 @BusinessObject
 public class Author {
 
-   // [...]
+    // [...]
 
-   @BusinessAssertion("Author's name must be defined.")
-   public boolean isNameValid() {
-      return DefaultAssertions.isDefined(name);
-   }
+    @BusinessAssertion("Author's name must be defined.")
+    public boolean isNameValid() {
+        return DefaultAssertions.isDefined(name);
+    }
 }
 ```
 
-`BusinessAssertion` should be enriched with a meaningful description. It will help other developers to understand the assertion,
+`BusinessAssertion` should be enriched with a meaningful description. It will help other developers to understand the
+assertion,
 but it will also be used in the validation report.
 
 If requirement engineering is required, `id` attribute can be used to declare the requirement id.
@@ -158,12 +167,12 @@ If requirement engineering is required, `id` attribute can be used to declare th
 ```java
 public class Author {
 
-   //[...]
+    //[...]
 
-   @BusinessAssertion(id = "req-01", value = "Author's name must be defined.")
-   public boolean isNameValid() {
-      return DefaultAssertions.isDefined(name);
-   }
+    @BusinessAssertion(id = "req-01", value = "Author's name must be defined.")
+    public boolean isNameValid() {
+        return DefaultAssertions.isDefined(name);
+    }
 }
 ```
 
@@ -182,26 +191,27 @@ import io.github.ceoche.bvalid.BusinessAssertion;
 @BusinessObject
 public class Book {
 
-   private Author author;
+    private Author author;
 
-   @BusinessMember
-   public Author getAuthor() {
-      return author;
-   }
+    @BusinessMember
+    public Author getAuthor() {
+        return author;
+    }
 
-   public Book setAuthor(Author author) {
-      this.author = author;
-      return this;
-   }
+    public Book setAuthor(Author author) {
+        this.author = author;
+        return this;
+    }
 
-   @BusinessAssertion("Author must be defined.")
-   public boolean isAuthorValid() {
-      return DefaultAssertions.isDefined(author);
-   }
+    @BusinessAssertion("Author must be defined.")
+    public boolean isAuthorValid() {
+        return DefaultAssertions.isDefined(author);
+    }
 }
 ```
 
-When calling `BValidator::validate`, all business assertions of declared business members will also be tested to assess the
+When calling `BValidator::validate`, all business assertions of declared business members will also be tested to assess
+the
 validity of the business object. If the business member's accessor return a `null` value, the member will be ignored. It
 allows optional associations in models.
 
@@ -211,18 +221,19 @@ Composition support also multiple cardinality:
 import io.github.ceoche.bvalid.BusinessMember;
 import io.github.ceoche.bvalid.BusinessObject;
 
+import java.util.List;
 import java.util.ArrayList;
 
 @BusinessObject(name = "library")
 public class Library {
 
-   public List<Book> books = new ArrayList<>();
+    public List<Book> books = new ArrayList<>();
 
-   @BusinessMember(name = "books")
-   public List<Book> getBooks() {
-      return books;
-   }
-   
+    @BusinessMember(name = "books")
+    public List<Book> getBooks() {
+        return books;
+    }
+
     public Library setBooks(List<Book> books) {
         this.books = books;
         return this;
@@ -232,11 +243,40 @@ public class Library {
 
 In this situation, the `BValidator` will go through all elements of the collection and validate them all.
 
-Currently, only `java.util.Collection` (List, Set, Queue...) and __arrays__ are supported.
+Composition supports also Map attributes under the condition that the complex object to iterate through
+is the value of the Map. Iteration won't work for Key complex objects. The key will be converted to String
+and used as index for location path in the Rule report.
+
+```java
+import io.github.ceoche.bvalid.BusinessMember;
+import io.github.ceoche.bvalid.BusinessObject;
+
+import java.util.Map;
+import java.util.HashMap;
+
+@BusinessObject(name = "library")
+public class Library {
+
+    public Map<String, Book> books = new HashMap<>();
+
+    @BusinessMember(name = "books")
+    public Map<String, Book> getBooks() {
+        return books;
+    }
+
+    public Library setBooks(Map<String, Book> books) {
+        this.books = books;
+        return this;
+    }
+}
+```
+
+Currently, `java.util.Collection` (List, Set, Queue...), __arrays__ and `java.util.Map` are supported.
 
 #### Business object inheritance
 
-Business objects can inherit from others business object. They will get all business assertions and members from the parent
+Business objects can inherit from others business object. They will get all business assertions and members from the
+parent
 business object.
 
 ```java
@@ -247,31 +287,68 @@ import io.github.ceoche.bvalid.BusinessAssertion;
 @BusinessObject
 public class Comic extends Book {
 
-   private String artist;
+    private String artist;
 
-   public String getArtist() {
-      return artist;
-   }
+    public String getArtist() {
+        return artist;
+    }
 
-   public Comic setArtist(String artist) {
-      this.artist = artist;
-      return this;
-   }
+    public Comic setArtist(String artist) {
+        this.artist = artist;
+        return this;
+    }
 
-   @Override
-   public Comic setAuthor(Author author) { // override parent setter for java 8 style
-      super.setAuthor(author);
-      return this;
-   }
+    @Override
+    public Comic setAuthor(Author author) { // override parent setter for java 8 style
+        super.setAuthor(author);
+        return this;
+    }
 
-   @BusinessAssertion("Artist must be defined if present.")
-   public boolean isArtistValid() {
-      DefaultAssertions.isDefinedIfPresent(artist);
-   }
+    @BusinessAssertion("Artist must be defined if present.")
+    public boolean isArtistValid() {
+        DefaultAssertions.isDefinedIfPresent(artist);
+    }
 }
 ```
 
 In the example above, `Comic` will also inherit from the business assertion `Author::isAuthorValid`.
+
+#### ActualValues supplier in business rules
+
+Business rules can now define the actual result obtained when applying a rule
+by providing a supplier to the rule definition. If present, the actual value will be
+printed in the rule report making easy to see the reason why the rule is invalid.
+
+```java
+import io.github.ceoche.bvalid.DefaultAssertions;
+import io.github.ceoche.bvalid.BusinessObject;
+import io.github.ceoche.bvalid.BusinessAssertion;
+
+@BusinessObject(name = "ValueSupplier")
+public static class ValueSupplierObject {
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public ValueSupplierObject setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    @BusinessAssertion(
+            description = "An assertion must not take any parameter.",
+            actualValueSuppliers = {
+                    @BusinessAssertion.ActualValueSupplier(attributeName = "name", supplier = "getName"),
+            }
+    )
+    public boolean isValid(Object object) {
+        return object != null;
+    }
+}
+```
 
 #### Subtyping of business objects
 
@@ -283,15 +360,16 @@ As example, to subtype the `Book` class within the `Library` aggregate:
 
 ```java 
 BValidator<Library> validator = new AnnotationResolver<>(Library.class)
-          .addMemberSubTypes(Book.class, 
+        .addMemberSubTypes(Book.class,
                 Comic.class, Novel.class, Educational.class
-          )
-      .buildValidator();
+        )
+        .buildValidator();
 ```
 
 ### Usage with Programmatic Builder (No annotations)
 
-It is also possible to use __BValid__ without any annotations. That is a good thing if you do not want to create coupling
+It is also possible to use __BValid__ without any annotations. That is a good thing if you do not want to create
+coupling
 between you business models and __bValid__.
 
 To do so, use `BValidatorManualBuilder` to create a `BValidator` instance programmatically.
@@ -308,34 +386,44 @@ import io.github.ceoche.bvalid.BReport;
 
 class Example {
 
-  public static void main(String[] args) {
+    public static void main(String[] args) {
 
-    BValidator<Author> authorValidator = new BValidatorBuilder<>(Author.class)
-            .setObjectName("author") // optional, but we recommend to set it for better error messages.
-            .addAssertion(Author::isNameValid, "Author's name must be defined.")
-            .build();
+        BValidator<Author> authorValidator = new BValidatorBuilder<>(Author.class)
+                .setObjectName("author") // optional, but we recommend to set it for better error messages.
+                .addAssertion(
+                        Author::isNameValid, // Lambda of the business rule (predicate)
+                        "Author's name must be defined.",  // Description of the rule
+                        new ActualValueSupplier<>("name", Author::getName) // optional, Value Supplier for the validated field
+                )
+                .build();
 
-    Author author = new Author();
-    author.setName("John Doe");
+        Author author = new Author();
+        author.setName("John Doe");
 
-    BReport report = authorValidator.validate(author);
+        BReport report = authorValidator.validate(author);
 
-    report.orThrow(IllegalArgumentException::new);
-  }
+        // The above report will produce the following result :
+        // "author Author's name must be defined. - Actual values : {name=John Doe} -  => valid"
+
+        report.orThrow(IllegalArgumentException::new);
+    }
 }
 ```
 
-Just as business assertion annotated with `@BusinessAssertion`, it must be a __public__ method that takes no arguments and
+Just as business assertion annotated with `@BusinessAssertion`, it must be a __public__ method that takes no arguments
+and
 returns a `boolean` (the method must return `true` if the assertion is validated, `false` otherwise).
 
-The business object name is optional, but we recommend to set it at least for the root business object to get better error messages.
+The business object name is optional, but we recommend to set it at least for the root business object to get better
+error messages.
 
 #### Programmatic business members
 
 Aggregates and associations can be validated by adding business members to the builder.
 
-The add member method takes: 
-- The name of the member 
+The add member method takes:
+
+- The name of the member
 - The getter method of the member
 - The validators builders for the member and/or its subtypes.
 
@@ -347,18 +435,18 @@ import io.github.ceoche.bvalid.BValidatorBuilder;
 
 class Example {
 
-  public static void main(String[] args) {
-    BValidator<Book> bValidator = new BValidatorBuilder<>(Book.class)
-            .setObjectName("Book") // optional, but we recommend to set it for better error messages.
-            .addAssertion(Book::isAuthorValid, "Author must not be null.")
-            .addMember("author", Book::getAuthor,
-                    new BValidatorBuilder<>(Author.class)
-                            .addAssertion(Author::isNameValid, "Author's name must be defined.")
-            )
-            .build();
+    public static void main(String[] args) {
+        BValidator<Book> bValidator = new BValidatorBuilder<>(Book.class)
+                .setObjectName("Book") // optional, but we recommend to set it for better error messages.
+                .addAssertion(Book::isAuthorValid, "Author must not be null.")
+                .addMember("author", Book::getAuthor,
+                        new BValidatorBuilder<>(Author.class)
+                                .addAssertion(Author::isNameValid, "Author's name must be defined.")
+                )
+                .build();
 
-    // use the validator
-  }
+        // use the validator
+    }
 }
 
 ```
@@ -372,36 +460,37 @@ import io.github.ceoche.bvalid.BReport;
 
 class Example {
 
-  public static void main(String[] args) {
-    BValidator<Library> bValidator = new BValidatorBuilder<>(Library.class)
-            .setObjectName("library") // optional, but we recommend to set it for better error messages.
-            .addMember("books", Library::getBooks,
-                    new BValidatorBuilder<>(Book.class)
-                            .addAssertion(Book::isAuthorValid, "Author must be defined.")
-                            .addMember("author", Book::getAuthor,
-                                    new BValidatorBuilder<>(Author.class)
-                                            .addAssertion(Author::isNameValid,
-                                                    "Author's name must be defined.")
-                            )
-            )
-            .build();
+    public static void main(String[] args) {
+        BValidator<Library> bValidator = new BValidatorBuilder<>(Library.class)
+                .setObjectName("library") // optional, but we recommend to set it for better error messages.
+                .addMember("books", Library::getBooks,
+                        new BValidatorBuilder<>(Book.class)
+                                .addAssertion(Book::isAuthorValid, "Author must be defined.")
+                                .addMember("author", Book::getAuthor,
+                                        new BValidatorBuilder<>(Author.class)
+                                                .addAssertion(Author::isNameValid,
+                                                        "Author's name must be defined.")
+                                )
+                )
+                .build();
 
-    // Instantiate a Library with several books
-    Library library = new Library().setBooks(Arrays.asList(
-            new Book().setAuthor(new Author().setName("John Doe")),
-            new Book().setAuthor(new Author().setName("Jane Doe"))
-    ));
+        // Instantiate a Library with several books
+        Library library = new Library().setBooks(Arrays.asList(
+                new Book().setAuthor(new Author().setName("John Doe")),
+                new Book().setAuthor(new Author().setName("Jane Doe"))
+        ));
 
-    // use the validator
-    BReport result = bValidator.validate(library);
-    System.out.println(result);
+        // use the validator
+        BReport result = bValidator.validate(library);
+        System.out.println(result);
 
-  }
+    }
 }
 
 ```
 
 The above validation would produce the output :
+
 ```
 library.books[0] Author must be defined. => valid
 library.books[0].author Author's name must be defined. => valid
@@ -421,28 +510,28 @@ import io.github.ceoche.bvalid.BReport;
 
 class Example {
 
-   public static void main(String[] args) {
-      BValidatorBuilder<Person> personValidatorBuilder = new BValidatorBuilder<>(Person.class)
-            .addAssertion(Person::isNameValid, "The person's name must be defined.");
-      
-      BValidatorBuilder<Book> bookValidatorBuilder = new BValidatorBuilder<>(Book.class)
-            .addAssertion(Book::isAuthorValid, "Author must be defined.")
-            .addMember("author", Book::getAuthor, personValidatorBuilder);
-      
-      // Comic extends Book and has an artist. Note the constructor with the parent builder.
-      BValidatorBuilder<Comic> comicValidatorBuilder = new BValidatorBuilder<>(Comic.class, bookValidatorBuilder)
-            .addAssertion(Comic::isArtistValid, "Artist must be defined if present.")
-            .addMember("artist", Comic::getArtist, personValidatorBuilder);
-   }
+    public static void main(String[] args) {
+        BValidatorBuilder<Person> personValidatorBuilder = new BValidatorBuilder<>(Person.class)
+                .addAssertion(Person::isNameValid, "The person's name must be defined.");
+
+        BValidatorBuilder<Book> bookValidatorBuilder = new BValidatorBuilder<>(Book.class)
+                .addAssertion(Book::isAuthorValid, "Author must be defined.")
+                .addMember("author", Book::getAuthor, personValidatorBuilder);
+
+        // Comic extends Book and has an artist. Note the constructor with the parent builder.
+        BValidatorBuilder<Comic> comicValidatorBuilder = new BValidatorBuilder<>(Comic.class, bookValidatorBuilder)
+                .addAssertion(Comic::isArtistValid, "Artist must be defined if present.")
+                .addMember("artist", Comic::getArtist, personValidatorBuilder);
+    }
 }
 ```
 
 #### Subtyping of business members
 
-Polymorphism context is supported by the manual builder. although, the possible implementations should be provided 
+Polymorphism context is supported by the manual builder. although, the possible implementations should be provided
 at build time. This will be enhanced in future versions to support more extensibility.
 
-Taking the example of the `Book` class, we can add a `Comic` class that extends `Book` and add a validator builder 
+Taking the example of the `Book` class, we can add a `Comic` class that extends `Book` and add a validator builder
 for the `Comic` implementation to the Library validator builder.
 
 ```java
@@ -453,29 +542,29 @@ import io.github.ceoche.bvalid.BReport;
 class Example {
 
     public static void main(String[] args) {
-    
+
         // add all known subtypes of Book to the builder when adding the member in the builder.
         BValidatorBuilder<Library> libraryValidatorBuilder = new BValidatorBuilder<>(Library.class)
-              .setObjectName("library") // optional, but we recommend to set it for better error messages
-              .addMember("books", Library::getBooks,
-                      bookValidatorBuilder,
-                      comicValidatorBuilder
-              );
-        
+                .setObjectName("library") // optional, but we recommend to set it for better error messages
+                .addMember("books", Library::getBooks,
+                        bookValidatorBuilder,
+                        comicValidatorBuilder
+                );
+
         // If new subtypes are discovered later, they can be added to the builder:
         libraryValidatorBuilder.addMemberSubTypes("books", educationalValidatorBuilder);
-        
+
         BValidator<Library> bValidator = libraryValidatorBuilder.build();
-        
+
         // Instantiate a Library with different type of books
         Library library = new Library().setBooks(Arrays.asList(
-            new Book()
-                  .setAuthor(new Person().setName("John Doe")),
-            new Comic()
-                  .setAuthor(new Person().setName("Jane Doe"))
-                  .setArtist(new Person().setName("Jack Doe"))
+                new Book()
+                        .setAuthor(new Person().setName("John Doe")),
+                new Comic()
+                        .setAuthor(new Person().setName("Jane Doe"))
+                        .setArtist(new Person().setName("Jack Doe"))
         ));
-        
+
         // use the validator
         BReport result = bValidator.validate(library);
         System.out.println(result);
@@ -484,6 +573,7 @@ class Example {
 ```
 
 The above validation would produce the output :
+
 ```
 library.books[0] Author must be defined. => valid
 library.books[0].author Person's name must be defined. => valid
@@ -498,13 +588,15 @@ It is also possible to add such subtypes builders later on using the
 
 #### Complex use cases
 
-The validator support other uses cases such: 
+The validator support other uses cases such:
+
 * Validating a recursive structure, indexes will prevent infinite recursion.
 * Use same validator builder reference for multiple members.
 
 ### Default assertions
 
-__BValid__ provides the `DefaultAssertions` utility to implement quickly default business assertions to assert mandatory attributes
+__BValid__ provides the `DefaultAssertions` utility to implement quickly default business assertions to assert mandatory
+attributes
 or cardinality.
 
 ```java
@@ -512,30 +604,30 @@ import io.github.ceoche.bvalid.DefaultAssertions;
 
 public class DefaultAssertionsDemo {
 
-   public boolean mandatoryAttribute() {
-      // check is not null, and also not blank for Strings.
-      return DefaultAssertions.isDefined(attribute);
-   }
+    public boolean mandatoryAttribute() {
+        // check is not null, and also not blank for Strings.
+        return DefaultAssertions.isDefined(attribute);
+    }
 
-   public boolean optionalStringAttribute() {
-      // check is not blank if string is not null (Only for strings).
-      return DefaultAssertions.isDefinedIfPresent(stringAttribute);
-   }
+    public boolean optionalStringAttribute() {
+        // check is not blank if string is not null (Only for strings).
+        return DefaultAssertions.isDefinedIfPresent(stringAttribute);
+    }
 
-   public boolean oneToManyAssociation() {
-      // check a collection or an array has at least one element.
-      return DefaultAssertions.hasOneOrMoreElements(collectionAttribute);
-   }
+    public boolean oneToManyAssociation() {
+        // check a collection or an array has at least one element.
+        return DefaultAssertions.hasOneOrMoreElements(collectionAttribute);
+    }
 
-   public boolean zeroToManyDefinedAssociation() {
-      // check there are no null elements in collections or arrays.
-      return DefaultAssertions.hasDefinedElements(collectionAttribute);
-   }
+    public boolean zeroToManyDefinedAssociation() {
+        // check there are no null elements in collections or arrays.
+        return DefaultAssertions.hasDefinedElements(collectionAttribute);
+    }
 
-   public boolean oneToManyDefinedAssociation() {
-      // check a collection or an array has at least one element AND no null elements.
-      return DefaultAssertions.hasOneOrMoreDefinedElements(collectionAttribute);
-   }
+    public boolean oneToManyDefinedAssociation() {
+        // check a collection or an array has at least one element AND no null elements.
+        return DefaultAssertions.hasOneOrMoreDefinedElements(collectionAttribute);
+    }
 
 
 }
@@ -546,18 +638,22 @@ pattern.
 
 ## Ideas behind BValid
 
-A business object or model, is usually seen as a stateful data structure with enforced business assertions. However, business
-assertions are not always required to be verified, for example when data are pulled from an already verified database, there
-should be no need to verify business assertions again. As such, we usually prefer writing the business assertions in methods
+A business object or model, is usually seen as a stateful data structure with enforced business assertions. However,
+business
+assertions are not always required to be verified, for example when data are pulled from an already verified database,
+there
+should be no need to verify business assertions again. As such, we usually prefer writing the business assertions in
+methods
 separated from constructors and accessors, use cases can invoke them whenever necessary.
 
-Then instead of manually aggregating validation methods to call and sequence collections of business assertions, we can use
-__BValid__ to list all business assertions using annotation or the manual validator-builder.
+Then instead of manually aggregating validation methods to call and sequence collections of business assertions, we can
+use __BValid__ to list all business assertions using annotation or the manual validator-builder.
 
 Ideally, we would have expected such library to be the least intrusive in the code, because we do not want our business
 code to depend on an obscure framework. Unlike the famous Jakarta-EE-Validation that is declaring assertions as
-annotations, we have decided that all business assertions should be methods and should be written in plain Java. Annotations 
-(or the programmatic builder) are used only to reference them. So even if you decide to no longer use __BValid__ in your
+annotations, we have decided that all business assertions should be methods and should be written in plain Java.
+Annotations (or the programmatic builder) are used only to reference them. So even if you decide to no longer use
+__BValid__ in your
 project, your code will still have all its valuable assertions.
 
 ## Sources and build
