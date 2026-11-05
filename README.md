@@ -315,9 +315,8 @@ In the example above, `Comic` will also inherit from the business assertion `Aut
 
 #### ActualValues supplier in business rules
 
-Business rules can now define the actual result obtained when applying a rule
-by providing a supplier to the rule definition. If present, the actual value will be
-printed in the rule report making easy to see the reason why the rule is invalid.
+Business rules can provide suppliers to access at runtime the values of the evaluated attributes. If present, the actual
+value will be printed in the rule report making easy to see the reason why the rule is invalid.
 
 ```java
 import io.github.ceoche.bvalid.DefaultAssertions;
@@ -660,7 +659,7 @@ project, your code will still have all its valuable assertions.
 
 ### Requirements
 
-* Java 17 or youngest
+* Java 21 or youngest
 * Maven 3
 
 ### Build, test and package
@@ -703,11 +702,20 @@ mvn nexus-staging:release -Prelease -DstagingRepositoryId=${STAGING_REPO}
 
 Feel free to open an issue, fork the project and/or propose a merge request.
 
-Thanks to @achrafxx and [Kereval](https://www.kereval.com) for their contribution to the Programmatic builder.
+Here is some rules:
+
+* no external dependencies
+* no warnings in compilation
+* Unit test provided and mutants in mutation testing must be 100% killed on modified code
+* javadoc completed on public elements
+* README up to date with added features/fixes.
+
+Thanks to @achrafxx, @ClementLagorce and [Kereval](https://www.kereval.com) for their contribution to the Programmatic builder, the
+support of Map, locations and actual values.
 
 ## License
 
-__Copyright 2022-2025 Cédric Eoche-Duval.__
+__Copyright 2022-2026 Cédric Eoche-Duval.__
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with
 the License. You may obtain a copy of the License at

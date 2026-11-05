@@ -92,11 +92,15 @@ public @interface BusinessAssertion {
 
         /**
          * The name of the value the supplier is giving. Typically, the name of the validated attribute.
+         *
+         * @return the name of the supplied value.
          */
         String attributeName();
 
         /**
          * The supplier as a String, i.e. the name of the method in the validated object that can be used to read the value of the verified attribute.
+         *
+         * @return the method name of the supplier.
          */
         String supplier();
     }

@@ -114,6 +114,8 @@ public class BValidatorBuilder<T> {
     *
     * @param rule        the rule to add
     * @param description the description of the rule
+    * @param actualValueSuppliers a set of functions to retrieve the actual values used in the assertion, this is for rich reporting.
+    *     *                     Can be empty if no values are required.
     *
     * @return the builder
     *
