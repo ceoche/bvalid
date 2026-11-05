@@ -17,20 +17,11 @@
 
 package io.github.ceoche.bvalid;
 
-import io.github.ceoche.bvalid.ObjectMocks.DefaultValidableMock;
-import io.github.ceoche.bvalid.ObjectMocks.ExceptionBusinessMemberObject;
-import io.github.ceoche.bvalid.ObjectMocks.ExceptionBusinessRuleObject;
-import io.github.ceoche.bvalid.ObjectMocks.IllegalBusinessObject;
-import io.github.ceoche.bvalid.ObjectMocks.MemberIsNotBO;
-import io.github.ceoche.bvalid.ObjectMocks.OnlyBusinessMember;
+import io.github.ceoche.bvalid.ObjectMocks.*;
 import org.junit.jupiter.api.Test;
 
 import static io.github.ceoche.bvalid.Assertions4BValid.assertReportContains;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ManualSimpleTest {
 
@@ -48,9 +39,9 @@ class ManualSimpleTest {
 
       assertReportContains(
             new Object[][]{
-                  {"validable-mock", "rule01", "mandatoryAttribute must be defined.", true},
-                  {"validable-mock", "", "optionalAttribute must be defined if present.", true},
-                  {"validable-mock", "", "oneOrMoreAssociation must have at least one element.", true}
+                  {"validable-mock", "rule01", "mandatoryAttribute must be defined.", true, "validable-mock"},
+                  {"validable-mock", "", "optionalAttribute must be defined if present.", true, "validable-mock"},
+                  {"validable-mock", "", "oneOrMoreAssociation must have at least one element.", true, "validable-mock"}
             },
             report);
    }
@@ -87,10 +78,10 @@ class ManualSimpleTest {
 
       assertReportContains(
             new Object[][]{
-                  {"my-only-member", "rule01", "mandatoryAttribute must be defined.", false},
-                  {"my-only-member", "", "optionalAttribute must be defined if present.", false},
+                  {"my-only-member", "rule01", "mandatoryAttribute must be defined.", false, "OnlyBusinessMember.my-only-member"},
+                  {"my-only-member", "", "optionalAttribute must be defined if present.", false, "OnlyBusinessMember.my-only-member"},
                   {"my-only-member", "", "oneOrMoreAssociation must have at least one element.",
-                        false}
+                        false, "OnlyBusinessMember.my-only-member"}
             },
             report);
    }
@@ -104,7 +95,6 @@ class ManualSimpleTest {
 
    @Test
    void testNoBusinessRuleNorMemberError() {
-      IllegalBusinessObject object = ObjectMocks.instantiateWithoutAssertions();
       assertThrows(IllegalStateException.class,
             () -> buildObjectValidator(IllegalBusinessObject.class));
    }
@@ -123,27 +113,21 @@ class ManualSimpleTest {
    void testExceptionWhileValidatingRule() {
       ExceptionBusinessRuleObject object = ObjectMocks.instantiateExceptionBusinessRule();
       BValidator<ExceptionBusinessRuleObject> validator = buildObjectValidator(ExceptionBusinessRuleObject.class);
-      try {
-         validator.validate(object);
-         fail("Should have raised an " + InvocationException.class.getCanonicalName());
-      } catch (InvocationException e) {
-         assertEquals(IllegalStateException.class, e.getCause().getClass(),
-               "The original exception of the assertion should be wrapped as cause.");
-      }
+      InvocationException e = assertThrows(InvocationException.class, () -> validator.validate(object), "Should have raised an " + InvocationException.class.getCanonicalName());
+      assertEquals(IllegalStateException.class, e.getCause().getClass(),
+            "The original exception of the assertion should be wrapped as cause.");
    }
 
    @Test
    void testExceptionWhileGettingMember() {
       ExceptionBusinessMemberObject object = ObjectMocks.instantiateExceptionBusinessMember();
-      try {
-         buildObjectValidator(ExceptionBusinessMemberObject.class).validate(object);
-         fail("Should have raised an " + InvocationException.class.getCanonicalName());
-      } catch (InvocationException e) {
-         assertEquals(IllegalStateException.class, e.getCause().getClass(),
-               "The original exception of the BusinessMember should be wrapped as cause.");
-      }
+      BValidator<ExceptionBusinessMemberObject> validator = buildObjectValidator(ExceptionBusinessMemberObject.class);
+      InvocationException e = assertThrows(InvocationException.class, () -> validator.validate(object), "Should have raised an " + InvocationException.class.getCanonicalName());
+      assertEquals(IllegalStateException.class, e.getCause().getClass(),
+            "The original exception of the assertion should be wrapped as cause.");
    }
 
+   @SuppressWarnings("unchecked")
    protected <R> BValidator<R> buildObjectValidator(Class<R> clazz) {
       if (DefaultValidableMock.class.equals(clazz)) {
          return (BValidator<R>) getDefaultValidableMockBValidatorBuilder().build();
@@ -158,7 +142,7 @@ class ManualSimpleTest {
       } else if (MemberIsNotBO.class.equals(clazz)) {
          return (BValidator<R>) getMemberIsNotBOBValidatorBuilder().build();
       } else if (clazz == null) {
-         return (BValidator<R>) new BValidatorBuilder<>(clazz).build();
+         return (BValidator<R>) new BValidatorBuilder<>(null).build();
       }
       throw new IllegalArgumentException("Unknown class: " + clazz);
    }

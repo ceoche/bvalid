@@ -72,15 +72,15 @@ public class ObjectMocks {
       CollectionBusinessMembers collecBusinessMember = new CollectionBusinessMembers();
       collecBusinessMember.setValidableMockList(Arrays.asList(new DefaultValidableMock[]{validMock, invalidMock}));
       collecBusinessMember.setValidableMockSet(
-            new HashSet<DefaultValidableMock>(collecBusinessMember.getValidableMockList()));
+            new HashSet<>(collecBusinessMember.getValidableMockList()));
       collecBusinessMember.setValidableMockQueue(
-            new LinkedTransferQueue<DefaultValidableMock>(collecBusinessMember.getValidableMockList()));
+            new LinkedTransferQueue<>(collecBusinessMember.getValidableMockList()));
       return collecBusinessMember;
    }
 
    public static ArrayBusinessMember instantiateBusinessMemberArray() {
-      DefaultValidableMock validMock = (DefaultValidableMock) instantiateValid();
-      DefaultValidableMock invalidMock = (DefaultValidableMock) instantiateInvalid();
+      DefaultValidableMock validMock = instantiateValid();
+      DefaultValidableMock invalidMock = instantiateInvalid();
       ArrayBusinessMember arrayBusinessMember = new ArrayBusinessMember();
       arrayBusinessMember.setValidableMockArray(new DefaultValidableMock[]{validMock, invalidMock});
       return arrayBusinessMember;
@@ -307,6 +307,7 @@ public class ObjectMocks {
       private String name;
       private Recursive reference;
 
+
       public String getName() {
          return name;
       }
@@ -397,7 +398,12 @@ public class ObjectMocks {
          this.name = name;
       }
 
-      @BusinessAssertion(description = "The object name must be defined")
+      @BusinessAssertion(
+            description = "The object name must be defined",
+            actualValueSuppliers = {
+                  @BusinessAssertion.ActualValueSupplier(attributeName = "name", supplier = "getName"),
+            }
+      )
       public boolean isNameValid() {
          return name != null && !name.isEmpty();
       }
