@@ -7,34 +7,31 @@ This project is under [Apache License, Version 2.0](#license).
 __README Index__
 
 <!-- TOC -->
-
 * [BValid](#bvalid)
-    * [Project set-up](#project-set-up)
-    * [Usage](#usage)
-        * [Usage with Annotations](#usage-with-annotations)
-            * [Business Object](#business-object)
-            * [Validation](#validation)
-            * [business assertions](#business-assertions)
-            * [Business member composition](#business-member-composition)
-            * [Business object inheritance](#business-object-inheritance)
-            * [ActualValues supplier in business rules](#actualvalues-supplier-in-business-rules)
-            * [Subtyping of business objects](#subtyping-of-business-objects)
-        * [Usage with Programmatic Builder (No annotations)](#usage-with-programmatic-builder-no-annotations)
-            * [Programmatic business assertions](#programmatic-business-assertions)
-            * [Programmatic business members](#programmatic-business-members)
-            * [Business objects with inheritance](#business-objects-with-inheritance)
-            * [Subtyping of business members](#subtyping-of-business-members)
-            * [Complex use cases](#complex-use-cases)
-        * [Default assertions](#default-assertions)
-    * [Ideas behind BValid](#ideas-behind-bvalid)
-    * [Sources and build](#sources-and-build)
-        * [Requirements](#requirements)
-        * [Build, test and package](#build-test-and-package)
-        * [Mutation testing](#mutation-testing)
-        * [Release a new version of BValid](#release-a-new-version-of-bvalid)
-    * [Contribute](#contribute)
-    * [License](#license)
-
+  * [Project set-up](#project-set-up)
+  * [Usage](#usage)
+    * [Usage with Annotations](#usage-with-annotations)
+      * [Business Object](#business-object)
+      * [Validation](#validation)
+      * [business assertions](#business-assertions)
+      * [Business member composition](#business-member-composition)
+      * [Business object inheritance](#business-object-inheritance)
+      * [Subtyping of business objects](#subtyping-of-business-objects)
+    * [Usage with Programmatic Builder (No annotations)](#usage-with-programmatic-builder-no-annotations)
+      * [Programmatic business assertions](#programmatic-business-assertions)
+      * [Programmatic business members](#programmatic-business-members)
+      * [Business objects with inheritance](#business-objects-with-inheritance)
+      * [Subtyping of business members](#subtyping-of-business-members)
+      * [Complex use cases](#complex-use-cases)
+    * [Default assertions](#default-assertions)
+  * [Ideas behind BValid](#ideas-behind-bvalid)
+  * [Sources and build](#sources-and-build)
+    * [Requirements](#requirements)
+    * [Build, test and package](#build-test-and-package)
+    * [Mutation testing](#mutation-testing)
+    * [Release a new version of BValid](#release-a-new-version-of-bvalid)
+  * [Contribute](#contribute)
+  * [License](#license)
 <!-- TOC -->
 
 ## Project set-up
@@ -176,6 +173,40 @@ public class Author {
 }
 ```
 
+Business assertions can be enriched with suppliers to access at runtime the values of the evaluated attributes.
+If present, the actual value will be printed in the rule report making easy to see the reason why the rule is invalid.
+
+```java
+import io.github.ceoche.bvalid.DefaultAssertions;
+import io.github.ceoche.bvalid.BusinessObject;
+import io.github.ceoche.bvalid.BusinessAssertion;
+
+@BusinessObject(name = "ValueSupplier")
+public static class ValueSupplierObject {
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public ValueSupplierObject setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    @BusinessAssertion(
+            description = "An assertion must not take any parameter.",
+            actualValueSuppliers = {
+                    @BusinessAssertion.ActualValueSupplier(attributeName = "name", supplier = "getName"),
+            }
+    )
+    public boolean isValid(Object object) {
+        return object != null;
+    }
+}
+```
+
 #### Business member composition
 
 Business objects can have other business objects as attributes to compose an aggregate (see DDD) or a business model.
@@ -312,42 +343,6 @@ public class Comic extends Book {
 ```
 
 In the example above, `Comic` will also inherit from the business assertion `Author::isAuthorValid`.
-
-#### ActualValues supplier in business rules
-
-Business rules can provide suppliers to access at runtime the values of the evaluated attributes. If present, the actual
-value will be printed in the rule report making easy to see the reason why the rule is invalid.
-
-```java
-import io.github.ceoche.bvalid.DefaultAssertions;
-import io.github.ceoche.bvalid.BusinessObject;
-import io.github.ceoche.bvalid.BusinessAssertion;
-
-@BusinessObject(name = "ValueSupplier")
-public static class ValueSupplierObject {
-
-    private String name;
-
-    public String getName() {
-        return name;
-    }
-
-    public ValueSupplierObject setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    @BusinessAssertion(
-            description = "An assertion must not take any parameter.",
-            actualValueSuppliers = {
-                    @BusinessAssertion.ActualValueSupplier(attributeName = "name", supplier = "getName"),
-            }
-    )
-    public boolean isValid(Object object) {
-        return object != null;
-    }
-}
-```
 
 #### Subtyping of business objects
 
