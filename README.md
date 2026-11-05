@@ -123,14 +123,20 @@ that can be used if the model is invalid to raise an exception using a `Supplier
 constructor with a String as parameter):
 
 ```java
-bReport.orThrow(IllegalArgumentException::new);
+import io.github.ceoche.bvalid.BValidator;
 
-// or in one line with the validation
-validator.
+class Example {
 
-valiate(object).
+    public static <T> void example(BValidator<T> validator, T object) {
 
-orThrow(IllegalArgumentException::new);
+        // Validate and throw an exception if invalid.
+        BReport breport = validator.validate(object);
+        bReport.orThrow(IllegalArgumentException::new);
+
+        // or in one line with the validation
+        validator.validate(object).orThrow(IllegalArgumentException::new);
+    }
+}
 ```
 
 #### business assertions
@@ -156,8 +162,7 @@ public class Author {
 ```
 
 `BusinessAssertion` should be enriched with a meaningful description. It will help other developers to understand the
-assertion,
-but it will also be used in the validation report.
+assertion, but it will also be used in the validation report.
 
 If requirement engineering is required, `id` attribute can be used to declare the requirement id.
 
@@ -173,7 +178,7 @@ public class Author {
 }
 ```
 
-Business assertions can be enriched with suppliers to access at runtime the values of the evaluated attributes.
+Business assertions can also be enriched with suppliers to access at runtime the values of the evaluated attributes.
 If present, the actual value will be printed in the rule report making easy to see the reason why the rule is invalid.
 
 ```java
@@ -242,9 +247,8 @@ public class Book {
 ```
 
 When calling `BValidator::validate`, all business assertions of declared business members will also be tested to assess
-the
-validity of the business object. If the business member's accessor return a `null` value, the member will be ignored. It
-allows optional associations in models.
+the validity of the business object. If the business member's accessor return a `null` value, the member will be
+ignored. It allows optional associations in models.
 
 Composition support also multiple cardinality:
 
@@ -307,8 +311,7 @@ Currently, `java.util.Collection` (List, Set, Queue...), __arrays__ and `java.ut
 #### Business object inheritance
 
 Business objects can inherit from others business object. They will get all business assertions and members from the
-parent
-business object.
+parent business object.
 
 ```java
 import io.github.ceoche.bvalid.DefaultAssertions;
@@ -346,9 +349,9 @@ In the example above, `Comic` will also inherit from the business assertion `Aut
 
 #### Subtyping of business objects
 
-It is sometimes requires to subtype an attribute. If the different subtypes also have specific
-assertions, all possible subtypes annotated with aditionnal `@BusinessAssertion` or
-`@BusinessMember` can be given to the builder for runtime type resolution.
+It is sometimes requires to subtype an attribute. If the different subtypes also have specific assertions, all possible
+subtypes annotated with aditionnal `@BusinessAssertion` or `@BusinessMember` can be given to the builder for runtime
+type resolution.
 
 As example, to subtype the `Book` class within the `Library` aggregate:
 
@@ -363,8 +366,7 @@ BValidator<Library> validator = new AnnotationResolver<>(Library.class)
 ### Usage with Programmatic Builder (No annotations)
 
 It is also possible to use __BValid__ without any annotations. That is a good thing if you do not want to create
-coupling
-between you business models and __bValid__.
+coupling between you business models and __bValid__.
 
 To do so, use `BValidatorManualBuilder` to create a `BValidator` instance programmatically.
 
@@ -405,8 +407,7 @@ class Example {
 ```
 
 Just as business assertion annotated with `@BusinessAssertion`, it must be a __public__ method that takes no arguments
-and
-returns a `boolean` (the method must return `true` if the assertion is validated, `false` otherwise).
+and returns a `boolean` (the method must return `true` if the assertion is validated, `false` otherwise).
 
 The business object name is optional, but we recommend to set it at least for the root business object to get better
 error messages.
@@ -494,8 +495,8 @@ library.books[1].author Author's name must be defined. => valid
 
 #### Business objects with inheritance
 
-It is possible to validate business objects that inherit from others business objects. Simply add
-the parent BValidatorBuilder in the constructor of the child's one:
+It is possible to validate business objects that inherit from others business objects. Simply add the parent
+BValidatorBuilder in the constructor of the child's one:
 
 ```java
 import io.github.ceoche.bvalid.BValidator;
@@ -590,8 +591,7 @@ The validator support other uses cases such:
 ### Default assertions
 
 __BValid__ provides the `DefaultAssertions` utility to implement quickly default business assertions to assert mandatory
-attributes
-or cardinality.
+attributes or cardinality.
 
 ```java
 import io.github.ceoche.bvalid.DefaultAssertions;
@@ -633,12 +633,9 @@ pattern.
 ## Ideas behind BValid
 
 A business object or model, is usually seen as a stateful data structure with enforced business assertions. However,
-business
-assertions are not always required to be verified, for example when data are pulled from an already verified database,
-there
-should be no need to verify business assertions again. As such, we usually prefer writing the business assertions in
-methods
-separated from constructors and accessors, use cases can invoke them whenever necessary.
+business assertions are not always required to be verified, for example when data are pulled from an already verified
+database, there should be no need to verify business assertions again. As such, we usually prefer writing the business
+assertions in methods separated from constructors and accessors, use cases can invoke them whenever necessary.
 
 Then instead of manually aggregating validation methods to call and sequence collections of business assertions, we can
 use __BValid__ to list all business assertions using annotation or the manual validator-builder.
@@ -647,8 +644,7 @@ Ideally, we would have expected such library to be the least intrusive in the co
 code to depend on an obscure framework. Unlike the famous Jakarta-EE-Validation that is declaring assertions as
 annotations, we have decided that all business assertions should be methods and should be written in plain Java.
 Annotations (or the programmatic builder) are used only to reference them. So even if you decide to no longer use
-__BValid__ in your
-project, your code will still have all its valuable assertions.
+__BValid__ in your project, your code will still have all its valuable assertions.
 
 ## Sources and build
 
@@ -684,7 +680,7 @@ A report will be generated in `target/pit-reports/index.html`
 
 ### Release a new version of BValid
 
-Release process can only be performed by project members.
+Release can only be performed by maintainers of the project.
 
 ```shell
 mvn release:prepare
@@ -697,7 +693,7 @@ mvn nexus-staging:release -Prelease -DstagingRepositoryId=${STAGING_REPO}
 
 Feel free to open an issue, fork the project and/or propose a merge request.
 
-Here is some rules:
+Here are some rules:
 
 * no external dependencies
 * no warnings in compilation
@@ -705,7 +701,8 @@ Here is some rules:
 * javadoc completed on public elements
 * README up to date with added features/fixes.
 
-Thanks to @achrafxx, @ClementLagorce and [Kereval](https://www.kereval.com) for their contribution to the Programmatic builder, the
+Thanks to @achrafxx, @ClementLagorce and [Kereval](https://www.kereval.com) for their contribution to the Programmatic
+builder, the
 support of Map, locations and actual values.
 
 ## License
