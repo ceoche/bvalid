@@ -18,6 +18,8 @@ package io.github.ceoche.bvalid;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -214,25 +216,24 @@ public class AnnotationResolver<T> {
       if (clazz.isArray()) {
          return clazz.getComponentType();
       } else if (Collection.class.isAssignableFrom(clazz)) {
-         return getGenericTypeParameter(method);
+         return getGenericTypeParameter(method, 0);
+      } else if (Map.class.isAssignableFrom(clazz)) {
+         return getGenericTypeParameter(method, 1); // We consider the value type of the map
       } else {
          return clazz;
       }
    }
 
-   private Class<?> getGenericTypeParameter(Method method) {
-      String genericType = method.getGenericReturnType().getTypeName();
-      if (genericType.contains("<") && genericType.contains(">")) {
-         String className = genericType.substring(genericType.indexOf("<") + 1, genericType.indexOf(">"));
-         try {
-            return Class.forName(className);
-         } catch (ClassNotFoundException e) {
-            throw new TypeResolutionException(e);
+   private Class<?> getGenericTypeParameter(Method method, int typeIndex) {
+      Type genericType = method.getGenericReturnType();
+      if (genericType instanceof ParameterizedType pt) {
+         Type memberType = pt.getActualTypeArguments()[typeIndex];
+         if (memberType instanceof Class<?> memberClass) {
+            return memberClass;
          }
       }
       throw new TypeResolutionException("Cannot resolve the generic return type of method " + method.getName());
    }
-
 
    private Class<?> assertBusinessObjectClass(Class<?> clazz) {
       if(clazz != null) {

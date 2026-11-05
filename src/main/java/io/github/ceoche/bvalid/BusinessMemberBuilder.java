@@ -54,6 +54,7 @@ class BusinessMemberBuilder<T, M> {
       return validatorBuilders;
    }
 
+   @SuppressWarnings("unchecked")
    void addValidatorBuilder(BValidatorBuilder<?> builder) {
       validatorBuilders.add((BValidatorBuilder<? extends M>) builder);
    }

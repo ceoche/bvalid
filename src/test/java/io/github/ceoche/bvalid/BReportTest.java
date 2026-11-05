@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Objects;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BReportTest {
@@ -168,6 +170,50 @@ public class BReportTest {
       assertTrue(Objects.requireNonNull(getRuleResult(result, "person.phones[0] [countryCodeValid]")).isValid());
       assertTrue(Objects.requireNonNull(getRuleResult(result, "person.phones[1] [numberValid]")).isValid());
       assertFalse(Objects.requireNonNull(getRuleResult(result, "person.phones[1] [countryCodeValid]")).isValid());
+   }
+
+   @Test
+   void testEmptyObjectNameValidator() {
+       BValidator<Person> addressBValidator = new BValidatorBuilder<>(Person.class)
+               .setObjectName("")
+               .addMember("phones", Person::getPhones, new BValidatorBuilder<>(Phone.class)
+                       .setObjectName("Phone")
+                       .addAssertion("numberValid", Phone::isNumberValid, "Number must not be null")
+                       .addAssertion("countryCodeValid", Phone::isCountryCodeValid, "Country code must not be valid")
+               )
+               .build();
+       Person person = new Person(null, null, null, null,
+               List.of(new Phone("123456789", "+33"), new Phone("987654321", "aa"))
+       );
+       BReport result = addressBValidator.validate(person);
+       assertThat(result.getAllAssertionReports(), hasItem(
+               allOf(
+                       hasProperty("id",  equalTo("numberValid")),
+                       hasProperty("location", equalTo("phones[0]")),
+                       hasProperty("valid", equalTo(true))
+               )
+       ));
+       assertThat(result.getAllAssertionReports(), hasItem(
+               allOf(
+                       hasProperty("id",  equalTo("countryCodeValid")),
+                       hasProperty("location", equalTo("phones[0]")),
+                       hasProperty("valid", equalTo(true))
+               )
+       ));
+       assertThat(result.getAllAssertionReports(), hasItem(
+               allOf(
+                       hasProperty("id",  equalTo("numberValid")),
+                       hasProperty("location", equalTo("phones[1]")),
+                       hasProperty("valid", equalTo(true))
+               )
+       ));
+       assertThat(result.getAllAssertionReports(), hasItem(
+               allOf(
+                       hasProperty("id",  equalTo("countryCodeValid")),
+                       hasProperty("location", equalTo("phones[1]")),
+                       hasProperty("valid", equalTo(false))
+               )
+       ));
    }
 
    @Test
