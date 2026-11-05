@@ -2,6 +2,7 @@ package io.github.ceoche.bvalid;
 
 import java.util.function.Function;
 
+
 /**
  * Represents a supplier of an actual value that is associated with a specific name.
  *
