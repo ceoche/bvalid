@@ -38,11 +38,15 @@
       <developer>
          <id>ceoche</id>
          <name>Cédric Eoche-Duval</name>
-         <email>cedric.eoche.duval@gmail.com</email>
+         <url>https://github.com/ceoche</url>
       </developer>
       <developer>
          <id>achrafxx</id>
          <url>https://github.com/achrafxx</url>
+      </developer>
+      <developer>
+         <id>ClementLagorce</id>
+         <url>https://github.com/ClementLagorce</url>
       </developer>
    </developers>
 
@@ -146,22 +150,13 @@
                   </executions>
                </plugin>
                <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-install-plugin</artifactId>
-                  <version>3.0.0-M1</version>
-                  <configuration>
-                     <createChecksum>true</createChecksum>
-                  </configuration>
-               </plugin>
-               <plugin>
-                  <groupId>org.sonatype.plugins</groupId>
-                  <artifactId>nexus-staging-maven-plugin</artifactId>
-                  <version>1.6.13</version>
+                  <groupId>org.sonatype.central</groupId>
+                  <artifactId>central-publishing-maven-plugin</artifactId>
+                  <version>0.12.0</version>
                   <extensions>true</extensions>
                   <configuration>
-                     <serverId>ossrh</serverId>
-                     <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                     <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                     <publishingServerId>central</publishingServerId>
+                     <checksums>required</checksums>
                   </configuration>
                </plugin>
             </plugins>
